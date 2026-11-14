@@ -8,7 +8,7 @@ DashboardWidgetInterface
   getTitle()            Übersetzungsschlüssel der Domain admin, oder Klartext
   getType()             number | progress | list | bars | custom
   getSecurityContext()  Sulu-Sicherheitskontext, den der Benutzer braucht (Ansehen), oder null
-  getColumn()           row | main | side
+  getColumn()           row | main | side | auto
   getPriority()         Reihenfolge in der Spalte, höhere zuerst
   getData($locale)      die Daten in der Form der Darstellungsart (siehe unten)
 ```
@@ -145,8 +145,9 @@ Das Paket in `assets/admin/package.json` eintragen (`"sulu-dashboard-bundle": "f
 ## Platz und Rechte
 
 - `WidgetColumns::ROW`: Zeile mit Kennzahlen oben, alle Kacheln gleich hoch.
-- `WidgetColumns::MAIN` und `WidgetColumns::SIDE`: eine breite (zwei Drittel) und eine schmale Spalte, die Kacheln stehen untereinander. Ist eine Spalte leer, nutzt die andere die volle Breite.
-- Spalte wählen: Breites (Tabellen, Listen mit mehreren Spalten) gehört in `MAIN`, Schmales (kurze Listen, Balken, Ringe, Status) in `SIDE`. Die Kacheln einer Spalte stehen in der Reihenfolge von `getPriority()` untereinander; die beiden Spalten sind unabhängig, die kürzere endet also früher. Beide Spalten sollten ähnlich hoch werden, und eine Spalte nicht nur eine winzige Kachel bekommen. Ohne Kacheln in einer Spalte nutzt die andere die volle Breite.
+- `WidgetColumns::MAIN` und `WidgetColumns::SIDE`: eine breite (zwei Drittel) und eine schmale Spalte, die Kacheln stehen untereinander. Ist eine Spalte leer, nutzt die andere die volle Breite. Die Spalte ist ein Wunsch, siehe „Ausgleich der Spalten“ weiter unten.
+- `WidgetColumns::AUTO`: kein Wunsch. Die Kachel kommt in die Spalte, die gerade kürzer ist. Passend, wenn die Kachel in beide Spalten passt.
+- Spalte wählen: Breites (Tabellen, Listen mit mehreren Spalten) gehört in `MAIN`, Schmales (kurze Listen, Balken, Ringe, Status) in `SIDE`. Die Kacheln einer Spalte stehen in der Reihenfolge von `getPriority()`, höhere zuerst.
 - `getSecurityContext()`: Der Benutzer sieht die Kachel nur mit dem Recht „Ansehen“ für diesen Kontext. Der Daten-Endpunkt prüft es erneut, ohne Recht lassen sich also auch die Daten nicht abrufen. `null` heißt: jeder, der das Dashboard öffnen darf. Eigene Inhalte (Seiten, Einträge) filtert `getData()` nach den Rechten des Benutzers.
 - Schlüssel mit `sulu_` am Anfang gehören den Kacheln dieses Bundles.
 - Eine Kachel abschalten: `sulu_dashboard.disabled_widgets: ['sulu_activities']`.
@@ -212,3 +213,18 @@ php bin/console sulu:dashboard:dump --user=admin --widget=projects
 ```
 
 Der Befehl gibt die Kacheln, die der Benutzer sieht, mit ihren Daten als JSON aus. Ein Fehler in einer Kachel erscheint als `error` und setzt den Exit-Code auf 1.
+
+## Ausgleich der Spalten
+
+Die Kacheln laden einzeln, die beiden Spalten wären sonst unterschiedlich hoch und ließen eine Lücke. Deshalb gleicht das Dashboard sie einmal im Browser aus:
+
+1. Es wartet, bis alle Kacheln ihre Daten haben und ihre Größe einen Moment lang ruhig war (höchstens fünf Sekunden).
+2. Es misst die Kacheln. Solange am Ende der längeren Spalte eine Kachel steht, die kleiner ist als der Unterschied der beiden Spalten, wandert sie in die kürzere Spalte. Die Reihenfolge nach `getPriority()` bleibt in jeder Spalte erhalten.
+3. Danach nichts mehr. Spätere Höhenänderungen (eine Liste wird aufgeklappt, „Alle anzeigen“) verschieben nichts mehr, damit beim Arbeiten nichts springt. Ist in den Systemeinstellungen „weniger Bewegung“ gewählt, erscheinen verschobene Kacheln ohne Einblenden.
+
+Unter 520 px Fensterbreite stellt Sulus Raster die Spalten untereinander, dann wird nichts ausgeglichen.
+
+- `isPinned()`: Eine Kachel mit `PinnedDashboardWidgetInterface`, die `true` liefert, wird nie in die andere Spalte verschoben. Die eingebauten Kacheln „Offene Entwürfe“ und „Letzte Aktivität“ sind festgesetzt, sie bleiben dort, wo man sie sucht. Für eine Kachel ohne PHP-Abhängigkeit gibt es das Tag-Attribut `pinned: true`.
+- Ausschalten mit `sulu_dashboard.layout.balance: false`. Dann wird nichts gemessen: Jede Kachel bleibt in ihrer Spalte, Kacheln mit `auto` werden gleichmäßig nach Anzahl verteilt.
+- Wer die Kacheln selbst angeordnet hat ([Dashboard anpassen](customize.de.md)), ist nicht betroffen: Diese Anordnung gewinnt. Kacheln, die seitdem dazugekommen sind, werden nach den obigen Regeln einsortiert.
+- Eine Kachel mit eigener React-Komponente, die nach dem Einhängen weitere Daten lädt, sollte sie in der Prop `cache` ablegen (ein Objekt, das das Dashboard so lange behält, wie die Seite offen ist): Beim Verschieben in die andere Spalte wird die Komponente neu eingehängt, der Cache spart die zweite Abfrage.

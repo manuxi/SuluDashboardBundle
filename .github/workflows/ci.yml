@@ -42,3 +42,11 @@ jobs:
 
       - name: Unit tests
         run: vendor/bin/phpunit
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Layout functions (JavaScript)
+        run: node --test tests/js/layout.test.mjs

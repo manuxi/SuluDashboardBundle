@@ -6,6 +6,7 @@ namespace Manuxi\SuluDashboardBundle\Admin;
 
 use Manuxi\SuluDashboardBundle\Tab\ReplacesNavigationItemInterface;
 use Manuxi\SuluDashboardBundle\Tab\TabRegistry;
+use Manuxi\SuluDashboardBundle\Widget\PinnedDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use Sulu\Article\Domain\Model\ArticleInterface;
 use Sulu\Bundle\AdminBundle\Admin\Admin;
@@ -51,6 +52,7 @@ class DashboardAdmin extends Admin
         private readonly bool $startPage = true,
         private readonly ?TabRegistry $tabRegistry = null,
         private readonly bool $replaceNavigation = true,
+        private readonly bool $balance = true,
     ) {
     }
 
@@ -116,6 +118,7 @@ class DashboardAdmin extends Admin
                 'title' => $widget->getTitle(),
                 'type' => $widget->getType(),
                 'column' => $widget->getColumn(),
+                'pinned' => $widget instanceof PinnedDashboardWidgetInterface && $widget->isPinned(),
             ];
         }
 
@@ -132,6 +135,7 @@ class DashboardAdmin extends Admin
                 'pages' => $this->templateTitles(PageInterface::TEMPLATE_TYPE),
                 'articles' => $this->templateTitles(ArticleInterface::TEMPLATE_TYPE),
             ])
+            ->setOption('balance', $this->balance)
             ->setOption('widgets', $widgets);
 
         if ([] === $tabs) {

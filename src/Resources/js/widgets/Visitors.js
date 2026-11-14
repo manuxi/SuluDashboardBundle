@@ -22,10 +22,15 @@ const errorShare = (days) => {
 const format = (value) => new Intl.NumberFormat().format(value);
 
 export default class Visitors extends React.Component {
-    state = {days: undefined, error: undefined};
+    // the dashboard may move the tile to the other column, which mounts it again: the result is kept in props.cache then
+    state = {days: (this.props.cache || {}).visitors, error: undefined};
 
     componentDidMount() {
         const {apiUrl, days} = this.props.data;
+
+        if (this.state.days) {
+            return;
+        }
 
         if (!apiUrl) {
             this.setState({error: translate('sulu_dashboard.visitors_not_set_up')});
@@ -34,7 +39,13 @@ export default class Visitors extends React.Component {
         }
 
         Requester.get(apiUrl)
-            .then((statistics) => !this.unmounted && this.setState({days: (statistics.days || []).slice(-days)}))
+            .then((statistics) => {
+                const lastDays = (statistics.days || []).slice(-days);
+                if (this.props.cache) {
+                    this.props.cache.visitors = lastDays;
+                }
+                !this.unmounted && this.setState({days: lastDays});
+            })
             .catch(() => !this.unmounted && this.setState({error: translate('sulu_dashboard.widget_error')}));
     }
 

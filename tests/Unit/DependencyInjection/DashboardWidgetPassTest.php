@@ -91,6 +91,15 @@ class DashboardWidgetPassTest extends TestCase
         $this->assertTrue($widget->isAvailable());
     }
 
+    public function testTaggedAdapterReadsPinnedAndAutoColumn(): void
+    {
+        $widget = new TaggedWidget(new DuckWidget(), ['key' => 'duck', 'title' => 'app.duck', 'type' => 'bars', 'column' => 'auto', 'pinned' => true]);
+
+        $this->assertSame('auto', $widget->getColumn());
+        $this->assertTrue($widget->isPinned());
+        $this->assertFalse((new TaggedWidget(new DuckWidget(), ['key' => 'duck', 'title' => 'app.duck', 'type' => 'bars']))->isPinned());
+    }
+
     /**
      * @param array<string, mixed> $attributes
      */

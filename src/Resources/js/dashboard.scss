@@ -8,22 +8,59 @@
     min-width: $viewMinWidth;
 }
 
-/* Sulu's Grid items have no vertical gap of their own (forms use the fields' margin) */
+/* a tile: the Card inside fills the cell. Sulu's Grid items have no vertical gap of their own (forms use the margin of
+   the fields), so the cell brings it (GAP in Dashboard.js) */
 .cell {
+    display: flex;
     margin-bottom: 20px;
 }
 
-/* the row of figures: all cards as high as the highest one */
-.row {
+.tileBody {
+    position: relative;
     display: flex;
-    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
+}
 
-    > .cell {
-        display: flex;
+.content {
+    display: flex;
+    flex: 1;
+    min-width: 0;
 
-        > section {
-            flex: 1;
-        }
+    > * {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* the row of figures: all cards as high as the highest one, up to four next to each other */
+.rowList {
+    display: grid;
+    grid-template-columns: repeat(var(--columns, 4), minmax(0, 1fr));
+    column-gap: 20px;
+}
+
+/* below the width at which Sulu's Grid stacks its items (grid.scss) */
+@media (max-width: 519px) {
+    .rowList {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* tiles the balance has moved fade in, unless the user asked for less motion */
+@media (prefers-reduced-motion: no-preference) {
+    .moved {
+        animation: tileIn 0.3s ease-out;
+    }
+}
+
+@keyframes tileIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }
 

@@ -6,6 +6,7 @@ namespace Manuxi\SuluDashboardBundle\Tests\Unit\Widget;
 
 use LogicException;
 use Manuxi\SuluDashboardBundle\Tests\Unit\Widget\Fixtures\ArrayWidget;
+use Manuxi\SuluDashboardBundle\Widget\WidgetColumns;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -53,6 +54,14 @@ class WidgetRegistryTest extends TestCase
         $this->assertNull($registry->find('secret'), 'find() must not reveal a tile the user may not see');
         $this->assertNotNull($registry->find('shared'));
         $this->assertNull($registry->find('unknown'));
+    }
+
+    public function testAutoIsAColumn(): void
+    {
+        $registry = new WidgetRegistry([new ArrayWidget('free', column: WidgetColumns::AUTO)], $this->checker([]));
+
+        $this->assertSame(WidgetColumns::AUTO, $registry->find('free')?->getColumn());
+        $this->assertContains(WidgetColumns::AUTO, WidgetColumns::all());
     }
 
     public function testDisabledTilesAreMissing(): void

@@ -114,6 +114,8 @@ sulu_dashboard:
     start_page: true       # true: Dashboard auf "/", Sulus Suche zieht nach "/search"; false: Dashboard auf "/dashboard", Suche bleibt auf "/"
     tabs:
         replace_navigation: true   # ein Tab darf einen Menüpunkt eines anderen Bundles ersetzen (die Statistik der Log-Statistik)
+    layout:
+        balance: true      # nach dem Laden Kacheln vom Ende der längeren in die kürzere Spalte schieben (einmal); false: Kacheln bleiben in ihrer Spalte
     disabled_widgets: []   # Schlüssel von Kacheln, die nicht erscheinen, z. B. ['sulu_activities']
 ```
 

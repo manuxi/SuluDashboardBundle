@@ -93,6 +93,12 @@ class BuiltinWidgetsTest extends TestCase
         $this->assertSame([], $widget->getData('de'));
     }
 
+    public function testTheCoreTilesArePinned(): void
+    {
+        $this->assertTrue((new OpenItemsWidget($this->reader()))->isPinned());
+        $this->assertTrue((new ActivitiesWidget())->isPinned());
+    }
+
     public function testEveryBuiltinTileIsValidAndKeysAreReserved(): void
     {
         $localizations = $this->createMock(LocalizationManagerInterface::class);

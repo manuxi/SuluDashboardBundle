@@ -38,6 +38,7 @@ services:
             - '%sulu_dashboard.start_page%'
             - '@sulu_dashboard.tab_registry'
             - '%sulu_dashboard.tabs.replace_navigation%'
+            - '%sulu_dashboard.layout.balance%'
         tags:
             - { name: sulu.admin }
             - { name: sulu.context, context: admin }

@@ -3,7 +3,9 @@
 // are shown (src/Admin/DashboardAdmin.php).
 //
 // The component gets the props: widget (key, title, type, column), data (the answer of getData()), locale, locales,
-// router.
+// router, options, and cache: an object the dashboard keeps while it is open. The dashboard may move a tile to the other
+// column (automatic balance, arranging by the user), which mounts the component again; whatever it loaded on its own
+// can be kept in the cache under its own name so that it does not load again.
 class WidgetRegistry {
     widgets = {};
 

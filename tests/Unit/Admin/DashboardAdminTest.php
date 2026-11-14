@@ -24,7 +24,7 @@ class DashboardAdminTest extends TestCase
      * @param list<string>      $allowed security contexts the user may view
      * @param list<ArrayWidget> $widgets
      */
-    private function admin(array $allowed, array $widgets = [], bool $startPage = true): DashboardAdmin
+    private function admin(array $allowed, array $widgets = [], bool $startPage = true, bool $balance = true): DashboardAdmin
     {
         $checker = $this->createMock(SecurityCheckerInterface::class);
         $checker->method('hasPermission')->willReturnCallback(
@@ -45,7 +45,7 @@ class DashboardAdminTest extends TestCase
         $registry = $this->createMock(MetadataProviderRegistry::class);
         $registry->method('getMetadataProvider')->willReturn($provider);
 
-        return new DashboardAdmin(new ViewBuilderFactory(), $checker, $localizations, new WidgetRegistry($widgets, $checker), $registry, $startPage);
+        return new DashboardAdmin(new ViewBuilderFactory(), $checker, $localizations, new WidgetRegistry($widgets, $checker), $registry, $startPage, null, true, $balance);
     }
 
     /**
@@ -130,7 +130,7 @@ class DashboardAdminTest extends TestCase
             [
                 new ArrayWidget('visible', securityContext: 'sulu.visible', priority: 5, title: 'a.visible'),
                 new ArrayWidget('hidden', securityContext: 'sulu.hidden'),
-                new ArrayWidget('first', priority: 9),
+                new ArrayWidget('first', priority: 9, pinned: true),
             ],
         );
         $views = new ViewCollection();
@@ -147,11 +147,21 @@ class DashboardAdminTest extends TestCase
         );
         $this->assertSame(
             [
-                ['key' => 'first', 'title' => 'test.title', 'type' => 'number', 'column' => 'main'],
-                ['key' => 'visible', 'title' => 'a.visible', 'type' => 'number', 'column' => 'main'],
+                ['key' => 'first', 'title' => 'test.title', 'type' => 'number', 'column' => 'main', 'pinned' => true],
+                ['key' => 'visible', 'title' => 'a.visible', 'type' => 'number', 'column' => 'main', 'pinned' => false],
             ],
             $view->getOption('widgets'),
         );
+    }
+
+    public function testTheViewKnowsWhetherTheColumnsAreBalanced(): void
+    {
+        foreach ([true, false] as $balance) {
+            $views = new ViewCollection();
+            $this->admin([DashboardAdmin::SECURITY_CONTEXT], [], true, $balance)->configureViews($views);
+
+            $this->assertSame($balance, $views->get(DashboardAdmin::VIEW)->getView()->getOption('balance'));
+        }
     }
 
     public function testNavigationItemIsTheFirstOne(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Widget\Builtin;
 
 use Manuxi\SuluDashboardBundle\Content\ContentReader;
+use Manuxi\SuluDashboardBundle\Widget\PinnedDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\WidgetColumns;
 use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
 
@@ -12,7 +13,7 @@ use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
  * "Open drafts": pages and articles that are not live as edited. Rendered by the React component "sulu_open_items"
  * (table with filters and sorting).
  */
-final class OpenItemsWidget extends AbstractBuiltinWidget
+final class OpenItemsWidget extends AbstractBuiltinWidget implements PinnedDashboardWidgetInterface
 {
     public const LIMIT = 50;
 
@@ -33,6 +34,14 @@ final class OpenItemsWidget extends AbstractBuiltinWidget
     public function getType(): string
     {
         return WidgetTypes::CUSTOM;
+    }
+
+    /**
+     * Core tile: stays where it is when the columns are balanced.
+     */
+    public function isPinned(): bool
+    {
+        return true;
     }
 
     public function getColumn(): string

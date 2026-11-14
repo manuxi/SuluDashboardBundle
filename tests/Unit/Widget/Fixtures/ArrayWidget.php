@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Tests\Unit\Widget\Fixtures;
 
 use Manuxi\SuluDashboardBundle\Widget\ConditionalDashboardWidgetInterface;
+use Manuxi\SuluDashboardBundle\Widget\PinnedDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\WidgetColumns;
 use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
 use Throwable;
@@ -12,7 +13,7 @@ use Throwable;
 /**
  * A configurable tile for tests.
  */
-final class ArrayWidget implements ConditionalDashboardWidgetInterface
+final class ArrayWidget implements ConditionalDashboardWidgetInterface, PinnedDashboardWidgetInterface
 {
     /**
      * @param array<string, mixed> $data
@@ -27,6 +28,7 @@ final class ArrayWidget implements ConditionalDashboardWidgetInterface
         private readonly bool $available = true,
         private readonly array $data = ['value' => 1],
         private readonly ?Throwable $failure = null,
+        private readonly bool $pinned = false,
     ) {
     }
 
@@ -67,6 +69,11 @@ final class ArrayWidget implements ConditionalDashboardWidgetInterface
         }
 
         return $this->data + ['locale' => $locale];
+    }
+
+    public function isPinned(): bool
+    {
+        return $this->pinned;
     }
 
     public function isAvailable(): bool

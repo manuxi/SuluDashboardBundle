@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Balance of the columns: once the tiles have loaded (all have their data and their size has been quiet, at most five seconds), tiles move from the end of the longer column into the shorter one as long as that makes the difference smaller. The order by priority stays in each column; later changes of height move nothing; below 520 px, where Sulu's grid stacks the columns, nothing is balanced; moved tiles fade in unless the user prefers reduced motion. Option `sulu_dashboard.layout.balance` (default true).
+- Column `WidgetColumns::AUTO` (tag attribute `column: auto`): no wish, the tile goes into the shorter column.
+- `PinnedDashboardWidgetInterface` (tag attribute `pinned: true`): the balance never moves such a tile to the other column. "Open drafts" and "Recent activity" are pinned.
+- Tiles get the prop `cache`, an object the dashboard keeps while the page is open, so a tile that moves to the other column (and is mounted again) does not request its data twice. The visitors tile uses it.
+- The layout functions live in `src/Resources/js/layout.js` without React and can be tested with `node --test tests/js`.
+
 ## 1.0.0 - 2026-11-14
 
 First release of SuluDashboardBundle: a start page for the Sulu 3 admin and a small interface for other bundles and projects to add tiles and tabs.

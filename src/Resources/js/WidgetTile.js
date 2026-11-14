@@ -1,5 +1,7 @@
 // One tile: loads its own data (so an error stays inside the tile) and shows it by type. Types number, progress, list and
 // bars are built in; "custom" looks up a React component in the widgetRegistry under the key of the tile.
+// The answer is kept in props.cache (owned by the dashboard) so that a tile the dashboard moves to the other column, which
+// mounts it again, shows its data at once. props.onSettled(key) tells the dashboard that the data arrived or failed.
 import React from 'react';
 import {Loader} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
@@ -20,9 +22,15 @@ const TYPES = {
 };
 
 export default class WidgetTile extends React.Component {
-    state = {data: undefined, error: false};
+    state = {data: (this.props.cache || {})[this.props.widget.key + ':' + this.props.locale], error: false};
 
     componentDidMount() {
+        if (this.state.data !== undefined) {
+            this.settled();
+
+            return;
+        }
+
         this.load();
     }
 
@@ -36,17 +44,35 @@ export default class WidgetTile extends React.Component {
         this.unmounted = true;
     }
 
+    settled() {
+        if (this.props.onSettled) {
+            this.props.onSettled(this.props.widget.key);
+        }
+    }
+
     load() {
-        const {widget, locale} = this.props;
+        const {cache, widget, locale} = this.props;
         this.setState({data: undefined, error: false});
 
         Requester.get('/admin/api/dashboard/widgets/' + encodeURIComponent(widget.key) + '?locale=' + encodeURIComponent(locale))
-            .then((response) => !this.unmounted && this.setState({data: response.data || {}}))
-            .catch(() => !this.unmounted && this.setState({error: true}));
+            .then((response) => {
+                const data = response.data || {};
+                if (cache) {
+                    cache[widget.key + ':' + locale] = data;
+                }
+                if (!this.unmounted) {
+                    this.setState({data}, () => this.settled());
+                }
+            })
+            .catch(() => {
+                if (!this.unmounted) {
+                    this.setState({error: true}, () => this.settled());
+                }
+            });
     }
 
     render() {
-        const {widget, locale, locales, options, router} = this.props;
+        const {cache, widget, locale, locales, options, router} = this.props;
         const {data, error} = this.state;
 
         if (error) {
@@ -77,6 +103,6 @@ export default class WidgetTile extends React.Component {
             Component = TYPES[widget.type];
         }
 
-        return <Component data={data} locale={locale} locales={locales} options={options} router={router} widget={widget} />;
+        return <Component cache={cache} data={data} locale={locale} locales={locales} options={options} router={router} widget={widget} />;
     }
 }

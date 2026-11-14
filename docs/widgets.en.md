@@ -8,7 +8,7 @@ DashboardWidgetInterface
   getTitle()            translation key of the admin domain, or plain text
   getType()             number | progress | list | bars | custom
   getSecurityContext()  Sulu security context the user needs (view), or null
-  getColumn()           row | main | side
+  getColumn()           row | main | side | auto
   getPriority()         order inside the column, higher first
   getData($locale)      the data in the shape of the type (see below)
 ```
@@ -145,8 +145,9 @@ Add the package to `assets/admin/package.json` (`"sulu-dashboard-bundle": "file:
 ## Place and permissions
 
 - `WidgetColumns::ROW`: row of figures on top, all tiles of equal height.
-- `WidgetColumns::MAIN` and `WidgetColumns::SIDE`: a wide (two thirds) and a narrow column, tiles stack. If one column is empty, the other uses the full width.
-- Choosing the column: put wide content (tables, lists with several columns) in `MAIN`, narrow content (short lists, bars, rings, status) in `SIDE`. Tiles of a column stack in the order of `getPriority()`; the two columns are independent, so the shorter one ends earlier. Keep the heights of both columns similar, and do not leave one column with a single tiny tile. Without tiles in one column the other one takes the full width.
+- `WidgetColumns::MAIN` and `WidgetColumns::SIDE`: a wide (two thirds) and a narrow column, tiles stack. If one column is empty, the other uses the full width. The column is a wish, see "Balance of the columns" below.
+- `WidgetColumns::AUTO`: no wish. The tile goes into the column that is shorter at that moment. Use it when the tile fits both columns.
+- Choosing the column: put wide content (tables, lists with several columns) in `MAIN`, narrow content (short lists, bars, rings, status) in `SIDE`. Tiles of a column stand in the order of `getPriority()`, highest first.
 - `getSecurityContext()`: the user sees the tile only with the view permission for this context. The data endpoint checks it again, so a user without permission cannot request the data either. `null` means everyone who may open the dashboard. Content of its own (pages, entries) must be filtered by the permissions of the user inside `getData()`.
 - Keys starting with `sulu_` belong to the tiles of this bundle.
 - Switch a tile off in the configuration: `sulu_dashboard.disabled_widgets: ['sulu_activities']`.
@@ -212,3 +213,18 @@ php bin/console sulu:dashboard:dump --user=admin --widget=projects
 ```
 
 The command prints the tiles the user sees with their data as JSON. An error in a tile appears as `error` and sets the exit code to 1.
+
+## Balance of the columns
+
+Tiles load one by one, so the two columns would end at different heights and leave a gap. That is why the dashboard balances them once, in the browser:
+
+1. It waits until all tiles have their data and their size has been quiet for a moment (at most five seconds).
+2. It measures the tiles. As long as the end of the longer column has a tile that is smaller than the difference of the two columns, that tile moves into the shorter column. The order by `getPriority()` stays inside each column.
+3. That is all. Later changes of height (a list is opened, "Show all") do not move anything again, so nothing jumps while someone works. With reduced motion in the system settings, moved tiles appear without a fade.
+
+Below a window width of 520 px Sulu's grid puts the columns under each other, and nothing is balanced.
+
+- `isPinned()`: a tile that implements `PinnedDashboardWidgetInterface` and returns `true` is never moved to the other column. The built-in tiles "Open drafts" and "Recent activity" are pinned, so they stay where people look for them. For a tile without PHP dependency use the tag attribute `pinned: true`.
+- Switch the balance off with `sulu_dashboard.layout.balance: false`. Then nothing is measured: every tile stays in its column, tiles with `auto` are spread evenly by number.
+- A user who has arranged the tiles ([Customize the dashboard](customize.en.md)) is not affected: that arrangement wins. Tiles that are new since then are placed by the rules above.
+- A tile with its own React component that loads more data after mounting should keep it in the `cache` prop (an object the dashboard keeps while the page is open): moving a tile to the other column mounts the component again, and the cache saves the second request.

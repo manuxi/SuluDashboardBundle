@@ -9,7 +9,7 @@ namespace Manuxi\SuluDashboardBundle\Widget;
  * method getData() is required, everything else comes from the tag attributes (or from a method of the same name).
  * This way a bundle can add a tile without any PHP dependency on this bundle.
  */
-final class TaggedWidget implements DashboardWidgetInterface, ConditionalDashboardWidgetInterface
+final class TaggedWidget implements DashboardWidgetInterface, ConditionalDashboardWidgetInterface, PinnedDashboardWidgetInterface
 {
     /**
      * @param array<string, mixed> $attributes
@@ -63,6 +63,11 @@ final class TaggedWidget implements DashboardWidgetInterface, ConditionalDashboa
     public function isAvailable(): bool
     {
         return !\is_callable([$this->service, 'isAvailable']) || (bool) $this->service->isAvailable();
+    }
+
+    public function isPinned(): bool
+    {
+        return (bool) $this->value('pinned', 'isPinned');
     }
 
     public function getService(): object
