@@ -108,8 +108,11 @@ With `autoconfigure` the class is found automatically. More: [Your own tile in 5
 ```yaml
 # config/packages/sulu_dashboard.yaml
 sulu_dashboard:
+    start_page: true       # true: dashboard on "/", Sulu's search moves to "/search"; false: dashboard on "/dashboard", search stays on "/"
     disabled_widgets: []   # keys of tiles that are not shown, e.g. ['sulu_activities']
 ```
+
+Sulu's search and the dashboard both want the path `/`. The router of the admin takes the first matching view, so with `start_page: true` the dashboard moves the search view `sulu_search.search` to `/search` (its name, menu item and links stay the same).
 
 ## 📖 Documentation
 

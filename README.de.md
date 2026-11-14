@@ -108,8 +108,11 @@ Mit `autoconfigure` wird die Klasse automatisch gefunden. Mehr: [Eigene Kachel i
 ```yaml
 # config/packages/sulu_dashboard.yaml
 sulu_dashboard:
+    start_page: true       # true: Dashboard auf "/", Sulus Suche zieht nach "/search"; false: Dashboard auf "/dashboard", Suche bleibt auf "/"
     disabled_widgets: []   # Schlüssel von Kacheln, die nicht erscheinen, z. B. ['sulu_activities']
 ```
+
+Sulus Suche und das Dashboard wollen beide den Pfad `/`. Der Router des Admins nimmt die erste passende View. Mit `start_page: true` verlegt das Dashboard deshalb die Such-View `sulu_search.search` nach `/search` (Name, Menüpunkt und Links bleiben gleich).
 
 ## 📖 Dokumentation
 

@@ -24,7 +24,7 @@ class DashboardAdminTest extends TestCase
      * @param list<string>      $allowed security contexts the user may view
      * @param list<ArrayWidget> $widgets
      */
-    private function admin(array $allowed, array $widgets = []): DashboardAdmin
+    private function admin(array $allowed, array $widgets = [], bool $startPage = true): DashboardAdmin
     {
         $checker = $this->createMock(SecurityCheckerInterface::class);
         $checker->method('hasPermission')->willReturnCallback(
@@ -45,7 +45,69 @@ class DashboardAdminTest extends TestCase
         $registry = $this->createMock(MetadataProviderRegistry::class);
         $registry->method('getMetadataProvider')->willReturn($provider);
 
-        return new DashboardAdmin(new ViewBuilderFactory(), $checker, $localizations, new WidgetRegistry($widgets, $checker), $registry);
+        return new DashboardAdmin(new ViewBuilderFactory(), $checker, $localizations, new WidgetRegistry($widgets, $checker), $registry, $startPage);
+    }
+
+    /**
+     * A view like the one of Sulu's SearchAdmin, registered before the dashboard.
+     */
+    private function viewsWithSearch(): ViewCollection
+    {
+        $factory = new ViewBuilderFactory();
+        $views = new ViewCollection();
+        $views->add($factory->createViewBuilder('sulu_search.search', '/', 'sulu_search.search')->setOption('hint', 'kept'));
+
+        return $views;
+    }
+
+    public function testStartPageMovesTheSearchToSearch(): void
+    {
+        $views = $this->viewsWithSearch();
+
+        $this->admin([DashboardAdmin::SECURITY_CONTEXT])->configureViews($views);
+
+        $dashboard = $views->get(DashboardAdmin::VIEW)->getView();
+        $search = $views->get('sulu_search.search')->getView();
+        $this->assertSame('/', $dashboard->getPath());
+        $this->assertSame('/search', $search->getPath());
+        $this->assertSame('sulu_search.search', $search->getType());
+        $this->assertSame('kept', $search->getOption('hint'), 'options of the old view are kept');
+        $this->assertNull($search->getParent());
+    }
+
+    public function testWithoutStartPageTheDashboardIsOnDashboardAndTheSearchStays(): void
+    {
+        $views = $this->viewsWithSearch();
+
+        $this->admin([DashboardAdmin::SECURITY_CONTEXT], [], false)->configureViews($views);
+
+        $this->assertSame('/dashboard', $views->get(DashboardAdmin::VIEW)->getView()->getPath());
+        $this->assertSame('/', $views->get('sulu_search.search')->getView()->getPath());
+    }
+
+    public function testWithoutAPermissionTheSearchStaysOnTheRootPath(): void
+    {
+        $views = $this->viewsWithSearch();
+
+        $this->admin([])->configureViews($views);
+
+        $this->assertSame('/', $views->get('sulu_search.search')->getView()->getPath());
+        $this->assertFalse($views->has(DashboardAdmin::VIEW));
+    }
+
+    public function testWorksWithoutTheSearchView(): void
+    {
+        $views = new ViewCollection();
+
+        $this->admin([DashboardAdmin::SECURITY_CONTEXT])->configureViews($views);
+
+        $this->assertSame('/', $views->get(DashboardAdmin::VIEW)->getView()->getPath());
+        $this->assertFalse($views->has('sulu_search.search'));
+    }
+
+    public function testRunsAfterTheOtherAdminClasses(): void
+    {
+        $this->assertLessThan(0, DashboardAdmin::getPriority());
     }
 
     public function testNothingChangesWithoutThePermission(): void

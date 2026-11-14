@@ -17,6 +17,7 @@ class SuluDashboardExtension extends Extension
     {
         $config = $this->processConfiguration(new Configuration(), $configs);
 
+        $container->setParameter('sulu_dashboard.start_page', $config['start_page']);
         $container->setParameter('sulu_dashboard.disabled_widgets', array_values($config['disabled_widgets']));
 
         // every service that implements the interface becomes a tile, without any further configuration

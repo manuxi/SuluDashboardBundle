@@ -16,6 +16,10 @@ class Configuration implements ConfigurationInterface
 
         $root
             ->children()
+                ->booleanNode('start_page')
+                    ->defaultTrue()
+                    ->info('true: the dashboard is the start page of the admin ("/") and the search of Sulu moves to "/search". false: the dashboard is on "/dashboard", the search stays on "/".')
+                ->end()
                 ->arrayNode('disabled_widgets')
                     ->info('Keys of tiles that are not shown, for example "sulu_activities". Applies to built-in tiles and tiles of other bundles.')
                     ->scalarPrototype()->end()
