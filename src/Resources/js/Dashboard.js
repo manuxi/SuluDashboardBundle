@@ -135,6 +135,7 @@ class Dashboard extends React.Component {
 
     componentWillUnmount() {
         this.stopSettling();
+        this.saveNow();
     }
 
     get locales() {
@@ -253,7 +254,19 @@ class Dashboard extends React.Component {
 
     @action stopEditing = () => {
         this.editing = false;
+        this.saveNow();
     };
+
+    // Sulu's user store sends a changed setting only after a pause of 2.5 seconds (debounce). Whoever reloads right after
+    // "Done" or "Reset" would lose the change, so it is sent now. Not done on beforeunload: the request of Sulu's Requester
+    // is a plain fetch that the browser may cancel while the page closes, so it would promise more than it keeps.
+    saveNow() {
+        const update = userStore.updatePersistentSettings;
+
+        if (update && 'function' === typeof update.flush) {
+            update.flush();
+        }
+    }
 
     // saved with every change, so nothing is lost when the user leaves the page without "Done"
     persist(arrangement) {
@@ -306,6 +319,7 @@ class Dashboard extends React.Component {
         this.settled = true;
         this.stopSettling();
         this.applyArrangement(arrange(this.widgets, null, this.heights, {balance: this.balance, gap: GAP}));
+        this.saveNow();
     };
 
     // --- display ---
