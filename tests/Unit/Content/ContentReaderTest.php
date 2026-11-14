@@ -35,8 +35,8 @@ class ContentReaderTest extends TestCase
 
         foreach ([
             'CREATE TABLE pa_pages (uuid TEXT, webspaceKey TEXT)',
-            'CREATE TABLE pa_page_dimension_contents (pageUuid TEXT, stage TEXT, version INT, locale TEXT, workflowPlace TEXT, templateKey TEXT, title TEXT, changed TEXT, idUsersChanger INT)',
-            'CREATE TABLE ar_article_dimension_contents (articleUuid TEXT, stage TEXT, version INT, locale TEXT, workflowPlace TEXT, templateKey TEXT, title TEXT, changed TEXT, idUsersChanger INT)',
+            'CREATE TABLE pa_page_dimension_contents (pageUuid TEXT, stage TEXT, version INT, locale TEXT, workflowPlace TEXT, templateKey TEXT, title TEXT, changed TEXT, idUsersChanger INT, seoData TEXT, excerptData TEXT)',
+            'CREATE TABLE ar_article_dimension_contents (articleUuid TEXT, stage TEXT, version INT, locale TEXT, workflowPlace TEXT, templateKey TEXT, title TEXT, changed TEXT, idUsersChanger INT, seoData TEXT, excerptData TEXT)',
             'CREATE TABLE se_users (id INT, idContacts INT)',
             'CREATE TABLE co_contacts (id INT, firstName TEXT, lastName TEXT)',
             'CREATE TABLE sn_snippets (id INT)',
@@ -223,5 +223,52 @@ class ContentReaderTest extends TestCase
 
         $this->assertSame(1, $translations['locales']['de']['total'], 'only b1');
         $this->assertArrayNotHasKey('en', $translations['locales'], 'the other webspace has no English');
+    }
+
+    private function live(string $table, string $column, string $uuid, string $template, string $title, string $changed, string $seo, string $excerpt): void
+    {
+        $this->connection->insert($table, [$column => $uuid, 'stage' => 'live', 'version' => 0, 'locale' => 'de', 'workflowPlace' => 'published', 'templateKey' => $template, 'title' => $title, 'changed' => $changed, 'seoData' => $seo, 'excerptData' => $excerpt]);
+    }
+
+    public function testSeoCoverageCountsPublishedEntriesWithTitleDescriptionAndImage(): void
+    {
+        $this->connection->executeStatement("DELETE FROM pa_page_dimension_contents WHERE stage = 'live'");
+        // pages: full, only title, nothing; b1 is in the other webspace
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'a1', 'default', 'Home', '2026-11-03 10:00:00', '{"title":"T","description":"D"}', '{"image":{"id":3}}');
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'a2', 'default', 'About', '2026-11-02 10:00:00', '{"title":"T","description":" "}', '{"image":null}');
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'b1', 'default', 'Secret', '2026-11-01 10:00:00', '{}', '{}');
+        $this->live('ar_article_dimension_contents', 'articleUuid', 'x1', 'blog', 'Post', '2026-11-04 10:00:00', '{"title":"","description":"D"}', '{"image":{"id":9}}');
+        $this->connection->update('pa_pages', ['webspaceKey' => 'other'], ['uuid' => 'b1']);
+
+        $seo = $this->reader(['sulu.webspaces.main', 'sulu.article.articles_blog'])->seoCoverage('de');
+
+        $this->assertSame(3, $seo['total'], 'b1 is in a webspace the user may not see');
+        $this->assertSame(2, $seo['seoTitle']);
+        $this->assertSame(2, $seo['seoDescription']);
+        $this->assertSame(2, $seo['excerptImage']);
+        $this->assertSame(['a2'], array_column($seo['missing'], 'id'));
+        $this->assertSame('main', $seo['missing'][0]['webspace']);
+    }
+
+    public function testSeoCoverageListsAtMostFiveEntriesNewestFirstAndKnowsTheArticleGroup(): void
+    {
+        $this->connection->executeStatement("DELETE FROM pa_page_dimension_contents WHERE stage = 'live'");
+        foreach (range(1, 7) as $i) {
+            $this->live('ar_article_dimension_contents', 'articleUuid', 'z' . $i, 'blog', 'Post ' . $i, '2026-11-0' . $i . ' 10:00:00', '{}', '{}');
+        }
+
+        $seo = $this->reader(['sulu.article.articles_blog'])->seoCoverage('de');
+
+        $this->assertSame(['z7', 'z6', 'z5', 'z4', 'z3'], array_column($seo['missing'], 'id'));
+        $this->assertSame('blog', $seo['missing'][0]['group']);
+        $this->assertSame(7, $seo['total']);
+    }
+
+    public function testSeoCoverageIsEmptyWithoutPermission(): void
+    {
+        $this->connection->executeStatement("DELETE FROM pa_page_dimension_contents WHERE stage = 'live'");
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'a1', 'default', 'Home', '2026-11-03 10:00:00', '{}', '{}');
+
+        $this->assertSame(0, $this->reader([])->seoCoverage('de')['total']);
     }
 }

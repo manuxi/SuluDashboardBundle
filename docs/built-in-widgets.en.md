@@ -9,6 +9,7 @@ The tiles of this bundle use the same interface as the tiles of other bundles ([
 | `sulu_snippets` | Snippets | number | row | `sulu.snippet.snippets` |
 | `sulu_media` | Media | number | row | `sulu.media.collections` |
 | `sulu_open_items` | Open drafts | custom | main | webspace and article type |
+| `sulu_seo` | Search engine details: rings and "Add first" | progress | main | webspace and article type |
 | `sulu_translations` | Translations (only with more than one language) | custom | side | webspace and article type |
 | `sulu_activities` | Recent activity | custom | side | `sulu.activities.activities` |
 
@@ -23,6 +24,10 @@ The colours of the workflow state are the same as in Sulu's lists: green means a
 ## Open drafts
 
 Pages and articles that are not live as edited (never published, unpublished changes, in review). The table has the columns title, type (icon plus the title of the template, in the admin language of the user) and changed (the editor in the tooltip). The pen button opens the entry. Filter (type, "Only mine") and sort order are saved per user. Ten rows are shown, "Show all" shows the rest.
+
+## Search engine details
+
+Three rings for the published pages and articles of the chosen language: share with an own SEO title, with a meta description and with a preview image (the excerpt image). Below, "Add first" lists up to five entries without a meta description, newest change first, with a link into the SEO tab of their form. The tile only knows what Sulu stores. Rules of a project (for example a length check of the title) belong in a tile of that project.
 
 ## Translations
 

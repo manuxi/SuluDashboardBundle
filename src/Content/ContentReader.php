@@ -177,6 +177,93 @@ class ContentReader
     }
 
     /**
+     * Search engine details of the published pages and articles in one locale: how many have an own SEO title, a meta
+     * description and an excerpt image, and the first entries without a meta description. The JSON columns (seoData,
+     * excerptData) are read in PHP, so the query works on MySQL and SQLite alike.
+     *
+     * @return array{total: int, seoTitle: int, seoDescription: int, excerptImage: int, missing: list<array{resourceKey: string, id: string, webspace: string|null, group: string|null, title: string}>}
+     */
+    public function seoCoverage(string $locale, int $missingLimit = 5): array
+    {
+        $result = ['total' => 0, 'seoTitle' => 0, 'seoDescription' => 0, 'excerptImage' => 0, 'missing' => []];
+
+        $webspaces = $this->allowedWebspaces($locale);
+        $groups = $this->allowedArticleTemplates($locale);
+        $rows = [];
+
+        if ([] !== $webspaces) {
+            foreach ($this->connection->fetchAllAssociative(
+                <<<'SQL'
+                    SELECT 'pages' AS resourceKey, d.pageUuid AS id, p.webspaceKey AS webspace, d.templateKey AS template, d.title,
+                           d.seoData, d.excerptData, d.changed
+                    FROM pa_page_dimension_contents d
+                    JOIN pa_pages p ON p.uuid = d.pageUuid
+                    WHERE d.stage = 'live' AND d.version = 0 AND d.locale = :locale AND p.webspaceKey IN (:scopes)
+                    SQL,
+                ['locale' => $locale, 'scopes' => $webspaces],
+                ['scopes' => ArrayParameterType::STRING],
+            ) as $row) {
+                $rows[] = $row;
+            }
+        }
+
+        if ([] !== $groups) {
+            foreach ($this->connection->fetchAllAssociative(
+                <<<'SQL'
+                    SELECT 'articles' AS resourceKey, d.articleUuid AS id, NULL AS webspace, d.templateKey AS template, d.title,
+                           d.seoData, d.excerptData, d.changed
+                    FROM ar_article_dimension_contents d
+                    WHERE d.stage = 'live' AND d.version = 0 AND d.locale = :locale AND d.templateKey IN (:scopes)
+                    SQL,
+                ['locale' => $locale, 'scopes' => array_keys($groups)],
+                ['scopes' => ArrayParameterType::STRING],
+            ) as $row) {
+                $rows[] = $row;
+            }
+        }
+
+        // newest first, so the entries to fix first are the ones someone worked on lately
+        usort($rows, static fn (array $a, array $b): int => strcmp((string) $b['changed'], (string) $a['changed']));
+
+        foreach ($rows as $row) {
+            $seo = $this->decode($row['seoData']);
+            $excerpt = $this->decode($row['excerptData']);
+
+            ++$result['total'];
+            $hasDescription = '' !== trim((string) ($seo['description'] ?? ''));
+            $result['seoTitle'] += '' !== trim((string) ($seo['title'] ?? '')) ? 1 : 0;
+            $result['seoDescription'] += $hasDescription ? 1 : 0;
+            $result['excerptImage'] += isset($excerpt['image']['id']) ? 1 : 0;
+
+            if (!$hasDescription && \count($result['missing']) < $missingLimit) {
+                $result['missing'][] = [
+                    'resourceKey' => (string) $row['resourceKey'],
+                    'id' => (string) $row['id'],
+                    'webspace' => null !== $row['webspace'] ? (string) $row['webspace'] : null,
+                    'group' => 'articles' === $row['resourceKey'] ? ($groups[$row['template']]['id'] ?? null) : null,
+                    'title' => (string) $row['title'],
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function decode(mixed $json): array
+    {
+        if (\is_array($json)) {
+            return $json;
+        }
+
+        $data = \is_string($json) ? json_decode($json, true) : null;
+
+        return \is_array($data) ? $data : [];
+    }
+
+    /**
      * Translation state per language over pages and articles. The original language is the default localization of the
      * webspace of a page; articles belong to no webspace and use the default localization of the first webspace.
      *

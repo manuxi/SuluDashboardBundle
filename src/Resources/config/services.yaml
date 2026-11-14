@@ -76,6 +76,10 @@ services:
         arguments: ['@Manuxi\SuluDashboardBundle\Content\ContentReader']
         tags: ['sulu_dashboard.widget']
 
+    Manuxi\SuluDashboardBundle\Widget\Builtin\SeoWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Content\ContentReader']
+        tags: ['sulu_dashboard.widget']
+
     Manuxi\SuluDashboardBundle\Widget\Builtin\TranslationsWidget:
         arguments:
             - '@Manuxi\SuluDashboardBundle\Content\ContentReader'

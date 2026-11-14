@@ -29,7 +29,7 @@ class ContainerTest extends KernelTestCase
         sort($keys);
 
         $this->assertSame(
-            ['sulu_activities', 'sulu_articles', 'sulu_media', 'sulu_open_items', 'sulu_pages', 'sulu_snippets', 'sulu_translations'],
+            ['sulu_activities', 'sulu_articles', 'sulu_media', 'sulu_open_items', 'sulu_pages', 'sulu_seo', 'sulu_snippets', 'sulu_translations'],
             $keys,
         );
     }

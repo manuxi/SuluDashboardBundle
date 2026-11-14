@@ -9,6 +9,7 @@ Die Kacheln dieses Bundles nutzen dasselbe Interface wie die Kacheln anderer Bun
 | `sulu_snippets` | Schnipsel | number | row | `sulu.snippet.snippets` |
 | `sulu_media` | Medien | number | row | `sulu.media.collections` |
 | `sulu_open_items` | Offene Entwürfe | custom | main | Webspace und Artikeltyp |
+| `sulu_seo` | Suchmaschinen-Angaben: Ringe und „Zuerst ergänzen“ | progress | main | Webspace und Artikeltyp |
 | `sulu_translations` | Übersetzungen (nur bei mehr als einer Sprache) | custom | side | Webspace und Artikeltyp |
 | `sulu_activities` | Letzte Aktivität | custom | side | `sulu.activities.activities` |
 
@@ -23,6 +24,10 @@ Die Farben des Workflow-Status sind dieselben wie in Sulus Listen: Grün heißt,
 ## Offene Entwürfe
 
 Seiten und Artikel, die nicht so live sind, wie sie bearbeitet wurden (nie veröffentlicht, unveröffentlichte Änderungen, zur Abnahme). Die Tabelle hat die Spalten Titel, Typ (Icon plus Titel des Templates, in der Admin-Sprache des Benutzers) und Geändert (Bearbeiter im Tooltip). Der Stift-Button öffnet den Eintrag. Filter (Typ, „Nur meine“) und Sortierung werden je Benutzer gespeichert. Zehn Zeilen sind sichtbar, „Alle anzeigen“ zeigt den Rest.
+
+## Suchmaschinen-Angaben
+
+Drei Ringe für die veröffentlichten Seiten und Artikel der gewählten Sprache: Anteil mit eigenem SEO-Titel, mit Meta-Beschreibung und mit Vorschaubild (Excerpt-Bild). Darunter listet „Zuerst ergänzen“ bis zu fünf Einträge ohne Meta-Beschreibung, jüngste Änderung zuerst, mit Link in den SEO-Tab ihres Formulars. Die Kachel kennt nur, was Sulu speichert. Regeln eines Projekts (zum Beispiel eine Längenprüfung des Titels) gehören in eine Kachel dieses Projekts.
 
 ## Übersetzungen
 

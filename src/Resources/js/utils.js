@@ -1,3 +1,5 @@
+import {translate} from 'sulu-admin-bundle/utils';
+
 // same meaning as in Sulu's lists (AbstractTableAdapter): green = live version exists, orange = unpublished changes
 export const INDICATOR = {
     published: {published: true, draft: false},
@@ -23,3 +25,8 @@ export const navigate = (router, link) => {
         router.navigate(link.view, link.attributes || {});
     }
 };
+
+// a text in tile data: plain text, an admin translation key, or {key, parameters} for a key with parameters
+export const tx = (value) => (
+    value && typeof value === 'object' ? translate(value.key, value.parameters) : translate(String(value))
+);

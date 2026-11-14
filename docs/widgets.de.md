@@ -85,8 +85,12 @@ return [
     'items' => [
         ['label' => 'Zeichen', 'value' => 120000, 'max' => 500000, 'text' => '120.000 von 500.000'],
     ],
+    // optional: darunter eine kurze Liste mit Links, zum Beispiel „Zuerst ergänzen“
+    'footer' => ['title' => 'app.dashboard_add_first', 'rows' => [['title' => 'Über uns', 'icon' => 'su-webspace', 'link' => ['view' => '...', 'attributes' => []]]]],
 ];
 ```
+
+Ein Text darf auch `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 3]]` sein, für eine Übersetzung mit Parametern.
 
 ### list
 

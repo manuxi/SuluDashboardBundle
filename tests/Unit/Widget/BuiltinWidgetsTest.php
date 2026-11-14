@@ -10,6 +10,7 @@ use Manuxi\SuluDashboardBundle\Widget\Builtin\ArticlesCountWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\MediaCountWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\OpenItemsWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\PagesCountWidget;
+use Manuxi\SuluDashboardBundle\Widget\Builtin\SeoWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\SnippetsCountWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\TranslationsWidget;
 use Manuxi\SuluDashboardBundle\Widget\ConditionalDashboardWidgetInterface;
@@ -28,6 +29,10 @@ class BuiltinWidgetsTest extends TestCase
         $reader->method('countSnippets')->willReturn(4);
         $reader->method('countMedia')->willReturn(99);
         $reader->method('openItems')->willReturn([['id' => 'a']]);
+        $reader->method('seoCoverage')->willReturn(['total' => 4, 'seoTitle' => 3, 'seoDescription' => 2, 'excerptImage' => 1, 'missing' => [
+            ['resourceKey' => 'pages', 'id' => 'p1', 'webspace' => 'main', 'group' => null, 'title' => 'About'],
+            ['resourceKey' => 'articles', 'id' => 'a1', 'webspace' => null, 'group' => 'blog', 'title' => 'Post'],
+        ]]);
         $reader->method('translations')->willReturn(['source' => 'de', 'locales' => []]);
 
         return $reader;
@@ -97,6 +102,7 @@ class BuiltinWidgetsTest extends TestCase
             new SnippetsCountWidget($this->reader()),
             new MediaCountWidget($this->reader()),
             new OpenItemsWidget($this->reader()),
+            new SeoWidget($this->reader()),
             new TranslationsWidget($this->reader(), $localizations),
             new ActivitiesWidget(),
         ];
@@ -113,5 +119,24 @@ class BuiltinWidgetsTest extends TestCase
 
         $this->assertSame($keys, array_unique($keys));
         $this->assertCount(1, array_filter($widgets, static fn ($widget): bool => $widget instanceof ConditionalDashboardWidgetInterface));
+    }
+
+    public function testSeoTileHasThreeRingsAndLinksIntoTheSeoTab(): void
+    {
+        $widget = new SeoWidget($this->reader());
+        $data = $widget->getData('de');
+
+        $this->assertSame('progress', $widget->getType());
+        $this->assertSame('main', $widget->getColumn());
+        $this->assertSame('ring', $data['display']);
+        $this->assertSame([3, 2, 1], array_column($data['items'], 'value'));
+        $this->assertSame([4, 4, 4], array_column($data['items'], 'max'));
+        $this->assertSame(4, $data['text']['parameters']['count']);
+
+        $rows = $data['footer']['rows'];
+        $this->assertSame('sulu_page.page_edit_form.seo', $rows[0]['link']['view']);
+        $this->assertSame(['id' => 'p1', 'webspace' => 'main', 'locale' => 'de'], $rows[0]['link']['attributes']);
+        $this->assertSame('sulu_article.article.edit_tabs_blog.seo', $rows[1]['link']['view']);
+        $this->assertSame(['id' => 'a1', 'locale' => 'de'], $rows[1]['link']['attributes']);
     }
 }

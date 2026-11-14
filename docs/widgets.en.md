@@ -85,8 +85,12 @@ return [
     'items' => [
         ['label' => 'Characters', 'value' => 120000, 'max' => 500000, 'text' => '120,000 of 500,000'],
     ],
+    // optional: a short list of links below, for example "Add first"
+    'footer' => ['title' => 'app.dashboard_add_first', 'rows' => [['title' => 'About us', 'icon' => 'su-webspace', 'link' => ['view' => '...', 'attributes' => []]]]],
 ];
 ```
+
+A text may also be `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 3]]` for a translation with parameters.
 
 ### list
 
