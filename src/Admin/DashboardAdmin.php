@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\Admin;
 
+use Manuxi\SuluDashboardBundle\Tab\ReplacesNavigationItemInterface;
 use Manuxi\SuluDashboardBundle\Tab\TabRegistry;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use Sulu\Article\Domain\Model\ArticleInterface;
@@ -49,6 +50,7 @@ class DashboardAdmin extends Admin
         private readonly MetadataProviderRegistry $metadataProviderRegistry,
         private readonly bool $startPage = true,
         private readonly ?TabRegistry $tabRegistry = null,
+        private readonly bool $replaceNavigation = true,
     ) {
     }
 
@@ -81,6 +83,20 @@ class DashboardAdmin extends Admin
             $item->addChildView(self::TABS_VIEW);
             foreach ($tabs as $tab) {
                 $item->addChildView(self::TAB_VIEW_PREFIX . $tab->getKey());
+            }
+        }
+
+        // a tab can take the place of a menu item of another bundle ("Statistics"): the item goes, its views stay (deep
+        // links keep working) and count as views of the dashboard item. This class runs after all other admin classes
+        // (priority), so the item already exists. Only top-level items; the collection has no way to remove a child.
+        if ($this->replaceNavigation) {
+            foreach ($tabs as $tab) {
+                if ($tab instanceof ReplacesNavigationItemInterface && $navigationItemCollection->has($tab->getReplacedNavigationItem())) {
+                    $navigationItemCollection->remove($tab->getReplacedNavigationItem());
+                    foreach ($tab->getReplacedViews() as $view) {
+                        $item->addChildView($view);
+                    }
+                }
             }
         }
 

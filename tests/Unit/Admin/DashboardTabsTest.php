@@ -8,11 +8,13 @@ use Manuxi\SuluDashboardBundle\Admin\DashboardAdmin;
 use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
 use Manuxi\SuluDashboardBundle\Tab\TabRegistry;
 use Manuxi\SuluDashboardBundle\Tests\Unit\Tab\Fixtures\ArrayTab;
+use Manuxi\SuluDashboardBundle\Tests\Unit\Tab\Fixtures\ReplacingTab;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Sulu\Bundle\AdminBundle\Admin\Admin;
 use Sulu\Bundle\AdminBundle\Admin\AdminPool;
+use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItem;
 use Sulu\Bundle\AdminBundle\Admin\Navigation\NavigationItemCollection;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewBuilderFactory;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewCollection;
@@ -35,7 +37,7 @@ class DashboardTabsTest extends TestCase
      * @param list<DashboardTabProviderInterface> $tabs
      * @param list<string>                        $allowed
      */
-    private function admin(array $tabs, bool $startPage, array $allowed = [DashboardAdmin::SECURITY_CONTEXT, 'sulu.tab']): DashboardAdmin
+    private function admin(array $tabs, bool $startPage, array $allowed = [DashboardAdmin::SECURITY_CONTEXT, 'sulu.tab'], bool $replaceNavigation = true): DashboardAdmin
     {
         $checker = $this->createMock(SecurityCheckerInterface::class);
         $checker->method('hasPermission')->willReturnCallback(
@@ -48,7 +50,7 @@ class DashboardTabsTest extends TestCase
         $metadata = $this->createMock(MetadataProviderRegistry::class);
         $metadata->method('getMetadataProvider')->willReturn($provider);
 
-        return new DashboardAdmin(new ViewBuilderFactory(), $checker, $localizations, new WidgetRegistry([], $checker), $metadata, $startPage, new TabRegistry($tabs, $checker));
+        return new DashboardAdmin(new ViewBuilderFactory(), $checker, $localizations, new WidgetRegistry([], $checker), $metadata, $startPage, new TabRegistry($tabs, $checker), $replaceNavigation);
     }
 
     private function registry(DashboardAdmin $dashboard): ViewRegistry
@@ -170,5 +172,63 @@ class DashboardTabsTest extends TestCase
         $admin->configureNavigationItems($navigation);
 
         $this->assertSame([DashboardAdmin::VIEW], $navigation->get(DashboardAdmin::NAVIGATION_ITEM)->getChildViews());
+    }
+
+    private function foreignNavigation(): NavigationItemCollection
+    {
+        $navigation = new NavigationItemCollection();
+        $navigation->add(new NavigationItem('foreign.statistics'));
+        $navigation->add(new NavigationItem('other.item'));
+
+        return $navigation;
+    }
+
+    public function testATabReplacesTheMenuItemOfAnotherBundleAndHighlightsTheDashboardInItsView(): void
+    {
+        $navigation = $this->foreignNavigation();
+
+        $this->admin([new ReplacingTab()], true)->configureNavigationItems($navigation);
+
+        $this->assertFalse($navigation->has('foreign.statistics'));
+        $this->assertTrue($navigation->has('other.item'), 'other items stay');
+        $this->assertContains('foreign.view', $navigation->get(DashboardAdmin::NAVIGATION_ITEM)->getChildViews());
+    }
+
+    public function testTheMenuItemStaysWhenTheOptionIsOff(): void
+    {
+        $navigation = $this->foreignNavigation();
+
+        $this->admin([new ReplacingTab()], true, replaceNavigation: false)->configureNavigationItems($navigation);
+
+        $this->assertTrue($navigation->has('foreign.statistics'));
+        $this->assertNotContains('foreign.view', $navigation->get(DashboardAdmin::NAVIGATION_ITEM)->getChildViews());
+    }
+
+    public function testTheMenuItemStaysWhenTheUserMayNotSeeTheTab(): void
+    {
+        $navigation = $this->foreignNavigation();
+
+        $this->admin([new ReplacingTab()], true, [DashboardAdmin::SECURITY_CONTEXT])->configureNavigationItems($navigation);
+
+        $this->assertTrue($navigation->has('foreign.statistics'));
+    }
+
+    public function testNothingHappensWhenTheReplacedItemDoesNotExist(): void
+    {
+        $navigation = new NavigationItemCollection();
+
+        $this->admin([new ReplacingTab()], true)->configureNavigationItems($navigation);
+
+        $this->assertTrue($navigation->has(DashboardAdmin::NAVIGATION_ITEM));
+        $this->assertContains(DashboardAdmin::TABS_VIEW, $navigation->get(DashboardAdmin::NAVIGATION_ITEM)->getChildViews());
+    }
+
+    public function testWithoutTabsNoItemIsRemoved(): void
+    {
+        $navigation = $this->foreignNavigation();
+
+        $this->admin([], true)->configureNavigationItems($navigation);
+
+        $this->assertTrue($navigation->has('foreign.statistics'));
     }
 }

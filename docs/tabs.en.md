@@ -21,6 +21,17 @@ final class VisitorsTab implements DashboardTabProviderInterface
 - The user sees the tab only with the view permission of `getSecurityContext()`.
 - Keys must be unique; `overview`, `dashboard` and `tabs` are reserved.
 
+## Replacing a menu item
+
+A tab that brings a page which already has a menu item of its own can take its place, so the menu has one entry less. Implement `ReplacesNavigationItemInterface` (extends the tab interface):
+
+```php
+public function getReplacedNavigationItem(): string { return 'other_bundle.statistics'; } // name of its NavigationItem
+public function getReplacedViews(): array { return ['other_bundle.dashboard']; }          // its views
+```
+
+The dashboard runs after all other admin classes and removes the menu item when the tab is visible to the user. The views of the replaced item stay as they are, so deep links keep working, and the menu item "Dashboard" is highlighted in them. Only top-level menu items can be replaced. Switch it off with `sulu_dashboard.tabs.replace_navigation: false`; the menu item then stays.
+
 ## Paths
 
 Sulu puts the path of the parent in front of the path of a child. The dashboard handles this for you:
@@ -30,7 +41,7 @@ Sulu puts the path of the parent in front of the path of a child. The dashboard 
 | `true` (default) | `/` | `/overview` | `/visitors` |
 | `false` | `/dashboard` | `/dashboard/overview` | `/dashboard/visitors` |
 
-Opening `/` redirects to "Overview". The search of Sulu stays on `/search`. Existing deep links of a bundle that brings its own page (for example `/log-stats`) stay valid; its menu item stays as well.
+Opening `/` redirects to "Overview". The search of Sulu stays on `/search`. Existing deep links of a bundle that brings its own page (for example `/log-stats`) stay valid.
 
 ## Built-in: visitors from the log statistics
 
@@ -38,4 +49,4 @@ Opening `/` redirects to "Overview". The search of Sulu stays on `/search`. Exis
 
 *The screenshot shows the German admin.*
 
-If `amoifr/sulu-log-stats-bundle` is installed and enabled, and the user has the permission `sulu.settings.log_stats`, the dashboard gets the tab **Visitors** (the statistics page of that bundle, with its options `apiUrl` and `timezone`) and the tile **Visitors (7 days)** in the narrow column: page views of the last seven days, the sum of the daily visitors and the share of error pages (status 4xx and 5xx). The log statistics are not a requirement of this bundle (`suggest` only); nothing of it is loaded without it.
+If `amoifr/sulu-log-stats-bundle` is installed and enabled, and the user has the permission `sulu.settings.log_stats`, the dashboard gets the tab **Visitors** (the statistics page of that bundle, with its options `apiUrl` and `timezone`) and the tile **Visitors (7 days)** in the narrow column: page views of the last seven days, the sum of the daily visitors and the share of error pages (status 4xx and 5xx). The tab replaces the menu item "Statistics" of that bundle (see above). The log statistics are not a requirement of this bundle (`suggest` only); nothing of it is loaded without it.

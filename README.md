@@ -114,6 +114,8 @@ With `autoconfigure` the class is found automatically. More: [Your own tile in 5
 # config/packages/sulu_dashboard.yaml
 sulu_dashboard:
     start_page: true       # true: dashboard on "/", Sulu's search moves to "/search"; false: dashboard on "/dashboard", search stays on "/"
+    tabs:
+        replace_navigation: true   # a tab may replace a menu item of another bundle (the statistics of the log statistics)
     disabled_widgets: []   # keys of tiles that are not shown, e.g. ['sulu_activities']
 ```
 

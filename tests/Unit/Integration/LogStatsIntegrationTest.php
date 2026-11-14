@@ -41,6 +41,14 @@ class LogStatsIntegrationTest extends TestCase
         $this->assertSame('sulu.settings.log_stats', $tab->getSecurityContext());
     }
 
+    public function testTheTabReplacesTheStatisticsMenuItemAndKeepsItsView(): void
+    {
+        $tab = $this->provider('/admin/api/log-stats');
+
+        $this->assertSame('amoifr_log_stats.statistics', $tab->getReplacedNavigationItem());
+        $this->assertSame(['amoifr_log_stats.dashboard'], $tab->getReplacedViews());
+    }
+
     public function testWithoutImportedRoutesTheViewGetsNullAndSaysSo(): void
     {
         $this->assertNull($this->provider(null)->getViewOptions()['apiUrl']);

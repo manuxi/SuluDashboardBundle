@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\Integration\LogStats;
 
-use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
+use Manuxi\SuluDashboardBundle\Tab\ReplacesNavigationItemInterface;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -13,13 +13,16 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * and enabled (see SuluDashboardExtension). The view type and the options are the ones its own admin class sets for its
  * menu item, so the page is the same one; nothing of that bundle is referenced by class.
  */
-final class LogStatsTabProvider implements DashboardTabProviderInterface
+final class LogStatsTabProvider implements ReplacesNavigationItemInterface
 {
     public const SECURITY_CONTEXT = 'sulu.settings.log_stats';
 
     public const VIEW_TYPE = 'amoifr_log_stats.dashboard';
 
     public const API_ROUTE = 'amoifr_log_stats.dashboard_api';
+
+    /** the menu item "Statistics" of that bundle (LogStatsAdmin::NAVIGATION_ITEM), referenced by name only */
+    public const NAVIGATION_ITEM = 'amoifr_log_stats.statistics';
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
@@ -50,6 +53,16 @@ final class LogStatsTabProvider implements DashboardTabProviderInterface
     public function getSecurityContext(): string
     {
         return self::SECURITY_CONTEXT;
+    }
+
+    public function getReplacedNavigationItem(): string
+    {
+        return self::NAVIGATION_ITEM;
+    }
+
+    public function getReplacedViews(): array
+    {
+        return [self::VIEW_TYPE];
     }
 
     public function getPriority(): int

@@ -112,6 +112,8 @@ Mit `autoconfigure` wird die Klasse automatisch gefunden. Mehr: [Eigene Kachel i
 # config/packages/sulu_dashboard.yaml
 sulu_dashboard:
     start_page: true       # true: Dashboard auf "/", Sulus Suche zieht nach "/search"; false: Dashboard auf "/dashboard", Suche bleibt auf "/"
+    tabs:
+        replace_navigation: true   # ein Tab darf einen Menüpunkt eines anderen Bundles ersetzen (die Statistik der Log-Statistik)
     disabled_widgets: []   # Schlüssel von Kacheln, die nicht erscheinen, z. B. ['sulu_activities']
 ```
 

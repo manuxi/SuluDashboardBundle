@@ -21,6 +21,17 @@ final class VisitorsTab implements DashboardTabProviderInterface
 - Der Benutzer sieht den Tab nur mit dem Recht „Ansehen“ für `getSecurityContext()`.
 - Schlüssel müssen eindeutig sein; `overview`, `dashboard` und `tabs` sind reserviert.
 
+## Einen Menüpunkt ersetzen
+
+Ein Tab, der eine Seite mitbringt, die schon einen eigenen Menüpunkt hat, kann dessen Platz einnehmen. Das Menü hat dann einen Eintrag weniger. Dazu `ReplacesNavigationItemInterface` implementieren (erweitert das Tab-Interface):
+
+```php
+public function getReplacedNavigationItem(): string { return 'other_bundle.statistics'; } // Name seines NavigationItem
+public function getReplacedViews(): array { return ['other_bundle.dashboard']; }          // seine Views
+```
+
+Das Dashboard läuft nach allen anderen Admin-Klassen und entfernt den Menüpunkt, wenn der Tab für den Benutzer sichtbar ist. Die Views des ersetzten Menüpunkts bleiben unverändert, Direktlinks funktionieren also weiter, und der Menüpunkt „Dashboard“ leuchtet dort. Ersetzt werden können nur Menüpunkte der obersten Ebene. Abschalten mit `sulu_dashboard.tabs.replace_navigation: false`, dann bleibt der Menüpunkt stehen.
+
 ## Pfade
 
 Sulu setzt den Pfad des Elternteils vor den Pfad eines Kindes. Das Dashboard übernimmt das für Sie:
@@ -30,10 +41,10 @@ Sulu setzt den Pfad des Elternteils vor den Pfad eines Kindes. Das Dashboard üb
 | `true` (Standard) | `/` | `/overview` | `/visitors` |
 | `false` | `/dashboard` | `/dashboard/overview` | `/dashboard/visitors` |
 
-Wer `/` öffnet, landet auf „Übersicht“. Sulus Suche bleibt auf `/search`. Vorhandene Direktlinks eines Bundles mit eigener Seite (zum Beispiel `/log-stats`) bleiben gültig, auch dessen Menüpunkt bleibt.
+Wer `/` öffnet, landet auf „Übersicht“. Sulus Suche bleibt auf `/search`. Vorhandene Direktlinks eines Bundles mit eigener Seite (zum Beispiel `/log-stats`) bleiben gültig.
 
 ## Eingebaut: Besucher aus der Log-Statistik
 
 ![Der Tab Besucher](img/dashboard-visitors.de.png)
 
-Ist `amoifr/sulu-log-stats-bundle` installiert und aktiviert und hat der Benutzer das Recht `sulu.settings.log_stats`, bekommt das Dashboard den Tab **Besucher** (die Statistik-Seite dieses Bundles mit seinen Optionen `apiUrl` und `timezone`) und die Kachel **Besucher (7 Tage)** in der schmalen Spalte: Seitenaufrufe der letzten sieben Tage, die Summe der täglichen Besucher und der Anteil der Fehlerseiten (Status 4xx und 5xx). Die Log-Statistik ist keine Voraussetzung dieses Bundles (nur `suggest`); ohne sie wird nichts davon geladen.
+Ist `amoifr/sulu-log-stats-bundle` installiert und aktiviert und hat der Benutzer das Recht `sulu.settings.log_stats`, bekommt das Dashboard den Tab **Besucher** (die Statistik-Seite dieses Bundles mit seinen Optionen `apiUrl` und `timezone`) und die Kachel **Besucher (7 Tage)** in der schmalen Spalte: Seitenaufrufe der letzten sieben Tage, die Summe der täglichen Besucher und der Anteil der Fehlerseiten (Status 4xx und 5xx). Der Tab ersetzt den Menüpunkt „Statistik“ dieses Bundles (siehe oben). Die Log-Statistik ist keine Voraussetzung dieses Bundles (nur `suggest`); ohne sie wird nichts davon geladen.
