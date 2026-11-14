@@ -14,7 +14,9 @@ The tiles of this bundle use the same interface as the tiles of other bundles ([
 | `sulu_activities` | Recent activity | custom | side | `sulu.activities.activities` |
 | `sulu_visitors` | Visitors (7 days), only with the log statistics, see [Tabs](tabs.en.md) | custom | side | `sulu.settings.log_stats` |
 
-![The dashboard](img/dashboard.en.png)
+![The dashboard](img/dashboard-overview.de.png)
+
+*The screenshots show the German admin.*
 
 ## Permissions of the content
 
@@ -28,7 +30,9 @@ Pages and articles that are not live as edited (never published, unpublished cha
 
 ## Search engine details
 
-Three rings for the published pages and articles of the chosen language: share with an own SEO title, with a meta description and with a preview image (the excerpt image). Below, "Add first" lists up to five entries without a meta description, newest change first, with a link into the SEO tab of their form. The tile only knows what Sulu stores. Rules of a project (for example a length check of the title) belong in a tile of that project.
+Three rings for the published pages and articles of the chosen language: share with an own SEO title, with a meta description and with a preview image (the excerpt image). Below, "Add first" lists up to five entries without a meta description, newest change first, with a link into the SEO tab of their form. ![Search engine details, translations and visitors](img/dashboard-tiles.de.png)
+
+The tile only knows what Sulu stores. Rules of a project (for example a length check of the title) belong in a tile of that project.
 
 ## Translations
 

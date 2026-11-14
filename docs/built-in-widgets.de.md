@@ -14,7 +14,7 @@ Die Kacheln dieses Bundles nutzen dasselbe Interface wie die Kacheln anderer Bun
 | `sulu_activities` | Letzte Aktivität | custom | side | `sulu.activities.activities` |
 | `sulu_visitors` | Besucher (7 Tage), nur mit der Log-Statistik, siehe [Tabs](tabs.de.md) | custom | side | `sulu.settings.log_stats` |
 
-![Das Dashboard](img/dashboard.de.png)
+![Das Dashboard](img/dashboard-overview.de.png)
 
 ## Rechte der Inhalte
 
@@ -28,7 +28,9 @@ Seiten und Artikel, die nicht so live sind, wie sie bearbeitet wurden (nie verö
 
 ## Suchmaschinen-Angaben
 
-Drei Ringe für die veröffentlichten Seiten und Artikel der gewählten Sprache: Anteil mit eigenem SEO-Titel, mit Meta-Beschreibung und mit Vorschaubild (Excerpt-Bild). Darunter listet „Zuerst ergänzen“ bis zu fünf Einträge ohne Meta-Beschreibung, jüngste Änderung zuerst, mit Link in den SEO-Tab ihres Formulars. Die Kachel kennt nur, was Sulu speichert. Regeln eines Projekts (zum Beispiel eine Längenprüfung des Titels) gehören in eine Kachel dieses Projekts.
+Drei Ringe für die veröffentlichten Seiten und Artikel der gewählten Sprache: Anteil mit eigenem SEO-Titel, mit Meta-Beschreibung und mit Vorschaubild (Excerpt-Bild). Darunter listet „Zuerst ergänzen“ bis zu fünf Einträge ohne Meta-Beschreibung, jüngste Änderung zuerst, mit Link in den SEO-Tab ihres Formulars. ![Suchmaschinen-Angaben, Übersetzungen und Besucher](img/dashboard-tiles.de.png)
+
+Die Kachel kennt nur, was Sulu speichert. Regeln eines Projekts (zum Beispiel eine Längenprüfung des Titels) gehören in eine Kachel dieses Projekts.
 
 ## Übersetzungen
 

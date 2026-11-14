@@ -34,4 +34,8 @@ Opening `/` redirects to "Overview". The search of Sulu stays on `/search`. Exis
 
 ## Built-in: visitors from the log statistics
 
+![The tab Visitors](img/dashboard-visitors.de.png)
+
+*The screenshot shows the German admin.*
+
 If `amoifr/sulu-log-stats-bundle` is installed and enabled, and the user has the permission `sulu.settings.log_stats`, the dashboard gets the tab **Visitors** (the statistics page of that bundle, with its options `apiUrl` and `timezone`) and the tile **Visitors (7 days)** in the narrow column: page views of the last seven days, the sum of the daily visitors and the share of error pages (status 4xx and 5xx). The log statistics are not a requirement of this bundle (`suggest` only); nothing of it is loaded without it.

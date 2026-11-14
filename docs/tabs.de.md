@@ -34,4 +34,6 @@ Wer `/` öffnet, landet auf „Übersicht“. Sulus Suche bleibt auf `/search`. 
 
 ## Eingebaut: Besucher aus der Log-Statistik
 
+![Der Tab Besucher](img/dashboard-visitors.de.png)
+
 Ist `amoifr/sulu-log-stats-bundle` installiert und aktiviert und hat der Benutzer das Recht `sulu.settings.log_stats`, bekommt das Dashboard den Tab **Besucher** (die Statistik-Seite dieses Bundles mit seinen Optionen `apiUrl` und `timezone`) und die Kachel **Besucher (7 Tage)** in der schmalen Spalte: Seitenaufrufe der letzten sieben Tage, die Summe der täglichen Besucher und der Anteil der Fehlerseiten (Status 4xx und 5xx). Die Log-Statistik ist keine Voraussetzung dieses Bundles (nur `suggest`); ohne sie wird nichts davon geladen.

@@ -10,6 +10,10 @@ The SuluDashboardBundle gives the Sulu 3 admin a start page. Instead of an empty
 
 The page is built only from the components of Sulu (toolbar with language select, grid, cards, tables, publish indicator). Other bundles and projects add their own tiles with a small PHP class, without JavaScript.
 
+![The dashboard](docs/img/dashboard-overview.de.png)
+
+*The screenshots show the German admin.*
+
 ## ✨ Features
 
 - **Open drafts** - Pages and articles that are not live as edited, sortable, filter by type and "Only mine", pen button to the form

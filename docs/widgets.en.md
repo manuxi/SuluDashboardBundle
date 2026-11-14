@@ -210,7 +210,3 @@ php bin/console sulu:dashboard:dump --user=admin --widget=projects
 ```
 
 The command prints the tiles the user sees with their data as JSON. An error in a tile appears as `error` and sets the exit code to 1.
-
-## Screenshots
-
-Needed for this page: a tile of each type (`docs/img/widget-number.png`, `widget-progress.png`, `widget-list.png`, `widget-bars.png`).

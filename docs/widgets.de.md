@@ -210,7 +210,3 @@ php bin/console sulu:dashboard:dump --user=admin --widget=projects
 ```
 
 Der Befehl gibt die Kacheln, die der Benutzer sieht, mit ihren Daten als JSON aus. Ein Fehler in einer Kachel erscheint als `error` und setzt den Exit-Code auf 1.
-
-## Screenshots
-
-Für diese Seite fehlen: je eine Kachel jeder Art (`docs/img/widget-number.png`, `widget-progress.png`, `widget-list.png`, `widget-bars.png`).

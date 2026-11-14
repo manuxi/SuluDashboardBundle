@@ -10,6 +10,8 @@ Das SuluDashboardBundle gibt dem Sulu-3-Admin eine Startseite. Statt einer leere
 
 Die Seite besteht nur aus den Bausteinen von Sulu (Toolbar mit Sprachauswahl, Raster, Karten, Tabellen, Veröffentlichungs-Punkt). Andere Bundles und Projekte ergänzen eigene Kacheln mit einer kleinen PHP-Klasse, ohne JavaScript.
 
+![Das Dashboard](docs/img/dashboard-overview.de.png)
+
 ## ✨ Funktionen
 
 - **Offene Entwürfe** - Seiten und Artikel, die nicht so live sind, wie sie bearbeitet wurden; sortierbar, Filter nach Typ und „Nur meine“, Stift-Button zum Formular
