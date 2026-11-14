@@ -270,3 +270,13 @@
     line-height: 20px;
     padding: 2px 0;
 }
+
+/* title with an optional grey second line in a cell of a list tile */
+.rowTexts {
+    flex: 1;
+    min-width: 0;
+}
+
+.rowText {
+    color: $gray;
+}

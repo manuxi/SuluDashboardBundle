@@ -54,7 +54,7 @@ Add the title to `translations/admin.en.yaml` (`app.dashboard_projects: "Project
 
 ## Texts and links in tile data
 
-- Every text may be an admin translation key or plain text. A key that does not exist is shown as it is.
+- Every text of a tile (titles, labels, rows, notes, `empty`, footer) may be an admin translation key, plain text or `['key' => ..., 'parameters' => [...]]`. Text that looks like a key (words joined by dots without spaces, such as `app.dashboard_projects`) goes through Sulu's translation, a key that does not exist is shown as it is. Anything else, such as `Berlin` or `Hall 3`, is shown unchanged.
 - A link is never a URL but a Sulu view with attributes: `['view' => 'sulu_page.page_edit_form', 'attributes' => ['id' => $id, 'webspace' => 'your_webspace', 'locale' => $locale]]`.
 - An error in `getData()` stays inside its tile: it is logged and the tile shows a message. Nothing is swallowed silently, and the message of the exception is never sent to the browser.
 
@@ -94,7 +94,7 @@ A text may also be `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 
 
 ### list
 
-A short table with a link per row (pen button). Ten rows are shown, the rest on demand.
+A short table with a link per row (pen button). Ten rows are shown, the rest on demand. `text` is an optional grey second line under the title (for example a place), `meta` a second column. An optional `footer` works as with `progress`.
 
 ```php
 return [
@@ -102,11 +102,13 @@ return [
     'rows' => [
         [
             'title' => 'Contact form',
+            'text' => 'Footer snippet',
             'meta' => '12 Nov 2026',
             'state' => 'unpublished',
             'link' => ['view' => 'sulu_snippet.snippet.edit_tabs', 'attributes' => ['id' => $id, 'locale' => $locale]],
         ],
     ],
+    'footer' => ['title' => ['key' => 'app.dashboard_unpublished', 'parameters' => ['count' => 34]], 'rows' => [['title' => 'All unpublished', 'link' => ['view' => 'app.list', 'attributes' => []]]]],
 ];
 ```
 

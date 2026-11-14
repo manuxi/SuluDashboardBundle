@@ -3,10 +3,11 @@
 //        footer?: {title, rows: [{title, icon?, link?: {view, attributes}}]}}
 // Texts are plain text, an admin translation key or {key, parameters}.
 import React from 'react';
-import {Button, CircularProgressbar, Icon} from 'sulu-admin-bundle/components';
+import {CircularProgressbar} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
 import ProgressBar from 'sulu-admin-bundle/components/ProgressBar';
-import {navigate, percent, tx} from '../utils';
+import {percent, tx} from '../utils';
+import Footer from './Footer';
 import styles from '../dashboard.scss';
 
 function Ring({item}) {
@@ -31,27 +32,6 @@ function Bar({item}) {
             </div>
             {item.note && <div className={styles.meta}>{tx(item.note)}</div>}
         </li>
-    );
-}
-
-function Footer({footer, router}) {
-    return (
-        <div className={styles.footer}>
-            <div className={styles.meta}>{tx(footer.title)}</div>
-            <ul>
-                {footer.rows.map((row, index) => (
-                    <li className={styles.footerEntry} key={index}>
-                        {row.icon && <Icon className={styles.typeIcon} name={row.icon} />}
-                        <span className={styles.missingTitle}>
-                            {row.link
-                                ? <Button onClick={() => navigate(router, row.link)} skin="link">{row.title}</Button>
-                                : row.title
-                            }
-                        </span>
-                    </li>
-                ))}
-            </ul>
-        </div>
     );
 }
 

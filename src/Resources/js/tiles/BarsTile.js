@@ -5,7 +5,7 @@ import {Button} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
 import ProgressBar from 'sulu-admin-bundle/components/ProgressBar';
 import {translate} from 'sulu-admin-bundle/utils';
-import {navigate} from '../utils';
+import {navigate, tx} from '../utils';
 import styles from '../dashboard.scss';
 
 export default function BarsTile({widget, data, router}) {
@@ -14,15 +14,15 @@ export default function BarsTile({widget, data, router}) {
 
     return (
         <Card>
-            <h2 className={styles.title}>{translate(widget.title)}</h2>
+            <h2 className={styles.title}>{tx(widget.title)}</h2>
             {items.length === 0 && <p className={styles.meta}>{translate('sulu_dashboard.empty')}</p>}
             <ul className={styles.languages}>
                 {items.map((item, index) => (
                     <li key={index}>
                         <div className={styles.languageLine}>
                             {item.link
-                                ? <Button onClick={() => navigate(router, item.link)} skin="link">{translate(item.label)}</Button>
-                                : <strong>{translate(item.label)}</strong>
+                                ? <Button onClick={() => navigate(router, item.link)} skin="link">{tx(item.label)}</Button>
+                                : <strong>{tx(item.label)}</strong>
                             }
                             <span>{item.value}</span>
                         </div>

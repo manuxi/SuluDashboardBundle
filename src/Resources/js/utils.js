@@ -26,7 +26,22 @@ export const navigate = (router, link) => {
     }
 };
 
+// something that looks like a translation key ("sulu_dashboard.pages", "app.my_tile"): dot-separated words without spaces.
+// Sulu's translate() returns an unknown key unchanged but logs a warning, so plain texts ("Hall 3", "Berlin") are not
+// sent through it at all.
+const KEY_PATTERN = /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
+
 // a text in tile data: plain text, an admin translation key, or {key, parameters} for a key with parameters
-export const tx = (value) => (
-    value && typeof value === 'object' ? translate(value.key, value.parameters) : translate(String(value))
-);
+export const tx = (value) => {
+    if (value === null || value === undefined) {
+        return '';
+    }
+
+    if (typeof value === 'object') {
+        return translate(value.key, value.parameters);
+    }
+
+    const text = String(value);
+
+    return KEY_PATTERN.test(text) ? translate(text) : text;
+};

@@ -54,7 +54,7 @@ Den Titel in `translations/admin.de.yaml` eintragen (`app.dashboard_projects: "P
 
 ## Texte und Links in den Kacheldaten
 
-- Jeder Text darf ein Übersetzungsschlüssel der Domain admin oder Klartext sein. Ein unbekannter Schlüssel wird unverändert angezeigt.
+- Jeder Text einer Kachel (Titel, Beschriftungen, Zeilen, Hinweise, `empty`, Footer) darf ein Übersetzungsschlüssel der Domain admin, Klartext oder `['key' => ..., 'parameters' => [...]]` sein. Was wie ein Schlüssel aussieht (Wörter mit Punkten ohne Leerzeichen, etwa `app.dashboard_projects`), läuft durch Sulus Übersetzung, ein unbekannter Schlüssel wird unverändert angezeigt. Alles andere, etwa `Berlin` oder `Halle 3`, bleibt unverändert.
 - Ein Link ist nie eine URL, sondern eine Sulu-View mit Attributen: `['view' => 'sulu_page.page_edit_form', 'attributes' => ['id' => $id, 'webspace' => 'your_webspace', 'locale' => $locale]]`.
 - Ein Fehler in `getData()` bleibt in seiner Kachel: Er wird protokolliert, die Kachel zeigt eine Meldung. Nichts wird still verschluckt, und die Meldung der Exception geht nie an den Browser.
 
@@ -94,7 +94,7 @@ Ein Text darf auch `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 
 
 ### list
 
-Eine kurze Tabelle mit einem Link je Zeile (Stift-Button). Zehn Zeilen sind sichtbar, der Rest auf Klick.
+Eine kurze Tabelle mit einem Link je Zeile (Stift-Button). Zehn Zeilen sind sichtbar, der Rest auf Klick. `text` ist eine optionale graue zweite Zeile unter dem Titel (zum Beispiel ein Ort), `meta` eine zweite Spalte. Ein optionaler `footer` funktioniert wie bei `progress`.
 
 ```php
 return [
@@ -102,11 +102,13 @@ return [
     'rows' => [
         [
             'title' => 'Kontaktformular',
+            'text' => 'Schnipsel im Fuß',
             'meta' => '12.11.2026',
             'state' => 'unpublished',
             'link' => ['view' => 'sulu_snippet.snippet.edit_tabs', 'attributes' => ['id' => $id, 'locale' => $locale]],
         ],
     ],
+    'footer' => ['title' => ['key' => 'app.dashboard_unpublished', 'parameters' => ['count' => 34]], 'rows' => [['title' => 'Alle nicht veröffentlichten', 'link' => ['view' => 'app.list', 'attributes' => []]]]],
 ];
 ```
 
