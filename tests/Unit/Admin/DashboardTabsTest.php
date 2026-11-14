@@ -143,4 +143,32 @@ class DashboardTabsTest extends TestCase
 
         $this->assertSame(DashboardAdmin::TABS_VIEW, $navigation->get(DashboardAdmin::NAVIGATION_ITEM)->getView());
     }
+
+    #[DataProvider('startPages')]
+    public function testTheMenuItemListsEveryViewOfTheDashboardAsChildView(bool $startPage): void
+    {
+        $admin = $this->admin([new ArrayTab('visitors', securityContext: 'sulu.tab'), new ArrayTab('more', securityContext: 'sulu.tab')], $startPage);
+        $navigation = new NavigationItemCollection();
+        $admin->configureNavigationItems($navigation);
+        $item = $navigation->get(DashboardAdmin::NAVIGATION_ITEM);
+
+        // every view the dashboard registers is the view of the item or one of its child views
+        $registry = $this->registry($admin);
+        $own = array_values(array_filter(array_map(static fn ($view): string => $view->getName(), $registry->getViews()), static fn (string $name): bool => str_starts_with($name, 'sulu_dashboard.')));
+        $highlighted = [$item->getView(), ...$item->getChildViews()];
+
+        sort($own);
+        $expected = array_values(array_unique($highlighted));
+        sort($expected);
+        $this->assertSame($own, $expected);
+    }
+
+    public function testWithoutTabsThePlainViewIsTheOnlyChildView(): void
+    {
+        $admin = $this->admin([], true);
+        $navigation = new NavigationItemCollection();
+        $admin->configureNavigationItems($navigation);
+
+        $this->assertSame([DashboardAdmin::VIEW], $navigation->get(DashboardAdmin::NAVIGATION_ITEM)->getChildViews());
+    }
 }

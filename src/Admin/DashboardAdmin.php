@@ -31,6 +31,9 @@ class DashboardAdmin extends Admin
     /** the tab view, only registered while at least one bundle brings a tab */
     public const TABS_VIEW = 'sulu_dashboard.tabs';
 
+    /** views of the tabs of other bundles: prefix plus the key of the tab */
+    private const TAB_VIEW_PREFIX = 'sulu_dashboard.tab_';
+
     public const NAVIGATION_ITEM = 'sulu_dashboard.dashboard';
 
     public const SECURITY_CONTEXT = 'sulu.settings.dashboard';
@@ -68,7 +71,18 @@ class DashboardAdmin extends Admin
         $item = new NavigationItem(self::NAVIGATION_ITEM);
         $item->setPosition(1);
         $item->setIcon('su-th-large');
-        $item->setView([] === $this->tabs() ? self::VIEW : self::TABS_VIEW);
+        $tabs = $this->tabs();
+        $item->setView([] === $tabs ? self::VIEW : self::TABS_VIEW);
+
+        // the menu item stays highlighted in every view of the dashboard: Sulu compares the name of the active view with
+        // the view of the item and its child views (Navigation.js, isItemActive), like for the media or the forms
+        $item->addChildView(self::VIEW);
+        if ([] !== $tabs) {
+            $item->addChildView(self::TABS_VIEW);
+            foreach ($tabs as $tab) {
+                $item->addChildView(self::TAB_VIEW_PREFIX . $tab->getKey());
+            }
+        }
 
         $navigationItemCollection->add($item);
     }
@@ -124,7 +138,7 @@ class DashboardAdmin extends Admin
         );
 
         foreach ($tabs as $index => $tab) {
-            $view = $this->viewBuilderFactory->createViewBuilder('sulu_dashboard.tab_' . $tab->getKey(), $this->childPath($tab->getKey()), $tab->getViewType())
+            $view = $this->viewBuilderFactory->createViewBuilder(self::TAB_VIEW_PREFIX . $tab->getKey(), $this->childPath($tab->getKey()), $tab->getViewType())
                 ->setParent(self::TABS_VIEW)
                 ->setOption('tabTitle', $tab->getTitle())
                 ->setOption('tabOrder', $index + 1)
