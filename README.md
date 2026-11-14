@@ -14,6 +14,10 @@ The page is built only from the components of Sulu (toolbar with language select
 
 *The screenshots show the German admin.*
 
+Every user can arrange the tiles to their liking. In customize mode a tile can be moved, hidden or reset to the default:
+
+![The dashboard in customize mode](docs/img/dashboard-customize.de.png)
+
 ## ✨ Features
 
 - **Open drafts** - Pages and articles that are not live as edited, sortable, filter by type and "Only mine", pen button to the form
@@ -23,7 +27,7 @@ The page is built only from the components of Sulu (toolbar with language select
 - **Customize** - Every user can arrange, hide and reset tiles; the columns balance themselves until then
 - **Permissions** - Own permission for the dashboard; every tile respects the permissions of the content and its own security context
 - **Tile interface** - `DashboardWidgetInterface`, display types `number`, `progress`, `list`, `bars` and `custom` (own React component)
-- **Tabs** - Bundles can add a whole page as a tab (`DashboardTabProviderInterface`); with `amoifr/sulu-log-stats-bundle` the dashboard gets the tab "Visitors" and a tile
+- **Tabs** - Bundles can add a whole page as a tab (`DashboardTabProviderInterface`); with `amoifr/sulu-log-stats-bundle` the dashboard gets the tab "Visitors" and a tile. The visitor statistics come from the bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) by Amoifr. Thank you for such a lean bundle that keeps data to a minimum.
 - **Errors stay in their tile** - Every tile loads its data on its own
 
 ## 📋 Prerequisites

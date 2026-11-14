@@ -12,6 +12,10 @@ Die Seite besteht nur aus den Bausteinen von Sulu (Toolbar mit Sprachauswahl, Ra
 
 ![Das Dashboard](docs/img/dashboard-overview.de.png)
 
+Jeder Benutzer kann die Kacheln nach seinem Geschmack anordnen. Im Anpassen-Modus lassen sich Kacheln verschieben, ausblenden oder auf den Standard zurücksetzen:
+
+![Das Dashboard im Anpassen-Modus](docs/img/dashboard-customize.de.png)
+
 ## ✨ Funktionen
 
 - **Offene Entwürfe** - Seiten und Artikel, die nicht so live sind, wie sie bearbeitet wurden; sortierbar, Filter nach Typ und „Nur meine“, Stift-Button zum Formular
@@ -21,7 +25,7 @@ Die Seite besteht nur aus den Bausteinen von Sulu (Toolbar mit Sprachauswahl, Ra
 - **Anpassen** - Jeder Benutzer kann Kacheln anordnen, ausblenden und zurücksetzen; bis dahin gleichen sich die Spalten selbst aus
 - **Rechte** - Eigenes Recht für das Dashboard; jede Kachel beachtet die Rechte der Inhalte und ihren eigenen Sicherheitskontext
 - **Kachel-Schnittstelle** - `DashboardWidgetInterface`, Darstellungsarten `number`, `progress`, `list`, `bars` und `custom` (eigene React-Komponente)
-- **Tabs** - Bundles können eine ganze Seite als Tab ergänzen (`DashboardTabProviderInterface`); mit `amoifr/sulu-log-stats-bundle` bekommt das Dashboard den Tab „Besucher“ und eine Kachel
+- **Tabs** - Bundles können eine ganze Seite als Tab ergänzen (`DashboardTabProviderInterface`); mit `amoifr/sulu-log-stats-bundle` bekommt das Dashboard den Tab „Besucher“ und eine Kachel. Die Besucherstatistik stammt aus dem Bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) von Amoifr. Danke für ein so schlankes und datensparsames Bundle.
 - **Fehler bleiben in ihrer Kachel** - Jede Kachel lädt ihre Daten einzeln
 
 ## 📋 Voraussetzungen
