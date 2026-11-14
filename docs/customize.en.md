@@ -2,6 +2,8 @@
 
 Everyone can arrange the dashboard for themselves: move tiles, hide the ones they do not need. The page stays quiet until they ask for it.
 
+![The dashboard in customize mode (the admin interface is shown in German)](img/dashboard-customize.de.png)
+
 ## Arranging
 
 1. Click **Customize** in the toolbar. Every tile now has a handle on the left (the same grip Sulu uses for blocks) and two small buttons at the top right.

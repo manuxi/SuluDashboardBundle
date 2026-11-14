@@ -2,6 +2,8 @@
 
 Jeder kann das Dashboard für sich anordnen: Kacheln verschieben, nicht benötigte ausblenden. Die Seite bleibt ruhig, bis man es will.
 
+![Das Dashboard im Anpassen-Modus](img/dashboard-customize.de.png)
+
 ## Anordnen
 
 1. In der Toolbar auf **Anpassen** klicken. Jede Kachel hat nun links einen Griff (derselbe wie bei Sulus Blöcken) und oben rechts zwei kleine Buttons.

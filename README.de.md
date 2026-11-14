@@ -125,7 +125,7 @@ Sulus Suche und das Dashboard wollen beide den Pfad `/`. Der Router des Admins n
 ## 📖 Dokumentation
 
 - [Eigene Kachel in 5 Minuten](docs/widgets.de.md) - Interface, Darstellungsarten, optionale Abhängigkeit, Tag
-- [Dashboard anpassen](docs/customize.de.md) - Kacheln je Benutzer anordnen, ausblenden und zurücksetzen
+- [Dashboard anpassen](docs/customize.de.md) - Kacheln je Benutzer anordnen, ausblenden und zurücksetzen ([Bildschirmfoto](docs/img/dashboard-customize.de.png))
 - [Tabs](docs/tabs.de.md) - Eine ganze Seite eines Bundles als Tab, Besucher aus der Log-Statistik
 - [Eingebaute Kacheln](docs/built-in-widgets.de.md) - Kacheln, Rechte, das Recht für das Dashboard
 

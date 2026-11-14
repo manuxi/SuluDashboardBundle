@@ -127,7 +127,7 @@ Sulu's search and the dashboard both want the path `/`. The router of the admin 
 ## 📖 Documentation
 
 - [Your own tile in 5 minutes](docs/widgets.en.md) - Interface, display types, optional dependency, tag
-- [Customize the dashboard](docs/customize.en.md) - Arrange, hide and reset tiles per user
+- [Customize the dashboard](docs/customize.en.md) - Arrange, hide and reset tiles per user ([screenshot](docs/img/dashboard-customize.de.png), admin in German)
 - [Tabs](docs/tabs.en.md) - A whole page of a bundle as a tab, visitors from the log statistics
 - [Built-in tiles](docs/built-in-widgets.en.md) - Tiles, permissions, the permission of the dashboard
 
