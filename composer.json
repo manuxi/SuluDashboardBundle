@@ -57,6 +57,11 @@
         "cs": "vendor/bin/php-cs-fixer fix --dry-run --diff",
         "cs-fix": "vendor/bin/php-cs-fixer fix"
     },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.0.x-dev"
+        }
+    },
     "config": {
         "allow-plugins": {
             "php-http/discovery": true,
