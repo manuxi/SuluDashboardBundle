@@ -8,6 +8,8 @@
 - Column `WidgetColumns::AUTO` (tag attribute `column: auto`): no wish, the tile goes into the shorter column.
 - `PinnedDashboardWidgetInterface` (tag attribute `pinned: true`): the balance never moves such a tile to the other column. "Open drafts" and "Recent activity" are pinned.
 - Tiles get the prop `cache`, an object the dashboard keeps while the page is open, so a tile that moves to the other column (and is mounted again) does not request its data twice. The visitors tile uses it.
+- Customize the dashboard: the toolbar button "Customize" shows a handle on every tile (Sulu's block handle, react-sortable-hoc), an eye button to hide a tile and an arrow button to move it to the other column. "Done" ends the mode, "Reset" deletes the own arrangement so the balance decides again. The row of figures can be reordered and hidden but stays a row. Hidden tiles show dimmed while arranging and do not load their data otherwise.
+- The arrangement is saved with every change as the user setting `sulu_dashboard.layout`, wins over the balance, and leaves tiles that are new since then to the balance.
 - The layout functions live in `src/Resources/js/layout.js` without React and can be tested with `node --test tests/js`.
 
 ## 1.0.0 - 2026-11-14

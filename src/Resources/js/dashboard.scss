@@ -64,6 +64,89 @@
     }
 }
 
+/* customize mode: the handle of Sulu's blocks (block.scss) on the left, the buttons at the top right of the tile. The
+   tile itself does not react, so a click does not open a link by accident. */
+.handle {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    background-color: $silver;
+    color: $black;
+    border-radius: 3px 0 0 3px;
+    overflow: hidden;
+}
+
+.editing .content > section {
+    border-left: 0;
+    border-radius: 0 3px 3px 0;
+}
+
+.inert {
+    pointer-events: none;
+}
+
+.controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    background-color: $white;
+    border: 1px solid $silver;
+    border-radius: 3px;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        border: 0;
+        border-radius: 3px;
+        background: none;
+        color: $doveGray;
+        font-size: 14px;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            background-color: $mercury;
+            color: $black;
+        }
+    }
+}
+
+/* hidden tile while arranging: dimmed, its place stays */
+.hiddenTile .content {
+    opacity: 0.5;
+}
+
+.hiddenTile .title {
+    margin-bottom: 5px;
+}
+
+.hint {
+    color: $doveGray;
+    margin: 0 0 20px;
+}
+
+.emptyColumn {
+    padding: 30px;
+    border: 1px dashed $silver;
+    border-radius: 3px;
+    color: $gray;
+    text-align: center;
+}
+
+/* the clone Sulu's sortable lists drag around, above the toolbar and the menu of the admin */
+.dragging {
+    z-index: 10000;
+    opacity: 0.9;
+}
+
 /* text in a Sulu table cell sits in a flex box: the ellipsis needs a shrinkable block of its own */
 .ellipsis {
     display: block;

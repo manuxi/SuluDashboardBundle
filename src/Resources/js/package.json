@@ -4,9 +4,11 @@
     "license": "MIT",
     "main": "index.js",
     "peerDependencies": {
+        "classnames": "^2.2.5",
         "mobx": "^4.0.0",
         "mobx-react": "^5.0.0",
         "react": "^17.0.0",
+        "react-sortable-hoc": "^2.0.0",
         "sulu-admin-bundle": "*"
     }
 }

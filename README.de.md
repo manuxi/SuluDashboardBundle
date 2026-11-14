@@ -18,6 +18,7 @@ Die Seite besteht nur aus den Bausteinen von Sulu (Toolbar mit Sprachauswahl, Ra
 - **Zahlen** - Seiten, Artikel, Schnipsel und Medien, aufgeteilt nach Status mit Sulus Veröffentlichungs-Punkt
 - **Übersetzungen** - Fehlende und veraltete Übersetzungen je Sprache, mit Liste dessen, was fehlt
 - **Letzte Aktivität** - Aus Sulus Aktivitäts-API
+- **Anpassen** - Jeder Benutzer kann Kacheln anordnen, ausblenden und zurücksetzen; bis dahin gleichen sich die Spalten selbst aus
 - **Rechte** - Eigenes Recht für das Dashboard; jede Kachel beachtet die Rechte der Inhalte und ihren eigenen Sicherheitskontext
 - **Kachel-Schnittstelle** - `DashboardWidgetInterface`, Darstellungsarten `number`, `progress`, `list`, `bars` und `custom` (eigene React-Komponente)
 - **Tabs** - Bundles können eine ganze Seite als Tab ergänzen (`DashboardTabProviderInterface`); mit `amoifr/sulu-log-stats-bundle` bekommt das Dashboard den Tab „Besucher“ und eine Kachel
@@ -124,6 +125,7 @@ Sulus Suche und das Dashboard wollen beide den Pfad `/`. Der Router des Admins n
 ## 📖 Dokumentation
 
 - [Eigene Kachel in 5 Minuten](docs/widgets.de.md) - Interface, Darstellungsarten, optionale Abhängigkeit, Tag
+- [Dashboard anpassen](docs/customize.de.md) - Kacheln je Benutzer anordnen, ausblenden und zurücksetzen
 - [Tabs](docs/tabs.de.md) - Eine ganze Seite eines Bundles als Tab, Besucher aus der Log-Statistik
 - [Eingebaute Kacheln](docs/built-in-widgets.de.md) - Kacheln, Rechte, das Recht für das Dashboard
 

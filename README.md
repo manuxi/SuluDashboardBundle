@@ -20,6 +20,7 @@ The page is built only from the components of Sulu (toolbar with language select
 - **Figures** - Pages, articles, snippets and media, split by publish state with Sulu's publish indicator
 - **Translations** - Missing and outdated translations per language, with a list of what is missing
 - **Recent activity** - From Sulu's activity API
+- **Customize** - Every user can arrange, hide and reset tiles; the columns balance themselves until then
 - **Permissions** - Own permission for the dashboard; every tile respects the permissions of the content and its own security context
 - **Tile interface** - `DashboardWidgetInterface`, display types `number`, `progress`, `list`, `bars` and `custom` (own React component)
 - **Tabs** - Bundles can add a whole page as a tab (`DashboardTabProviderInterface`); with `amoifr/sulu-log-stats-bundle` the dashboard gets the tab "Visitors" and a tile
@@ -126,6 +127,7 @@ Sulu's search and the dashboard both want the path `/`. The router of the admin 
 ## 📖 Documentation
 
 - [Your own tile in 5 minutes](docs/widgets.en.md) - Interface, display types, optional dependency, tag
+- [Customize the dashboard](docs/customize.en.md) - Arrange, hide and reset tiles per user
 - [Tabs](docs/tabs.en.md) - A whole page of a bundle as a tab, visitors from the log statistics
 - [Built-in tiles](docs/built-in-widgets.en.md) - Tiles, permissions, the permission of the dashboard
 

@@ -61,8 +61,8 @@ class TranslationKeysTest extends TestCase
             }
             preg_match_all('/[\'"](sulu_dashboard\.[a-z_]+)[\'"]/', (string) file_get_contents($file->getPathname()), $matches);
             foreach ($matches[1] as $key) {
-                if (str_starts_with($key, 'sulu_dashboard.get_') || str_ends_with($key, '_') || 'sulu_dashboard.tabs' === $key) {
-                    continue; // route name, or the start of a key put together in code (checked below)
+                if (str_starts_with($key, 'sulu_dashboard.get_') || str_ends_with($key, '_') || \in_array($key, ['sulu_dashboard.tabs', 'sulu_dashboard.layout'], true)) {
+                    continue; // route name, name of a user setting, or the start of a key put together in code (checked below)
                 }
                 $used[$key] = $file->getFilename();
             }
