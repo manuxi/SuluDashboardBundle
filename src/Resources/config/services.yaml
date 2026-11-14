@@ -49,6 +49,7 @@ services:
             - '@sulu.repository.user'
             - '@security.token_storage'
             - '@sulu.core.localization_manager'
+            - '@sulu_security.system_store'
         tags:
             - { name: console.command }
             - { name: sulu.context, context: admin }

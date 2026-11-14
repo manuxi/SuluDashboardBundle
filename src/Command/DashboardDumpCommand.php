@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Command;
 
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
+use Sulu\Bundle\AdminBundle\Admin\Admin;
+use Sulu\Bundle\SecurityBundle\System\SystemStoreInterface;
 use Sulu\Component\Localization\Manager\LocalizationManagerInterface;
 use Sulu\Component\Security\Authentication\UserRepositoryInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -30,6 +32,7 @@ class DashboardDumpCommand extends Command
         private readonly UserRepositoryInterface $userRepository,
         private readonly TokenStorageInterface $tokenStorage,
         private readonly LocalizationManagerInterface $localizationManager,
+        private readonly SystemStoreInterface $systemStore,
     ) {
         parent::__construct();
     }
@@ -69,6 +72,8 @@ class DashboardDumpCommand extends Command
             return Command::FAILURE;
         }
 
+        // the admin sets the system on every request; without it Sulu grants every permission
+        $this->systemStore->setSystem(Admin::SULU_ADMIN_SECURITY_SYSTEM);
         $this->tokenStorage->setToken(new UsernamePasswordToken($user, 'admin', $user->getRoles()));
 
         $only = $input->getOption('widget');
