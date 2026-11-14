@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\Admin;
 
+use Manuxi\SuluDashboardBundle\Tab\TabRegistry;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use Sulu\Article\Domain\Model\ArticleInterface;
 use Sulu\Bundle\AdminBundle\Admin\Admin;
@@ -27,6 +28,9 @@ class DashboardAdmin extends Admin
 {
     public const VIEW = 'sulu_dashboard.dashboard';
 
+    /** the tab view, only registered while at least one bundle brings a tab */
+    public const TABS_VIEW = 'sulu_dashboard.tabs';
+
     public const NAVIGATION_ITEM = 'sulu_dashboard.dashboard';
 
     public const SECURITY_CONTEXT = 'sulu.settings.dashboard';
@@ -41,6 +45,7 @@ class DashboardAdmin extends Admin
         private readonly WidgetRegistry $widgetRegistry,
         private readonly MetadataProviderRegistry $metadataProviderRegistry,
         private readonly bool $startPage = true,
+        private readonly ?TabRegistry $tabRegistry = null,
     ) {
     }
 
@@ -63,7 +68,7 @@ class DashboardAdmin extends Admin
         $item = new NavigationItem(self::NAVIGATION_ITEM);
         $item->setPosition(1);
         $item->setIcon('su-th-large');
-        $item->setView(self::VIEW);
+        $item->setView([] === $this->tabs() ? self::VIEW : self::TABS_VIEW);
 
         $navigationItemCollection->add($item);
     }
@@ -88,15 +93,66 @@ class DashboardAdmin extends Admin
             $this->moveSearchAway($viewCollection);
         }
 
+        $base = $this->startPage ? '/' : '/dashboard';
+        $tabs = $this->tabs();
+
+        $overview = $this->viewBuilderFactory->createViewBuilder(self::VIEW, [] === $tabs ? $base : $this->childPath('overview'), self::VIEW)
+            ->setOption('locales', array_values($this->localizationManager->getLocales()))
+            ->setOption('templateTitles', [
+                'pages' => $this->templateTitles(PageInterface::TEMPLATE_TYPE),
+                'articles' => $this->templateTitles(ArticleInterface::TEMPLATE_TYPE),
+            ])
+            ->setOption('widgets', $widgets);
+
+        if ([] === $tabs) {
+            // no tab, no tab bar: the plain view
+            $viewCollection->add($overview);
+
+            return;
+        }
+
+        // Sulu's tab view: children get the path of the parent in front of their own. The parent takes the base path and
+        // redirects to the tab with the highest priority, which is "Overview".
+        $viewCollection->add($this->viewBuilderFactory->createTabViewBuilder(self::TABS_VIEW, $base));
+
         $viewCollection->add(
-            $this->viewBuilderFactory->createViewBuilder(self::VIEW, $this->startPage ? '/' : '/dashboard', self::VIEW)
-                ->setOption('locales', array_values($this->localizationManager->getLocales()))
-                ->setOption('templateTitles', [
-                    'pages' => $this->templateTitles(PageInterface::TEMPLATE_TYPE),
-                    'articles' => $this->templateTitles(ArticleInterface::TEMPLATE_TYPE),
-                ])
-                ->setOption('widgets', $widgets),
+            $overview
+                ->setParent(self::TABS_VIEW)
+                ->setOption('tabTitle', 'sulu_dashboard.overview')
+                ->setOption('tabOrder', 0)
+                ->setOption('tabPriority', 1),
         );
+
+        foreach ($tabs as $index => $tab) {
+            $view = $this->viewBuilderFactory->createViewBuilder('sulu_dashboard.tab_' . $tab->getKey(), $this->childPath($tab->getKey()), $tab->getViewType())
+                ->setParent(self::TABS_VIEW)
+                ->setOption('tabTitle', $tab->getTitle())
+                ->setOption('tabOrder', $index + 1)
+                ->setOption('tabPriority', 0);
+
+            foreach ($tab->getViewOptions() as $name => $value) {
+                $view->setOption($name, $value);
+            }
+
+            $viewCollection->add($view);
+        }
+    }
+
+    /**
+     * Path of a child of the tab view. Sulu puts the path of the parent in front of it, so below "/" the child must not
+     * start with a slash (it would become "//x"), below "/dashboard" it must.
+     */
+    private function childPath(string $name): string
+    {
+        return ($this->startPage ? '' : '/') . $name;
+    }
+
+    /**
+     * @return list<\Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface>
+     */
+    private function tabs(): array
+    {
+        return null === $this->tabRegistry ? [] : $this->tabRegistry->available();
     }
 
     /**

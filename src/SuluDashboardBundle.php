@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle;
 
+use Manuxi\SuluDashboardBundle\DependencyInjection\Compiler\DashboardTabPass;
 use Manuxi\SuluDashboardBundle\DependencyInjection\Compiler\DashboardWidgetPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -15,5 +16,6 @@ class SuluDashboardBundle extends Bundle
         parent::build($container);
 
         $container->addCompilerPass(new DashboardWidgetPass());
+        $container->addCompilerPass(new DashboardTabPass());
     }
 }

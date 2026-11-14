@@ -29,6 +29,9 @@
         "symfony/routing": "^6.4 | ^7.0",
         "symfony/security-core": "^6.4 | ^7.0"
     },
+    "suggest": {
+        "amoifr/sulu-log-stats-bundle": "Adds the tab \"Visitors\" and the tile \"Visitors (7 days)\" to the dashboard"
+    },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.64",
         "phpstan/phpstan": "^2.1",

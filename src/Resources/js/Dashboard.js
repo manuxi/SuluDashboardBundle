@@ -2,7 +2,7 @@
 // Built like Sulu's own views: class component with withToolbar (language select in the top bar, stored in the user
 // setting "content locale" of Sulu) and Sulu's Grid and Card.
 // Layout: a row of figures, then two columns (Grid.Section) whose tiles stack, so tiles of different heights leave no
-// holes. Sulu's Masonry is made for media cards and does not re-layout when a tile grows after loading its data.
+// holes. As a tab of a tab view (a bundle brings a tab) the tab bar replaces the heading. Sulu's Masonry is made for media cards and does not re-layout when a tile grows after loading its data.
 import React from 'react';
 import {action, observable} from 'mobx';
 import {observer} from 'mobx-react';
@@ -63,7 +63,7 @@ class Dashboard extends React.Component {
 
         return (
             <div className={styles.dashboard}>
-                <h1>{translate('sulu_dashboard.dashboard')}</h1>
+                {!this.props.route.parent && <h1>{translate('sulu_dashboard.dashboard')}</h1>}
 
                 <Grid>
                     {row.length > 0 &&

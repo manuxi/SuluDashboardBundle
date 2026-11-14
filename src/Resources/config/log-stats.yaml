@@ -1,0 +1,16 @@
+# Only loaded when amoifr/sulu-log-stats-bundle is installed and enabled (SuluDashboardExtension).
+services:
+    _defaults:
+        autowire: false
+        autoconfigure: false
+        public: false
+
+    Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTabProvider:
+        arguments:
+            - '@router'
+            - '%amoifr_log_stats.timezone%'
+        tags: ['sulu_dashboard.tab']
+
+    Manuxi\SuluDashboardBundle\Integration\LogStats\VisitorsWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTabProvider']
+        tags: ['sulu_dashboard.widget']

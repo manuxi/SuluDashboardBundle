@@ -14,6 +14,12 @@ services:
     Manuxi\SuluDashboardBundle\Widget\WidgetRegistry:
         alias: sulu_dashboard.widget_registry
 
+    sulu_dashboard.tab_registry:
+        class: Manuxi\SuluDashboardBundle\Tab\TabRegistry
+        arguments:
+            $sources: [] # filled by DashboardTabPass
+            $securityChecker: '@sulu_security.security_checker'
+
     Manuxi\SuluDashboardBundle\Content\ContentReader:
         arguments:
             - '@doctrine.dbal.default_connection'
@@ -30,6 +36,7 @@ services:
             - '@sulu_dashboard.widget_registry'
             - '@sulu_admin.metadata_provider_registry'
             - '%sulu_dashboard.start_page%'
+            - '@sulu_dashboard.tab_registry'
         tags:
             - { name: sulu.admin }
             - { name: sulu.context, context: admin }

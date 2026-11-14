@@ -12,6 +12,7 @@ The tiles of this bundle use the same interface as the tiles of other bundles ([
 | `sulu_seo` | Search engine details: rings and "Add first" | progress | main | webspace and article type |
 | `sulu_translations` | Translations (only with more than one language) | custom | side | webspace and article type |
 | `sulu_activities` | Recent activity | custom | side | `sulu.activities.activities` |
+| `sulu_visitors` | Visitors (7 days), only with the log statistics, see [Tabs](tabs.en.md) | custom | side | `sulu.settings.log_stats` |
 
 ![The dashboard](img/dashboard.en.png)
 

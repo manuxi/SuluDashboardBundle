@@ -12,6 +12,7 @@ Die Kacheln dieses Bundles nutzen dasselbe Interface wie die Kacheln anderer Bun
 | `sulu_seo` | Suchmaschinen-Angaben: Ringe und „Zuerst ergänzen“ | progress | main | Webspace und Artikeltyp |
 | `sulu_translations` | Übersetzungen (nur bei mehr als einer Sprache) | custom | side | Webspace und Artikeltyp |
 | `sulu_activities` | Letzte Aktivität | custom | side | `sulu.activities.activities` |
+| `sulu_visitors` | Besucher (7 Tage), nur mit der Log-Statistik, siehe [Tabs](tabs.de.md) | custom | side | `sulu.settings.log_stats` |
 
 ![Das Dashboard](img/dashboard.de.png)
 
