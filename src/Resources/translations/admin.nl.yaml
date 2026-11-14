@@ -23,6 +23,8 @@ sulu_dashboard:
     translations_hint: "Pagina's en artikelen vergeleken met het origineel ({locale})."
     translated: "{done} van {total} vertaald"
     outdated: "{count, plural, one {# vertaling is ouder dan het origineel.} other {# vertalingen zijn ouder dan het origineel.}}"
+    show_all_short: "Alles tonen"
+    shown_of: "{shown} van {total} getoond"
     whats_missing: "Wat ontbreekt?"
     whats_missing_hide: "Verbergen"
     state_missing: "ontbreekt"

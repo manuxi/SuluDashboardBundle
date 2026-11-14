@@ -140,6 +140,7 @@ Das Paket in `assets/admin/package.json` eintragen (`"sulu-dashboard-bundle": "f
 
 - `WidgetColumns::ROW`: Zeile mit Kennzahlen oben, alle Kacheln gleich hoch.
 - `WidgetColumns::MAIN` und `WidgetColumns::SIDE`: eine breite (zwei Drittel) und eine schmale Spalte, die Kacheln stehen untereinander. Ist eine Spalte leer, nutzt die andere die volle Breite.
+- Spalte wählen: Breites (Tabellen, Listen mit mehreren Spalten) gehört in `MAIN`, Schmales (kurze Listen, Balken, Ringe, Status) in `SIDE`. Die Kacheln einer Spalte stehen in der Reihenfolge von `getPriority()` untereinander; die beiden Spalten sind unabhängig, die kürzere endet also früher. Beide Spalten sollten ähnlich hoch werden, und eine Spalte nicht nur eine winzige Kachel bekommen. Ohne Kacheln in einer Spalte nutzt die andere die volle Breite.
 - `getSecurityContext()`: Der Benutzer sieht die Kachel nur mit dem Recht „Ansehen“ für diesen Kontext. Der Daten-Endpunkt prüft es erneut, ohne Recht lassen sich also auch die Daten nicht abrufen. `null` heißt: jeder, der das Dashboard öffnen darf. Eigene Inhalte (Seiten, Einträge) filtert `getData()` nach den Rechten des Benutzers.
 - Schlüssel mit `sulu_` am Anfang gehören den Kacheln dieses Bundles.
 - Eine Kachel abschalten: `sulu_dashboard.disabled_widgets: ['sulu_activities']`.

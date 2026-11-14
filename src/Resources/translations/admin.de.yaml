@@ -23,6 +23,8 @@ sulu_dashboard:
     translations_hint: "Seiten und Artikel im Vergleich zum Original ({locale})."
     translated: "{done} von {total} übersetzt"
     outdated: "{count, plural, one {# Übersetzung ist älter als das Original.} other {# Übersetzungen sind älter als das Original.}}"
+    show_all_short: "Alle anzeigen"
+    shown_of: "{shown} von {total} angezeigt"
     whats_missing: "Was fehlt?"
     whats_missing_hide: "Ausblenden"
     state_missing: "fehlt"

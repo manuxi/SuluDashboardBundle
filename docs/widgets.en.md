@@ -140,6 +140,7 @@ Add the package to `assets/admin/package.json` (`"sulu-dashboard-bundle": "file:
 
 - `WidgetColumns::ROW`: row of figures on top, all tiles of equal height.
 - `WidgetColumns::MAIN` and `WidgetColumns::SIDE`: a wide (two thirds) and a narrow column, tiles stack. If one column is empty, the other uses the full width.
+- Choosing the column: put wide content (tables, lists with several columns) in `MAIN`, narrow content (short lists, bars, rings, status) in `SIDE`. Tiles of a column stack in the order of `getPriority()`; the two columns are independent, so the shorter one ends earlier. Keep the heights of both columns similar, and do not leave one column with a single tiny tile. Without tiles in one column the other one takes the full width.
 - `getSecurityContext()`: the user sees the tile only with the view permission for this context. The data endpoint checks it again, so a user without permission cannot request the data either. `null` means everyone who may open the dashboard. Content of its own (pages, entries) must be filtered by the permissions of the user inside `getData()`.
 - Keys starting with `sulu_` belong to the tiles of this bundle.
 - Switch a tile off in the configuration: `sulu_dashboard.disabled_widgets: ['sulu_activities']`.

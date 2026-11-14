@@ -37,7 +37,7 @@ class ContentReader
     /** a translation counts as outdated when the original was changed more than a day after it */
     private const OUTDATED_AFTER = 86400;
 
-    private const MAX_MISSING_LISTED = 10;
+    private const MAX_MISSING_LISTED = 50;
 
     /** @var array<string, array{id: string, title: string, context: string}>|null */
     private ?array $articleGroups = null;
