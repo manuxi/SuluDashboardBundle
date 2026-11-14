@@ -1,0 +1,66 @@
+{
+    "name": "manuxi/sulu-dashboard-bundle",
+    "description": "Dashboard for the Sulu 3 admin: start page with tiles, plus a small interface for other bundles and projects to add their own tiles",
+    "type": "symfony-bundle",
+    "keywords": [
+        "sulu",
+        "suluCms",
+        "sulu bundle",
+        "dashboard",
+        "admin"
+    ],
+    "homepage": "https://github.com/manuxi/SuluDashboardBundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Manuxi"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "doctrine/dbal": "^3.6 | ^4.0",
+        "sulu/sulu": "^3.0",
+        "symfony/config": "^6.4 | ^7.0",
+        "symfony/console": "^6.4 | ^7.0",
+        "symfony/dependency-injection": "^6.4 | ^7.0",
+        "symfony/framework-bundle": "^6.4 | ^7.0",
+        "symfony/http-foundation": "^6.4 | ^7.0",
+        "symfony/http-kernel": "^6.4 | ^7.0",
+        "symfony/routing": "^6.4 | ^7.0",
+        "symfony/security-core": "^6.4 | ^7.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5 | ^11.0",
+        "symfony/browser-kit": "^6.4 | ^7.0",
+        "symfony/phpunit-bridge": "^6.4 | ^7.0",
+        "symfony/var-exporter": "^6.4 | ^7.0",
+        "cmsig/seal-memory-adapter": "^0.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "Manuxi\\SuluDashboardBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Manuxi\\SuluDashboardBundle\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "@phpunit"
+        ],
+        "phpunit": "vendor/bin/phpunit",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=1G",
+        "cs": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "vendor/bin/php-cs-fixer fix"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "symfony/flex": true
+        }
+    }
+}

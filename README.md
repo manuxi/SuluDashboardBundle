@@ -1,0 +1,131 @@
+# SuluDashboardBundle!
+![ci workflow](https://github.com/manuxi/SuluDashboardBundle/actions/workflows/ci.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/manuxi/SuluDashboardBundle/blob/main/LICENSE)
+![GitHub Tag](https://img.shields.io/github/v/tag/manuxi/SuluDashboardBundle)
+![Supports Sulu 3.0 or later](https://img.shields.io/badge/%20Sulu->=3.0-0088cc?color=00b2df)
+
+[🇩🇪 German Version](README.de.md)
+
+The SuluDashboardBundle gives the Sulu 3 admin a start page. Instead of an empty area, editors see what is left to do (open drafts), what happened lately, how complete the translations are and how much content there is.
+
+The page is built only from the components of Sulu (toolbar with language select, grid, cards, tables, publish indicator). Other bundles and projects add their own tiles with a small PHP class, without JavaScript.
+
+## ✨ Features
+
+- **Open drafts** - Pages and articles that are not live as edited, sortable, filter by type and "Only mine", pen button to the form
+- **Figures** - Pages, articles, snippets and media, split by publish state with Sulu's publish indicator
+- **Translations** - Missing and outdated translations per language, with a list of what is missing
+- **Recent activity** - From Sulu's activity API
+- **Permissions** - Own permission for the dashboard; every tile respects the permissions of the content and its own security context
+- **Tile interface** - `DashboardWidgetInterface`, display types `number`, `progress`, `list`, `bars` and `custom` (own React component)
+- **Errors stay in their tile** - Every tile loads its data on its own
+
+## 📋 Prerequisites
+
+- PHP 8.2 or higher
+- Sulu CMS 3.0 or higher
+- Symfony 6.4 or higher
+
+## 👩🏻‍🏭 Installation
+
+### Step 1: Install the package
+
+```bash
+composer require manuxi/sulu-dashboard-bundle
+```
+
+Without Symfony Flex, add the bundle to `config/bundles.php`:
+
+```php
+return [
+    //...
+    Manuxi\SuluDashboardBundle\SuluDashboardBundle::class => ['all' => true],
+];
+```
+
+### Step 2: Configure routes
+
+Add to `config/routes_admin.yaml`:
+
+```yaml
+SuluDashboardBundle:
+    resource: '@SuluDashboardBundle/Resources/config/routes_admin.yaml'
+```
+
+### Step 3: Admin JavaScript
+
+In `assets/admin/package.json`:
+
+```json
+"sulu-dashboard-bundle": "file:../../vendor/manuxi/sulu-dashboard-bundle/src/Resources/js"
+```
+
+In `assets/admin/app.js`:
+
+```js
+import 'sulu-dashboard-bundle';
+```
+
+Then build the admin (`npm install`, `npm run build` in `assets/admin`) and clear the cache.
+
+### Step 4: Grant permissions
+
+1. Go to Sulu Admin → Settings → User Roles
+2. Find the role, open the group **Settings**
+3. Enable "view" for `sulu.settings.dashboard`
+4. Reload the page
+
+The dashboard has no database tables.
+
+## 🎣 Usage
+
+After the login the admin opens the dashboard; the first menu item **Dashboard** leads back to it. The language select in the toolbar sets the content language of the tiles.
+
+Check what a user sees without logging in:
+
+```bash
+php bin/console sulu:dashboard:dump --user=admin --locale=en
+```
+
+### Your own tile
+
+```php
+final class ProjectsWidget implements DashboardWidgetInterface
+{
+    // getKey(), getTitle(), getType(), getSecurityContext(), getColumn(), getPriority() ...
+
+    public function getData(string $locale): array
+    {
+        return ['value' => $this->projects->count()];
+    }
+}
+```
+
+With `autoconfigure` the class is found automatically. More: [Your own tile in 5 minutes](docs/widgets.en.md), including an optional dependency for other bundles.
+
+## 🧶 Configuration
+
+```yaml
+# config/packages/sulu_dashboard.yaml
+sulu_dashboard:
+    disabled_widgets: []   # keys of tiles that are not shown, e.g. ['sulu_activities']
+```
+
+## 📖 Documentation
+
+- [Your own tile in 5 minutes](docs/widgets.en.md) - Interface, display types, optional dependency, tag
+- [Built-in tiles](docs/built-in-widgets.en.md) - Tiles, permissions, the permission of the dashboard
+
+## 👩‍🍳 Contributing
+
+Contributions are welcome! Please create issues or pull requests.
+
+## 📝 License
+
+This bundle is licensed under the MIT License. See [LICENSE](LICENSE).
+
+## 🎉 Credits
+
+Created and maintained by [manuxi](https://github.com/manuxi).
+
+Thanks to the Sulu team for the great CMS and fantastic support!

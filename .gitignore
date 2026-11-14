@@ -1,0 +1,11 @@
+.idea
+/vendor/
+composer.lock
+/phpunit.xml
+.phpunit.result.cache
+/.phpunit.cache/
+/var/
+/tests/App/var/
+.php-cs-fixer.cache
+/node_modules/
+/src/Resources/js/node_modules/

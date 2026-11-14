@@ -1,0 +1,5 @@
+sulu_dashboard_admin_api:
+    resource: Manuxi\SuluDashboardBundle\Controller\Admin\WidgetController
+    type: attribute
+    options:
+        expose: true

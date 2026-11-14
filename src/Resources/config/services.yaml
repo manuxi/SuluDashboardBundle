@@ -1,0 +1,84 @@
+services:
+    _defaults:
+        autowire: false
+        autoconfigure: false
+        public: false
+
+    sulu_dashboard.widget_registry:
+        class: Manuxi\SuluDashboardBundle\Widget\WidgetRegistry
+        arguments:
+            $sources: [] # filled by DashboardWidgetPass
+            $securityChecker: '@sulu_security.security_checker'
+            $disabled: '%sulu_dashboard.disabled_widgets%'
+
+    Manuxi\SuluDashboardBundle\Widget\WidgetRegistry:
+        alias: sulu_dashboard.widget_registry
+
+    Manuxi\SuluDashboardBundle\Content\ContentReader:
+        arguments:
+            - '@doctrine.dbal.default_connection'
+            - '@sulu_security.security_checker'
+            - '@sulu_core.webspace.webspace_manager'
+            - '@sulu.core.localization_manager'
+            - '@sulu_admin.metadata_group_provider'
+
+    Manuxi\SuluDashboardBundle\Admin\DashboardAdmin:
+        arguments:
+            - '@sulu_admin.view_builder_factory'
+            - '@sulu_security.security_checker'
+            - '@sulu.core.localization_manager'
+            - '@sulu_dashboard.widget_registry'
+            - '@sulu_admin.metadata_provider_registry'
+        tags:
+            - { name: sulu.admin }
+            - { name: sulu.context, context: admin }
+
+    Manuxi\SuluDashboardBundle\Controller\Admin\WidgetController:
+        public: true
+        arguments:
+            - '@sulu_dashboard.widget_registry'
+            - '@sulu.core.localization_manager'
+            - '@?logger'
+        tags:
+            - { name: controller.service_arguments }
+            - { name: sulu.context, context: admin }
+
+    Manuxi\SuluDashboardBundle\Command\DashboardDumpCommand:
+        arguments:
+            - '@sulu_dashboard.widget_registry'
+            - '@sulu.repository.user'
+            - '@security.token_storage'
+            - '@sulu.core.localization_manager'
+        tags:
+            - { name: console.command }
+            - { name: sulu.context, context: admin }
+
+    # Built-in tiles. They use the same interface as the tiles of other bundles.
+    Manuxi\SuluDashboardBundle\Widget\Builtin\PagesCountWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Content\ContentReader']
+        tags: ['sulu_dashboard.widget']
+
+    Manuxi\SuluDashboardBundle\Widget\Builtin\ArticlesCountWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Content\ContentReader']
+        tags: ['sulu_dashboard.widget']
+
+    Manuxi\SuluDashboardBundle\Widget\Builtin\SnippetsCountWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Content\ContentReader']
+        tags: ['sulu_dashboard.widget']
+
+    Manuxi\SuluDashboardBundle\Widget\Builtin\MediaCountWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Content\ContentReader']
+        tags: ['sulu_dashboard.widget']
+
+    Manuxi\SuluDashboardBundle\Widget\Builtin\OpenItemsWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Content\ContentReader']
+        tags: ['sulu_dashboard.widget']
+
+    Manuxi\SuluDashboardBundle\Widget\Builtin\TranslationsWidget:
+        arguments:
+            - '@Manuxi\SuluDashboardBundle\Content\ContentReader'
+            - '@sulu.core.localization_manager'
+        tags: ['sulu_dashboard.widget']
+
+    Manuxi\SuluDashboardBundle\Widget\Builtin\ActivitiesWidget:
+        tags: ['sulu_dashboard.widget']

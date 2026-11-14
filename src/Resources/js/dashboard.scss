@@ -1,0 +1,210 @@
+@import 'sulu-admin-bundle/containers/Application/variables.scss';
+
+/* Dashboard: heading is Sulu's global h1 (like list views), layout comes from Sulu's Grid and Card;
+   only Sulu variables, no own colours */
+
+.dashboard {
+    max-width: $viewMaxWidth;
+    min-width: $viewMinWidth;
+}
+
+/* Sulu's Grid items have no vertical gap of their own (forms use the fields' margin) */
+.cell {
+    margin-bottom: 20px;
+}
+
+/* the row of figures: all cards as high as the highest one */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+
+    > .cell {
+        display: flex;
+
+        > section {
+            flex: 1;
+        }
+    }
+}
+
+/* text in a Sulu table cell sits in a flex box: the ellipsis needs a shrinkable block of its own */
+.ellipsis {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.typeFilter {
+    width: 160px;
+}
+
+.more {
+    margin-top: 10px;
+}
+
+.languages {
+    list-style: none;
+    margin: 15px 0 0;
+    padding: 0;
+
+    li + li {
+        margin-top: 15px;
+    }
+}
+
+.languageLine {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: normal;
+    color: $black;
+    margin: 0 0 20px;
+}
+
+.value {
+    font-size: 30px;
+    line-height: 1.1;
+    color: $black;
+}
+
+.label {
+    color: $doveGray;
+    margin-top: 5px;
+}
+
+.places {
+    list-style: none;
+    margin: 15px 0 0;
+    padding: 0;
+    /* one grid for all rows: numbers right-aligned in their own column, status dots at the right edge */
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: 8px;
+    align-items: center;
+    line-height: 20px;
+
+    li {
+        display: contents;
+    }
+}
+
+.placeCount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.placeIndicator {
+    display: inline-flex;
+    justify-self: end;
+}
+
+.indicator {
+    display: inline-flex;
+    margin-right: 8px;
+}
+
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+        padding: 10px 0;
+        border-top: 1px solid $gallery;
+    }
+
+    li:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+}
+
+.meta {
+    color: $gray;
+    margin: 3px 0 0;
+}
+
+.error {
+    color: $persianRed;
+    margin: 0;
+}
+
+.rings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.ring {
+    text-align: center;
+    width: 110px;
+
+    > div:first-child {
+        margin: 0 auto;
+    }
+}
+
+.ringLabel {
+    margin-top: 10px;
+}
+
+.usage {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+
+    p {
+        margin: 0;
+    }
+}
+
+/* safety net: on narrow screens the table scrolls inside its card instead of overlapping it */
+.tableWrap {
+    overflow-x: auto;
+}
+
+.typeIcon {
+    color: $gray;
+    margin-right: 8px;
+}
+
+/* Sulu's ProgressBar track is white, invisible on a white card: tint it slightly */
+.bar progress {
+    background-color: $gallery;
+    max-width: none;
+
+    &::-webkit-progress-bar {
+        background-color: $gallery;
+    }
+}
+
+/* sulu-admin-extras-bundle (PublishStateFieldTransformer.scss) hides Sulu's PublishIndicator with !important in every
+   table cell, not only in lists. Win against it with a more specific selector; fix belongs in that bundle. */
+.tableWrap td div.indicator.indicator {
+    display: inline-flex !important;
+    /* fixed width of two dots, right-aligned: titles start at the same place whether one or two dots are shown */
+    width: 26px;
+    flex-shrink: 0;
+    justify-content: flex-end;
+}
+
+/* list of missing translations under the language bar */
+.missing {
+    list-style: none;
+    margin: 5px 0 0;
+    padding: 0;
+}
