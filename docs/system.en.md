@@ -2,6 +2,10 @@
 
 For administrators: versions, environment and the things that should not be forgotten. The tab only appears for users who have its own permission, so editors never see it. The overview keeps only a small tile as a traffic light with a "Details" link.
 
+![The tab System (the admin interface is shown in German)](img/dashboard-system.de.png)
+
+![The small tile System on the overview (in German)](img/dashboard-system-tile.de.png)
+
 ## Layout
 
 Like "Visitors", the tab is made of tiles (group `system`). With "Customize" they can be arranged, hidden and reset. The arrangement is saved per user (`sulu_dashboard.layout.system`). The tab has neither a period nor a language select, the values do not depend on them.

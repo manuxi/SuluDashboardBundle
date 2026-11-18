@@ -2,6 +2,10 @@
 
 Für Administratoren: Versionen, Umgebung und das, was man nicht vergessen sollte. Der Tab erscheint nur bei Benutzern mit eigenem Recht, Redakteure sehen ihn nie. Auf der Übersicht bleibt nur eine kleine Kachel als Ampel mit dem Link „Details“.
 
+![Der Tab System](img/dashboard-system.de.png)
+
+![Die kleine Kachel System auf der Übersicht](img/dashboard-system-tile.de.png)
+
 ## Aufbau
 
 Der Tab besteht wie „Besucher“ aus Kacheln (Gruppe `system`). Sie lassen sich über „Anpassen“ anordnen, ausblenden und zurücksetzen. Die Anordnung wird je Benutzer gespeichert (`sulu_dashboard.layout.system`). Der Tab hat weder Zeitraum noch Sprachauswahl, die Werte hängen nicht davon ab.
