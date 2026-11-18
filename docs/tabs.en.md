@@ -51,6 +51,8 @@ The dashboard builds the view from it: type `sulu_dashboard.dashboard`, the tile
 
 With periods, the toolbar of the tab gets a select ("Last 7 days" ... and "Custom period ..."). A custom period opens a bar above the tiles with two date pickers (from, to) and "Apply". A start day after the end day, a missing day or more than 366 days (the limit of the log statistics API) show an error in the bar and change nothing.
 
+![A custom period with an error (the admin interface is shown in German)](img/dashboard-period.de.png)
+
 - The choice is saved per tab as a user setting (`sulu_dashboard.layout.<group>.period`) at once, so it is there after a reload.
 - Every tile of the tab gets the prop `period`: `{days: 30}` (the last days up to today) or `{from: '2026-10-01', to: '2026-10-31'}` (days as `YYYY-MM-DD`, both included). The dashboard mounts the tiles again when the period changes; a tile that keeps its data in `props.cache` must include the period in the key.
 - Without `getPeriods()` there is no select and `period` is not set. The overview has no period.

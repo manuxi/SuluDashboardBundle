@@ -51,6 +51,8 @@ Das Dashboard baut daraus die View: Typ `sulu_dashboard.dashboard`, die Kacheln 
 
 Mit Zeiträumen bekommt die Toolbar des Tabs eine Auswahl („Letzte 7 Tage“ … und „Eigener Zeitraum …“). Ein eigener Zeitraum öffnet über den Kacheln eine Leiste mit zwei Datumsfeldern (Von, Bis) und „Übernehmen“. Ein Starttag nach dem Endtag, ein fehlender Tag oder mehr als 366 Tage (Grenze der Log-Statistik-API) zeigen in der Leiste einen Fehler und ändern nichts.
 
+![Eigener Zeitraum mit Fehlermeldung](img/dashboard-period.de.png)
+
 - Die Wahl wird je Tab sofort als Benutzereinstellung gespeichert (`sulu_dashboard.layout.<gruppe>.period`) und ist nach dem Neuladen noch da.
 - Jede Kachel des Tabs bekommt die Prop `period`: `{days: 30}` (die letzten Tage bis heute) oder `{from: '2026-10-01', to: '2026-10-31'}` (Tage als `YYYY-MM-DD`, beide eingeschlossen). Ändert sich der Zeitraum, mountet das Dashboard die Kacheln neu; eine Kachel, die Daten in `props.cache` hält, muss den Zeitraum in den Schlüssel aufnehmen.
 - Ohne `getPeriods()` gibt es keine Auswahl und keine Prop `period`. Die Übersicht hat keinen Zeitraum.

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 - 2026-11-18
 
 ### Added
 
@@ -16,7 +16,10 @@
 - The period functions live in `src/Resources/js/period.js` without React and can be tested with `node --test tests/js/*.test.mjs`.
 - Display type `chart` (`WidgetTypes::CHART`): a line chart (one or two series) or a bar chart (simple or stacked) drawn as SVG without a library, with rounded axis values, thinned x labels, a tooltip per point or bar, a legend from two series on, a table of the data as a fallback, an accessible name (`role="img"`) and a message for empty data. The series colours are Sulu's own palette. Data: `{kind, stacked?, labels, series: [{label, values, color?}], unit?}`, see `docs/widgets.en.md`.
 - The calculations of the chart (axis, thinning, stacking) live in `src/Resources/js/chartMath.js` without React and are tested with `node --test tests/js/*.test.mjs` in CI.
-- Contrast of the chart colours: blue, green and yellow are mixed with 35% black (Sass `mix()` of Sulu's variables) so lines and bars reach 3:1 on the white tile (5.2, 4.6 and 3.5); the axis labels use `$doveGray` (5.1:1 instead of 3.6:1). Stacked bars get a white 1px gap, the status chart uses green, blue, yellow and red (2xx to 5xx) and the response time blue and yellow, so neighbours differ in lightness and hue. Legend, tooltips and the table of the data stay as a second way to read the values. The Sulu 3.0 admin has no dark mode, so there is nothing to follow.
+- Chart colours: Sulu's palette as it is (Sass colour functions such as `mix()` are not evaluated by the admin build). The axis labels use `$doveGray` (5.1:1 instead of 3.6:1). Stacked bars get a white 1px gap, the status chart uses green, blue, yellow and red (2xx to 5xx) and the response time blue and yellow, so neighbours differ in lightness and hue. Legend, tooltips and the table of the data stay as a second way to read the values. The Sulu 3.0 admin has no dark mode, so there is nothing to follow.
+- The table of days of the tab "Visitors" is pinned to the wide column. The response time of the log statistics may be empty (`null`, which Sulu's Requester turns into `undefined`); that is no missing field.
+- A list tile without a meta column (for example an empty list) no longer breaks Sulu's table.
+- Screenshots: `docs/img/dashboard-visitors.de.png` (updated) and `docs/img/dashboard-period.de.png` (new).
 
 ## 1.1.0 - 2026-11-14
 
