@@ -15,10 +15,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
 
 /**
- * The slow checks of the "System" tile, meant for a cron job: "composer audit" and the size of public/uploads and var.
+ * The slow checks of the "System" tile, meant for a cron job: "composer audit", the size of public/uploads and of the folders of var, and the media of Sulu.
  * The result is left in the cache for the tile, so nothing slow happens when someone opens the dashboard.
  */
-#[AsCommand(name: 'sulu:dashboard:system-check', description: 'Runs the slow checks of the dashboard tile "System" (composer audit, folder sizes) and saves the result for the tile')]
+#[AsCommand(name: 'sulu:dashboard:system-check', description: 'Runs the slow checks of the dashboard tile "System" (composer audit, folder sizes, media) and saves the result for the tile')]
 class SystemCheckCommand extends Command
 {
     public function __construct(private readonly SystemChecker $checker)
@@ -54,6 +54,15 @@ class SystemCheckCommand extends Command
 
         foreach ($check->storage as $folder) {
             $io->writeln(\sprintf('Storage %s: %s', $folder['path'], ByteFormatter::format($folder['bytes'], 'en')));
+        }
+
+        if (null !== $check->media) {
+            $io->writeln(\sprintf('Media: %d files, %s', $check->media['count'], ByteFormatter::format($check->media['bytes'], 'en')));
+        }
+
+        if (null !== $check->previous) {
+            $delta = array_sum(array_column($check->storage, 'bytes')) - array_sum(array_column($check->previous['storage'], 'bytes'));
+            $io->writeln(\sprintf('Storage since the check %d minutes ago: %s%s', intdiv(max(0, $check->checkedAt - $check->previous['checkedAt']), 60), $delta < 0 ? '-' : '+', ByteFormatter::format(abs($delta), 'en')));
         }
 
         if (AuditResult::UNAVAILABLE === $audit->status) {

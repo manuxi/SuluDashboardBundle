@@ -16,11 +16,25 @@ Der Tab besteht wie „Besucher“ aus Kacheln (Gruppe `system`). Sie lassen sic
 | Letzte Prüfung | schmal | Alter der Hintergrundprüfung, bei „nie“ oder zu alt eine Warnung, immer mit dem Befehl als Text |
 | Versionen | schmal | PHP, Symfony, Sulu |
 | Umgebung | schmal | Modus (`prod`, `dev` ...) und Debug-Modus. **Debug an in `prod` ist eine rote Warnung**, weil Besucher dadurch interne Details sehen können (`APP_DEBUG=0`, danach den Cache leeren). |
-| Speicher | schmal | Platz, den `public/uploads` und `var` belegen. Ohne Prüflauf der Hinweis, wie gemessen wird. |
-| Datenbank-Migrationen | schmal | nur mit `doctrine/doctrine-migrations-bundle`: „Alle Datenbank-Migrationen sind ausgeführt.“ oder eine Warnung mit der Zahl offener Migrationen (nur lesend, es wird nichts ausgeführt) |
-| Fehlgeschlagene Nachrichten | schmal | nur wenn Symfony Messenger einen `failure_transport` hat: grüne Zeile oder Warnung mit der Zahl (nur lesend, nichts wird wiederholt oder gelöscht) |
+| Speicher | breit | Gesamtgröße und ein Balken je Ordner mit Anteil, siehe unten. Ohne Prüflauf der Hinweis, wie gemessen wird. |
+| Datenbank-Migrationen | schmal, angepinnt | nur mit `doctrine/doctrine-migrations-bundle`: „Alle Datenbank-Migrationen sind ausgeführt.“ oder eine Warnung mit der Zahl offener Migrationen (nur lesend, es wird nichts ausgeführt) |
+| Fehlgeschlagene Nachrichten | schmal, angepinnt | nur wenn Symfony Messenger einen `failure_transport` hat: grüne Zeile oder Warnung mit der Zahl (nur lesend, nichts wird wiederholt oder gelöscht) |
 
-Schlüssel/Wert-Kacheln (Versionen, Umgebung, Speicher, Letzte Prüfung) haben keinen Tabellenkopf. Dafür kennt die Listen-Kachel die Option `'header' => false`, siehe [Eigene Kachel](widgets.de.md).
+Schlüssel/Wert-Kacheln (Versionen, Umgebung, Letzte Prüfung) haben keinen Tabellenkopf. Dafür kennt die Listen-Kachel die Option `'header' => false`, siehe [Eigene Kachel](widgets.de.md).
+
+### Die Kachel „Speicher“
+
+Die Kachel beantwortet: Wo bleibt der Platz, und wächst etwas ungewöhnlich? Sie zeigt
+
+- die **Gesamtgröße** der gemessenen Ordner und darunter für jeden Bereich einen **Balken mit Größe und Anteil**: `public/uploads` (erzeugte Bildformate und Uploads), `var/cache`, `var/log`, `var/storage` (Dateispeicher der Medien) und jeden weiteren Ordner in `var`. Lose Dateien in `var` stehen als „Sonstige Dateien in var“. Die sechs größten Bereiche bekommen einen Balken, der Rest steht zusammen in einer Zeile („3 weitere Ordner“).
+- die **Veränderung seit der letzten Messung**, zum Beispiel „+12,0 MB seit der Messung vor 1 Tag“, für die Summe und je Ordner. Änderungen unter 1 MB bleiben unerwähnt. Der Vergleich ist immer die Messung davor; läuft der Befehl mehrmals am Tag, ist das Fenster kürzer, und die Kachel nennt es.
+- bei **Medien** die Zahl der Medien und die Größe der Originale. Sie stammen aus Sulus Mediatabellen (`me_media`, `me_file_versions`) und werden nur im Befehl gelesen. Fehlen die Tabellen, entfällt die Zeile.
+- einen **Hinweis**, wenn `var/cache` oder `var/log` größer als der Schwellenwert ist (der Balken wird gelb): „Der Cache ist 1,9 GB groß. Leeren mit cache:clear …“ bzw. „Alte Logdateien rotieren oder löschen.“ Der Hinweis erscheint auch als Warnzeile in der kleinen Kachel auf der Übersicht.
+- immer das **Alter der Messung**: „Gemessen vor 3 Stunden vom Befehl sulu:dashboard:system-check, nicht live.“ Ist die Messung älter als `max_age`, steht dort stattdessen die Warnung, dass der Cronjob vermutlich nicht mehr läuft.
+
+Bewusst weggelassen: **freier Plattenplatz**. Auf Shared Hosting meldet PHP den Platz der ganzen Serverplatte, nicht das Kontingent des Kontos; eine solche Zahl wäre irreführend. Ebenso die Gesamtgröße des Projekts (`vendor`, `node_modules` zu zählen dauert zu lang) und die größten Medien-Sammlungen.
+
+Die Summe ist die der gemessenen Ordner, nicht die Größe der Platte.
 
 ### Die Tabelle der Sicherheitslücken
 
@@ -63,8 +77,8 @@ Einmal am Tag ausführen, zum Beispiel mit diesem Cron-Eintrag (Pfad anpassen):
 
 - `bin/adminconsole` verwenden: Die Tab liest den Cache des Admins, und der Befehl speichert dort.
 - Eine gescheiterte Prüfung endet mit Exit-Code 1 (Composer nicht gefunden, kein Internet, zu langsam), eine gefundene Lücke nicht: Die Prüfung selbst hat funktioniert.
-- **Solange der Befehl nie gelaufen ist, steht im Tab „Die Hintergrundprüfung ist noch nie gelaufen“** und er zeigt weder Sicherheitslücken noch Ordnergrößen. Ist der letzte Lauf älter als 48 Stunden, warnt der Tab, dass der Cronjob stehen geblieben sein könnte (`sulu_dashboard.system.max_age`, in Stunden, bei einem wöchentlichen Cronjob zum Beispiel 200).
-- `cache:clear` löscht auch dieses Ergebnis. Den Befehl am Ende eines Deployments nach `cache:clear` ausführen.
+- **Solange der Befehl nie gelaufen ist, steht im Tab „Die Hintergrundprüfung ist noch nie gelaufen“** und er zeigt weder Sicherheitslücken noch Ordnergrößen. Das Ergebnis liegt im Cache und enthält auch die Messung davor (für die Veränderung). Ist der letzte Lauf älter als 48 Stunden, warnt der Tab, dass der Cronjob stehen geblieben sein könnte (`sulu_dashboard.system.max_age`, in Stunden, bei einem wöchentlichen Cronjob zum Beispiel 200).
+- `cache:clear` löscht auch dieses Ergebnis und damit die Messung davor: die Veränderungsanzeige beginnt danach neu. Den Befehl am Ende eines Deployments nach `cache:clear` ausführen.
 - Hosting ohne crontab: die Cron-Funktion des Anbieters den Befehl starten lassen, oder ihn ab und zu von Hand ausführen. Ein Skript, das den Befehl über eine geheime URL aufruft, wäre nur eine Idee, das Bundle bringt keine solche Route mit.
 - Composer muss für den Benutzer des Cronjobs aufrufbar sein. Findet der Befehl Composer unter diesem Namen nicht, den Pfad eintragen: `sulu_dashboard.system.composer_binary: '/usr/local/bin/composer'` oder den Pfad zu einer `composer.phar`. Ohne `HOME`-Verzeichnis (manche Cron-Umgebungen) braucht Composer vor dem Befehl `COMPOSER_HOME=/pfad/zu/einem/beschreibbaren/ordner`. Ohne `composer.lock` im Projekt gibt es nichts zu prüfen.
 
@@ -85,5 +99,7 @@ sulu_dashboard:
     system:
         composer_binary: composer   # Befehl im PATH oder Pfad zu einer composer.phar
         max_age: 48                 # Stunden, nach denen die letzte Prüfung als zu alt gilt
+        cache_limit: 1024           # MB: ab dieser Größe von var/cache gibt die Kachel „Speicher“ einen Hinweis (0 = aus)
+        log_limit: 512              # MB: dasselbe für var/log (0 = aus)
     disabled_widgets: ['sulu_system', 'sulu_system_storage']   # schaltet Kacheln ab (Übersicht und Tab)
 ```

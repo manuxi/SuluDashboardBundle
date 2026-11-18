@@ -54,6 +54,6 @@ final class SystemWidget extends AbstractBuiltinWidget
 
     public function getData(string $locale): array
     {
-        return $this->data->summary();
+        return $this->data->summary($locale);
     }
 }

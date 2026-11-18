@@ -146,12 +146,23 @@ class SystemTilesTest extends TestCase
         $this->assertSame('sulu_dashboard.system_vulnerabilities', $tile->getTitle());
 
         foreach ($this->tiles() as $other) {
-            if ('sulu_system_vulnerabilities' !== $other->getKey()) {
-                $this->assertFalse($other->isPinned(), $other->getKey());
-                $this->assertSame('side', $other->getColumn(), $other->getKey());
-                $this->assertSame(WidgetTypes::LIST, $other->getType(), $other->getKey());
+            if (\in_array($other->getKey(), ['sulu_system_vulnerabilities', 'sulu_system_storage'], true)) {
+                continue;
             }
+
+            $this->assertSame('side', $other->getColumn(), $other->getKey());
+            $this->assertSame(WidgetTypes::LIST, $other->getType(), $other->getKey());
+            $this->assertSame(\in_array($other->getKey(), ['sulu_system_migrations', 'sulu_system_failed_messages'], true), $other->isPinned(), $other->getKey());
         }
+    }
+
+    public function testTheStorageIsACustomTileInTheWideColumnThatTheBalanceMayMove(): void
+    {
+        $tile = $this->tile('storage');
+
+        $this->assertSame(WidgetTypes::CUSTOM, $tile->getType());
+        $this->assertSame('main', $tile->getColumn());
+        $this->assertFalse($tile->isPinned());
     }
 
     public function testMigrationsAndFailedMessagesTilesOnlyExistWhereThereIsSomethingToRead(): void
@@ -253,16 +264,17 @@ class SystemTilesTest extends TestCase
         $this->assertCount(2, $this->tile('environment', $this->data('prod', false))->getData('en')['rows']);
     }
 
-    public function testStorageShowsTheFoldersByRelativeNameAndSaysHowToMeasureWithoutAResult(): void
+    public function testStorageSaysHowToMeasureWithoutAResultAndShowsTheFoldersWithOne(): void
     {
-        $this->assertSame([], $this->tile('storage')->getData('de')['rows']);
-        $this->assertSame('sulu_dashboard.system_storage_none', $this->tile('storage')->getData('de')['empty']);
+        $this->assertSame(['status' => 'never', 'command' => 'php bin/adminconsole sulu:dashboard:system-check'], $this->tile('storage')->getData('de'));
 
         $this->save(AuditResult::ok());
-        $rows = $this->tile('storage')->getData('de')['rows'];
+        $data = $this->tile('storage')->getData('de');
 
-        $this->assertSame(['title' => ['text' => 'public/uploads'], 'meta' => ['text' => '1,5 GB']], $rows[0]);
-        $this->assertSame(['title' => ['text' => 'var'], 'meta' => ['text' => '300 B']], $rows[1]);
+        $this->assertSame('ok', $data['status']);
+        $this->assertSame('1,5 GB', $data['total']['text']);
+        $this->assertSame('sulu_dashboard.system_storage_uploads', $data['items'][0]['label']);
+        $this->assertSame('public/uploads', $data['items'][0]['path']);
     }
 
     public function testLastCheckShowsTheAgeAndAlwaysTheCommand(): void

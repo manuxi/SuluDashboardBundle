@@ -106,6 +106,16 @@ class SystemWidgetTest extends TestCase
         $this->assertSame(['key' => 'sulu_dashboard.system_age_hours', 'parameters' => ['count' => 2]], $last['meta']);
     }
 
+    public function testABigCacheOrLogIsAWarningOnTheOverviewToo(): void
+    {
+        $this->store->save(new SystemCheck(self::NOW - 3600, AuditResult::ok(), [['path' => 'var/cache', 'bytes' => 2_000_000_000], ['path' => 'var/log', 'bytes' => 1000]]));
+
+        $this->assertSame(
+            [['title' => ['key' => 'sulu_dashboard.system_storage_cache_large', 'parameters' => ['size' => '1.9 GB']], 'severity' => 'warning', 'text' => 'sulu_dashboard.system_storage_cache_large_hint']],
+            $this->problems($this->widget()),
+        );
+    }
+
     public function testLinksToTheTabSystemAsViewAndAttributesNeverAsUrl(): void
     {
         $this->save(AuditResult::ok());

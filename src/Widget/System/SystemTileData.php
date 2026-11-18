@@ -7,7 +7,6 @@ namespace Manuxi\SuluDashboardBundle\Widget\System;
 use Closure;
 use Manuxi\SuluDashboardBundle\Admin\DashboardAdmin;
 use Manuxi\SuluDashboardBundle\System\AuditResult;
-use Manuxi\SuluDashboardBundle\System\ByteFormatter;
 use Manuxi\SuluDashboardBundle\System\FailedMessages;
 use Manuxi\SuluDashboardBundle\System\PendingMigrations;
 use Manuxi\SuluDashboardBundle\System\SystemCheck;
@@ -49,6 +48,7 @@ final class SystemTileData
         private readonly int $maxAgeHours = 48,
         private readonly ?LoggerInterface $logger = null,
         private readonly ?Closure $now = null,
+        private readonly ?StorageReport $storageReport = null,
     ) {
     }
 
@@ -127,19 +127,19 @@ final class SystemTileData
     }
 
     /**
-     * Tile "Storage": the size of the folders, measured by the console command.
+     * Tile "Storage": what the folders hold, the change since the measurement before, the media and hints. Measured by
+     * the console command; without a result the tile says how to get one.
      *
      * @return array<string, mixed>
      */
     public function storage(string $locale): array
     {
         $check = $this->store->load();
-        $rows = [];
-        foreach (null === $check ? [] : $check->storage as $folder) {
-            $rows[] = $this->fact($this->text($folder['path']), $this->text(ByteFormatter::format($folder['bytes'], $locale)));
+        if (null === $check || [] === $check->storage) {
+            return ['status' => 'never', 'command' => self::COMMAND];
         }
 
-        return ['header' => false, 'rows' => $rows, 'empty' => 'sulu_dashboard.system_storage_none'];
+        return ($this->storageReport ?? new StorageReport())->build($check, $locale, $this->time(), $this->isStale($check));
     }
 
     /**
@@ -183,9 +183,9 @@ final class SystemTileData
      *
      * @return array<string, mixed>
      */
-    public function summary(): array
+    public function summary(string $locale = 'en'): array
     {
-        $rows = $this->problems();
+        $rows = $this->problems($locale);
         if ([] === $rows) {
             $rows[] = $this->problem(self::SEVERITY_OK, 'sulu_dashboard.system_all_good');
         }
@@ -206,7 +206,7 @@ final class SystemTileData
      *
      * @return list<array<string, mixed>>
      */
-    private function problems(): array
+    private function problems(string $locale): array
     {
         $errors = [];
         $warnings = [];
@@ -232,6 +232,10 @@ final class SystemTileData
 
             if ($this->isStale($check)) {
                 $warnings[] = $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_stale');
+            }
+
+            foreach (($this->storageReport ?? new StorageReport())->hints($check, $locale) as $hint) {
+                $warnings[] = $this->problem(self::SEVERITY_WARNING, $hint['title'], $hint['text']);
             }
         }
 
@@ -385,7 +389,7 @@ final class SystemTileData
     /**
      * @return array{key: string, parameters: array{count: int}}
      */
-    private function ageText(int $seconds): array
+    public static function ageText(int $seconds): array
     {
         if ($seconds < 3600) {
             return ['key' => 'sulu_dashboard.system_age_minutes', 'parameters' => ['count' => max(1, intdiv($seconds, 60))]];

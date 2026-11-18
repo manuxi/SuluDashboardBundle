@@ -7,8 +7,9 @@ namespace Manuxi\SuluDashboardBundle\System;
 use Closure;
 
 /**
- * The expensive checks of the "System" tile: known vulnerabilities and the size of the folders. Run by the console
- * command (cron), the result goes to the cache pool the tile reads.
+ * The expensive checks of the "System" tile: known vulnerabilities, the size of the folders and the media. Run by the
+ * console command (cron), the result goes to the cache pool the tile reads. The result of the run before is kept inside
+ * the new one, so the tile can say what grew or shrank.
  */
 final class SystemChecker
 {
@@ -17,12 +18,24 @@ final class SystemChecker
         private readonly StorageMeasurer $storage,
         private readonly SystemCheckStore $store,
         private readonly ?Closure $now = null,
+        private readonly ?MediaStatistics $media = null,
     ) {
     }
 
     public function run(): SystemCheck
     {
-        $check = new SystemCheck(null === $this->now ? time() : (int) ($this->now)(), $this->audit->run(), $this->storage->measure());
+        $before = $this->store->load();
+        $previous = null === $before || [] === $before->storage
+            ? null
+            : ['checkedAt' => $before->checkedAt, 'storage' => $before->storage, 'media' => $before->media];
+
+        $check = new SystemCheck(
+            null === $this->now ? time() : (int) ($this->now)(),
+            $this->audit->run(),
+            $this->storage->measure(),
+            $this->media?->measure(),
+            $previous,
+        );
         $this->store->save($check);
 
         return $check;

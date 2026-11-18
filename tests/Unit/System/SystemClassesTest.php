@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\Tests\Unit\System;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception\TableNotFoundException;
 use Manuxi\SuluDashboardBundle\System\AuditResult;
 use Manuxi\SuluDashboardBundle\System\AuditRunnerInterface;
 use Manuxi\SuluDashboardBundle\System\ByteFormatter;
 use Manuxi\SuluDashboardBundle\System\ComposerAuditRunner;
 use Manuxi\SuluDashboardBundle\System\FailedMessages;
+use Manuxi\SuluDashboardBundle\System\MediaStatistics;
 use Manuxi\SuluDashboardBundle\System\StorageMeasurer;
 use Manuxi\SuluDashboardBundle\System\SystemCheck;
 use Manuxi\SuluDashboardBundle\System\SystemChecker;
@@ -84,7 +87,7 @@ class SystemClassesTest extends TestCase
 
         $result = (new StorageMeasurer($this->directory, ['public/uploads', 'var', 'does/not/exist']))->measure();
 
-        $this->assertSame([['path' => 'public/uploads', 'bytes' => 1000], ['path' => 'var', 'bytes' => 524]], $result);
+        $this->assertSame([['path' => 'public/uploads', 'bytes' => 1000], ['path' => 'var/cache', 'bytes' => 500], ['path' => 'var', 'bytes' => 24]], $result);
         $this->assertStringNotContainsString($this->directory, (string) json_encode($result));
     }
 
@@ -97,7 +100,7 @@ class SystemClassesTest extends TestCase
 
         $result = (new StorageMeasurer($this->directory, ['var']))->measure();
 
-        $this->assertSame([['path' => 'var', 'bytes' => 0]], $result);
+        $this->assertSame([], $result);
     }
 
     public function testTheStoreKeepsTheCheckAndTreatsBrokenDataAsMissing(): void
@@ -140,7 +143,71 @@ class SystemClassesTest extends TestCase
 
         $this->assertSame(1_800_000_000, $check->checkedAt);
         $this->assertSame($check->toArray(), $store->load()?->toArray());
-        $this->assertSame([['path' => 'public/uploads', 'bytes' => 0], ['path' => 'var', 'bytes' => 2]], $check->storage);
+        $this->assertSame([['path' => 'public/uploads', 'bytes' => 0], ['path' => 'var/cache', 'bytes' => 0], ['path' => 'var', 'bytes' => 2]], $check->storage);
+    }
+
+    public function testTheCheckerKeepsTheMeasurementBeforeInTheNewOne(): void
+    {
+        file_put_contents($this->directory . '/var/c.bin', 'xx');
+        $runner = new class implements AuditRunnerInterface {
+            public function run(): AuditResult
+            {
+                return AuditResult::ok();
+            }
+        };
+        $store = new SystemCheckStore(new ArrayAdapter());
+        $time = 1_800_000_000;
+        $checker = new SystemChecker($runner, new StorageMeasurer($this->directory), $store, static function () use (&$time): int {
+            return $time;
+        });
+
+        $first = $checker->run();
+        $this->assertNull($first->previous);
+
+        $time += 86400;
+        file_put_contents($this->directory . '/var/c.bin', 'xxxxx');
+        $second = $checker->run();
+
+        $this->assertSame(1_800_000_000, $second->previous['checkedAt'] ?? null);
+        $this->assertSame($first->storage, $second->previous['storage'] ?? null);
+        $this->assertSame($second->toArray(), $store->load()?->toArray());
+
+        $time += 86400;
+        $third = $checker->run();
+        $this->assertNull($third->previous['storage'][0]['previous'] ?? null, 'only one measurement is kept, not a chain');
+        $this->assertSame($second->storage, $third->previous['storage'] ?? null);
+    }
+
+    public function testTheCheckKeepsMediaAndPreviousAndReadsOlderResultsWithoutThem(): void
+    {
+        $check = new SystemCheck(10, AuditResult::ok(), [['path' => 'var', 'bytes' => 5]], ['count' => 3, 'bytes' => 700], ['checkedAt' => 5, 'storage' => [['path' => 'var', 'bytes' => 4]], 'media' => ['count' => 2, 'bytes' => 600]]);
+        $this->assertSame($check->toArray(), SystemCheck::fromArray($check->toArray())?->toArray());
+
+        $old = SystemCheck::fromArray(['checkedAt' => 10, 'audit' => AuditResult::ok()->toArray(), 'storage' => [['path' => 'var', 'bytes' => 5]]]);
+        $this->assertNotNull($old);
+        $this->assertNull($old->media);
+        $this->assertNull($old->previous);
+
+        $broken = SystemCheck::fromArray(['checkedAt' => 10, 'audit' => AuditResult::ok()->toArray(), 'storage' => [], 'media' => ['count' => 'x'], 'previous' => ['checkedAt' => 'y']]);
+        $this->assertNull($broken?->media);
+        $this->assertNull($broken?->previous);
+    }
+
+    public function testTheMediaStatisticsReadCountAndSizeAndStayQuietWhenTheyCannot(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchAssociative')->willReturn(['media_count' => '884', 'media_bytes' => '541532239']);
+        $this->assertSame(['count' => 884, 'bytes' => 541_532_239], (new MediaStatistics($connection))->measure());
+
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchAssociative')->willThrowException($this->createMock(TableNotFoundException::class));
+        $this->assertNull((new MediaStatistics($connection))->measure());
+
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchAssociative')->willReturn(false);
+        $this->assertNull((new MediaStatistics($connection))->measure());
+
+        $this->assertNull((new MediaStatistics())->measure());
     }
 
     /**

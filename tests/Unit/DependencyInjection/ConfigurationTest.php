@@ -33,7 +33,7 @@ class ConfigurationTest extends TestCase
 
     public function testTheSystemTileHasDefaults(): void
     {
-        $this->assertSame(['composer_binary' => 'composer', 'max_age' => 48], $this->process([])['system']);
+        $this->assertSame(['composer_binary' => 'composer', 'max_age' => 48, 'cache_limit' => 1024, 'log_limit' => 512], $this->process([])['system']);
     }
 
     public function testTheMaximumAgeOfTheSystemCheckMustBePositive(): void

@@ -637,3 +637,28 @@
         }
     }
 }
+
+/* the tile "Storage" of the tab "System": the sum and the facts on top, below it one bar per folder */
+.storageHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.storageFacts {
+    text-align: right;
+    line-height: 20px;
+}
+
+.storageHint {
+    margin: 20px 0 0;
+}
+
+.storageMeasured {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    line-height: 20px;
+}

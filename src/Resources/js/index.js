@@ -4,6 +4,7 @@ import widgetRegistry from './widgetRegistry';
 import Activities from './widgets/Activities';
 import OpenItems from './widgets/OpenItems';
 import Translations from './widgets/Translations';
+import SystemStorage from './widgets/SystemStorage';
 import SystemVulnerabilities from './widgets/SystemVulnerabilities';
 import Visitors from './widgets/Visitors';
 import VisitorTile from './widgets/VisitorTile';
@@ -23,7 +24,8 @@ widgetRegistry.add('sulu_visitors', Visitors);
 // the tiles of the tab "Visitors" (group visitors): one component, the metric comes from the server
 METRIC_NAMES.forEach((metric) => widgetRegistry.add(widgetKey(metric), VisitorTile));
 
-// the table of vulnerabilities of the tab "System" (the other tiles of the tab are lists)
+// the table of vulnerabilities and the storage of the tab "System" (the other tiles of the tab are lists)
 widgetRegistry.add('sulu_system_vulnerabilities', SystemVulnerabilities);
+widgetRegistry.add('sulu_system_storage', SystemStorage);
 
 export {widgetRegistry};
