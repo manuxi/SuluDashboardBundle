@@ -78,7 +78,7 @@ Run it once a day, for example with this cron entry (adjust the path):
 - Use `bin/adminconsole`: the tab reads the cache of the admin, and the command saves into it.
 - A failed check ends with exit code 1 (Composer not found, no internet, too slow), a found vulnerability does not: the check itself worked.
 - **Until the command has run, the tab says "The background check has not run yet"** and shows no vulnerabilities and no folder sizes. The result is kept in the cache and also contains the measurement before it (for the change). If the last run is older than 48 hours the tab warns that the cron job may have stopped (`sulu_dashboard.system.max_age`, in hours, for a weekly cron job for example 200).
-- `cache:clear` also clears this result and with it the measurement before: the display of the change starts again. Run the command at the end of a deployment, after `cache:clear`.
+- `cache:clear` also clears this result (depending on the cache setup of the project) and with it the measurement before: the display of the change starts again. Run the command at the end of a deployment, after `cache:clear`.
 - Hosting without a crontab: use the cron function of the provider and let it start the command, or run it by hand now and then. A script that calls the command through a secret URL is only an idea, the bundle has no such route.
 - Composer must be callable by the user of the cron job. If the command finds it under another name or path, set it: `sulu_dashboard.system.composer_binary: '/usr/local/bin/composer'` or the path to a `composer.phar`. Without a `HOME` directory (some cron environments) Composer needs `COMPOSER_HOME=/path/to/a/writable/folder` in front of the command. Without `composer.lock` in the project there is nothing to check.
 
