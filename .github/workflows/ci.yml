@@ -48,5 +48,5 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Layout functions (JavaScript)
-        run: node --test tests/js/layout.test.mjs
+      - name: Layout and chart functions (JavaScript)
+        run: node --test tests/js/layout.test.mjs tests/js/chartMath.test.mjs

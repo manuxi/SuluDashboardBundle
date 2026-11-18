@@ -438,3 +438,107 @@
     margin: 10px 0 0;
     color: $persianRed;
 }
+
+/* chart tile: drawn in SVG with currentColor, the series colours are Sulu's own palette */
+.series_blue {
+    color: $shakespeare;
+}
+
+.series_green {
+    color: $mantis;
+}
+
+.series_yellow {
+    color: $gold;
+}
+
+.series_red {
+    color: $persianRed;
+}
+
+.series_gray {
+    color: $stormGray;
+}
+
+.chartFrame {
+    min-width: 0;
+}
+
+.chartSvg {
+    display: block;
+    max-width: 100%;
+}
+
+.chartGrid {
+    stroke: $mercury;
+    stroke-width: 1;
+}
+
+.chartAxis {
+    stroke: $silver;
+    stroke-width: 1;
+}
+
+.chartText {
+    fill: $gray;
+    font-size: 11px;
+}
+
+.chartLine {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.chartDot {
+    fill: $white;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.chartBar {
+    fill: currentColor;
+}
+
+/* the column of a point answers the pointer with a title tooltip; a light shade shows which one */
+.chartHit {
+    fill: transparent;
+
+    &:hover {
+        fill: rgba($black, 0.05);
+    }
+}
+
+.chartLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+    color: $scorpion;
+}
+
+.chartSwatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 6px;
+    border-radius: 2px;
+    background: currentColor;
+}
+
+.chartData {
+    margin-top: 12px;
+
+    summary {
+        cursor: pointer;
+        color: $gray;
+
+        &:hover {
+            color: $black;
+        }
+    }
+}

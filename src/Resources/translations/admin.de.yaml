@@ -34,6 +34,7 @@ sulu_dashboard:
     activities: "Letzte Aktivität"
     no_activities: "Noch keine Aktivität."
     empty: "Keine Einträge."
+    chart_data_table: "Daten als Tabelle anzeigen"
     seo: "Suchmaschinen-Angaben"
     seo_hint: "{count, plural, one {# veröffentlichte Seite oder Artikel} other {# veröffentlichte Seiten und Artikel}} in dieser Sprache"
     seo_title: "SEO-Titel"

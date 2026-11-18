@@ -10,6 +10,8 @@
 - Period for tabs of tiles (`getPeriods()`, `getDefaultPeriod()`): a select in the toolbar (for example 7, 30, 90, 365 days) and "Custom period ..." with a bar of two date pickers (from, to) and "Apply" above the tiles. A missing day, a start after the end and more than 366 days show an error in the bar. The choice is saved per tab as a user setting at once. Tiles get the prop `period`: `{days}` or `{from, to}` (`YYYY-MM-DD`). The overview has no period.
 - `showLocale(): false` hides the language select of a tab of tiles.
 - The period functions live in `src/Resources/js/period.js` without React and can be tested with `node --test tests/js`.
+- Display type `chart` (`WidgetTypes::CHART`): a line chart (one or two series) or a bar chart (simple or stacked) drawn as SVG without a library, with rounded axis values, thinned x labels, a tooltip per point or bar, a legend from two series on, a table of the data as a fallback, an accessible name (`role="img"`) and a message for empty data. The series colours are Sulu's own palette. Data: `{kind, stacked?, labels, series: [{label, values, color?}], unit?}`, see `docs/widgets.en.md`.
+- The calculations of the chart (axis, thinning, stacking) live in `src/Resources/js/chartMath.js` without React and are tested with `node --test` in CI.
 
 ## 1.1.0 - 2026-11-14
 

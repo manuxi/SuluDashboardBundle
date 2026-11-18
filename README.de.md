@@ -24,7 +24,7 @@ Jeder Benutzer kann die Kacheln nach seinem Geschmack anordnen. Im Anpassen-Modu
 - **Letzte Aktivität** - Aus Sulus Aktivitäts-API
 - **Anpassen** - Jeder Benutzer kann Kacheln anordnen, ausblenden und zurücksetzen; bis dahin gleichen sich die Spalten selbst aus
 - **Rechte** - Eigenes Recht für das Dashboard; jede Kachel beachtet die Rechte der Inhalte und ihren eigenen Sicherheitskontext
-- **Kachel-Schnittstelle** - `DashboardWidgetInterface`, Darstellungsarten `number`, `progress`, `list`, `bars` und `custom` (eigene React-Komponente)
+- **Kachel-Schnittstelle** - `DashboardWidgetInterface`, Darstellungsarten `number`, `progress`, `list`, `bars`, `chart` (Linien- und Balkendiagramme in SVG) und `custom` (eigene React-Komponente)
 - **Tabs** - Bundles können eine ganze Seite als Tab ergänzen (`DashboardTabProviderInterface`); mit `amoifr/sulu-log-stats-bundle` bekommt das Dashboard den Tab „Besucher“ und eine Kachel. Die Besucherstatistik stammt aus dem Bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) von Amoifr. Danke für ein so schlankes und datensparsames Bundle.
 - **Fehler bleiben in ihrer Kachel** - Jede Kachel lädt ihre Daten einzeln
 
