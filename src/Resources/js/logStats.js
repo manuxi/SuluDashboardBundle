@@ -21,17 +21,17 @@ export const METRICS = {
     bots: ['totals.botRequests:number', 'totals.requests:number'],
     client_errors: ['totals.statusClasses.4:number', 'totals.requests:number'],
     server_errors: ['totals.statusClasses.5:number', 'totals.requests:number'],
-    response_time: ['responseTime:present'],
+    response_time: ['responseTime:nullObject'],
     bytes: ['totals.bytes:number'],
     chart_views: ['days:array', 'days[].day:present', 'days[].pageViews:number'],
     chart_visitors: ['days:array', 'days[].day:present', 'days[].visitors:number'],
     chart_status: ['days:array', 'days[].day:present', 'days[].statusClasses:object'],
     chart_hours: ['pageViewsByHourOfDay:array'],
-    chart_response: ['days:array', 'days[].day:present', 'days[].responseTime:present'],
+    chart_response: ['days:array', 'days[].day:present', 'days[].responseTime:nullObject'],
     top_pages: ['topPages:array', 'topPages[].path:present', 'topPages[].count:number'],
     top_not_found: ['topNotFound:array', 'topNotFound[].path:present', 'topNotFound[].count:number'],
     top_errors: ['topServerErrors:array', 'topServerErrors[].path:present', 'topServerErrors[].count:number'],
-    daily: ['days:array', 'days[].day:present', 'days[].pageViews:number', 'days[].visitors:number', 'days[].statusClasses:object', 'days[].responseTime:present'],
+    daily: ['days:array', 'days[].day:present', 'days[].pageViews:number', 'days[].visitors:number', 'days[].statusClasses:object', 'days[].responseTime:nullObject'],
 };
 
 export const METRIC_NAMES = Object.keys(METRICS);
@@ -54,6 +54,8 @@ const matches = (value, type) => {
         case 'number': return Number.isFinite(value);
         case 'array': return Array.isArray(value);
         case 'object': return isObject(value);
+        // may be null (no response times in the logs); Sulu's Requester turns null into undefined, so both mean "none"
+        case 'nullObject': return undefined === value || null === value || isObject(value);
         default: return undefined !== value;
     }
 };

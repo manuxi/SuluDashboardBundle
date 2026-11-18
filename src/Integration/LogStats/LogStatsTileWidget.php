@@ -6,6 +6,7 @@ namespace Manuxi\SuluDashboardBundle\Integration\LogStats;
 
 use InvalidArgumentException;
 use Manuxi\SuluDashboardBundle\Widget\GroupedDashboardWidgetInterface;
+use Manuxi\SuluDashboardBundle\Widget\PinnedDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\WidgetColumns;
 use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
 
@@ -16,7 +17,7 @@ use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
  * browser, which reads the answer once for all tiles and for the period of the tab. Same permission as the page of that
  * bundle.
  */
-final class LogStatsTileWidget implements GroupedDashboardWidgetInterface
+final class LogStatsTileWidget implements GroupedDashboardWidgetInterface, PinnedDashboardWidgetInterface
 {
     public const KEY_PREFIX = 'sulu_visitors_';
 
@@ -83,6 +84,14 @@ final class LogStatsTileWidget implements GroupedDashboardWidgetInterface
     public function getPriority(): int
     {
         return self::TILES[$this->metric][2];
+    }
+
+    /**
+     * The table of days has eight columns and needs the wide column: the balance never moves it into the narrow one.
+     */
+    public function isPinned(): bool
+    {
+        return 'daily' === $this->metric;
     }
 
     public function getGroup(): string

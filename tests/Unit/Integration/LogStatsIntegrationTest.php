@@ -118,6 +118,19 @@ class LogStatsIntegrationTest extends TestCase
         $this->assertNotContains('sulu_visitors', $keys, 'the tile of the overview keeps its key');
     }
 
+    public function testOnlyTheTableOfDaysIsPinnedToTheWideColumn(): void
+    {
+        $provider = $this->provider('/admin/api/log-stats');
+
+        foreach (array_keys(LogStatsTileWidget::TILES) as $metric) {
+            $widget = new LogStatsTileWidget($provider, $metric);
+
+            $this->assertSame('daily' === $metric, $widget->isPinned(), $metric);
+        }
+
+        $this->assertSame(WidgetColumns::MAIN, (new LogStatsTileWidget($provider, 'daily'))->getColumn());
+    }
+
     public function testAnUnknownMetricIsRefused(): void
     {
         $this->expectException(InvalidArgumentException::class);

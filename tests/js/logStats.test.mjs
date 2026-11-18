@@ -66,6 +66,44 @@ test('responseTime may be null (no durations in the logs): that is an answer, no
     assert.deepEqual(figure('response_time', data), {kind: 'ms', value: null, parts: []});
 });
 
+// what Sulu's Requester does with every answer (sulu-admin-bundle/services/Requester/Requester.js,
+// transformResponseObject): null becomes undefined, in objects and in lists of objects
+const asSuluRequester = (value) => {
+    if (Array.isArray(value)) {
+        return value.map((item) => (null !== item && 'object' === typeof item ? asSuluRequester(item) : item));
+    }
+
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+        key,
+        null === item ? undefined : ('object' === typeof item ? asSuluRequester(item) : item),
+    ]));
+};
+
+test('the answer as the tiles get it from Sulu\'s Requester has everything every tile expects', () => {
+    for (const metric of METRIC_NAMES) {
+        assert.deepEqual(missingFields(asSuluRequester(answer()), metric), [], metric);
+    }
+
+    const data = answer();
+    data.responseTime = null;
+    data.days.forEach((day) => { day.responseTime = null; });
+    const received = asSuluRequester(data);
+
+    assert.equal(received.responseTime, undefined);
+    for (const metric of METRIC_NAMES) {
+        assert.deepEqual(missingFields(received, metric), [], metric);
+    }
+    assert.deepEqual(chartData('chart_response', received), {empty: 'durations'});
+    assert.deepEqual(figure('response_time', received), {kind: 'ms', value: null, parts: []});
+});
+
+test('a responseTime that is neither an object nor empty is reported', () => {
+    const data = answer();
+    data.responseTime = 182;
+
+    assert.deepEqual(missingFields(data, 'response_time'), ['responseTime']);
+});
+
 test('figures', () => {
     const data = answer();
 

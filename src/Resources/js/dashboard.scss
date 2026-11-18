@@ -439,19 +439,19 @@
     color: $persianRed;
 }
 
-/* chart tile: drawn in SVG with currentColor, the series colours are Sulu's own palette.
-   Blue, green and yellow are too light on white for lines and bars (contrast 2.4, 2.1 and 1.5 to 1; graphics need 3 to 1),
-   so they are mixed with 35% black (5.2, 4.6 and 3.5 to 1). Red and gray are used as they are (4.9 and 4.5 to 1). */
+/* chart tile: drawn in SVG with currentColor, the series colours are Sulu's own palette as it is (lighter than 3 to 1 on
+   white for blue, green and yellow; the tooltips and the data table carry the values). No Sass colour functions: the
+   admin build leaves mix() unevaluated and the browser drops the rule. */
 .series_blue {
-    color: mix($black, $shakespeare, 35%);
+    color: $shakespeare;
 }
 
 .series_green {
-    color: mix($black, $mantis, 35%);
+    color: $mantis;
 }
 
 .series_yellow {
-    color: mix($black, $gold, 35%);
+    color: $gold;
 }
 
 .series_red {
