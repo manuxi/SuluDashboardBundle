@@ -100,7 +100,7 @@ class SystemClassesTest extends TestCase
 
         $result = (new StorageMeasurer($this->directory, ['var']))->measure();
 
-        $this->assertSame([], $result);
+        $this->assertSame([['path' => 'var/cache', 'bytes' => 0]], $result, 'the link is neither counted nor listed');
     }
 
     public function testTheStoreKeepsTheCheckAndTreatsBrokenDataAsMissing(): void
