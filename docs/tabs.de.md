@@ -85,6 +85,31 @@ Wer `/` öffnet, landet auf „Übersicht“. Sulus Suche bleibt auf `/search`. 
 
 ![Der Tab Besucher](img/dashboard-visitors.de.png)
 
-Ist `amoifr/sulu-log-stats-bundle` installiert und aktiviert und hat der Benutzer das Recht `sulu.settings.log_stats`, bekommt das Dashboard den Tab **Besucher** (die Statistik-Seite dieses Bundles mit seinen Optionen `apiUrl` und `timezone`) und die Kachel **Besucher (7 Tage)** in der schmalen Spalte: Seitenaufrufe der letzten sieben Tage, die Summe der täglichen Besucher und der Anteil der Fehlerseiten (Status 4xx und 5xx). Der Tab ersetzt den Menüpunkt „Statistik“ dieses Bundles (siehe oben). Die Log-Statistik ist keine Voraussetzung dieses Bundles (nur `suggest`); ohne sie wird nichts davon geladen.
+Ist `amoifr/sulu-log-stats-bundle` (Version `~0.1`) installiert und aktiviert und hat der Benutzer das Recht `sulu.settings.log_stats`, bekommt das Dashboard den Tab **Besucher** und die Kachel **Besucher (7 Tage)** in der schmalen Spalte (Seitenaufrufe der letzten sieben Tage, Summe der täglichen Besucher, Anteil der Fehlerseiten mit Status 4xx und 5xx). Der Tab ersetzt den Menüpunkt „Statistik“ dieses Bundles (siehe oben). Die Log-Statistik ist keine Voraussetzung dieses Bundles (nur `suggest`); ohne sie wird nichts davon geladen.
 
-Die Besucherstatistik stammt aus dem Bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) von Amoifr. Danke für ein so schlankes und datensparsames Bundle.
+### Der Tab aus Kacheln (Standard)
+
+Der Tab ist ein Tab aus Kacheln (siehe oben, Gruppe `visitors`), mit Zeitraum (7, 30, 90, 365 Tage oder „Eigener Zeitraum …“) und dem Modus „Anpassen“: Kacheln ziehen, ausblenden, zurücksetzen, getrennt von der Übersicht gespeichert.
+
+| Bereich | Kacheln |
+|---|---|
+| Zeile | Seitenaufrufe, Besucher, Anfragen, Bot-Anteil, Client-Fehler (4xx), Server-Fehler (5xx), Antwortzeit (mit 95. Perzentil), gesendete Daten |
+| Diagramme | Seitenaufrufe pro Tag, Besucher pro Tag, Anfragen pro Tag nach Status (gestapelt), Seitenaufrufe nach Tageszeit, Antwortzeit pro Tag |
+| Listen | Meistbesuchte Seiten, häufigste 404-Fehler, Seiten mit Serverfehlern |
+| Tabelle | Zahlen pro Tag |
+
+Die Besucher werden je Tag gezählt und addiert: Wer an einem anderen Tag wiederkommt, zählt erneut. Alle Kacheln teilen sich eine Anfrage an `GET /admin/api/log-stats` je Zeitraum. Die Diagramme zeichnet die Darstellungsart `chart` dieses Bundles (siehe [Eigene Kachel in 5 Minuten](widgets.de.md)).
+
+Die Seite des Log-Statistik-Bundles selbst wird ersetzt: Außer dem Menüpunkt entfällt auch ihre View (`amoifr_log_stats.dashboard`), und ein Aufruf ihres Pfads (`#/log-stats`) leitet auf den Tab „Besucher“ um. Das passiert nur zusammen mit dem ersetzten Menüpunkt (`sulu_dashboard.tabs.replace_navigation: true`, Standard).
+
+```yaml
+sulu_dashboard:
+    log_stats:
+        tab: tiles   # tiles (Standard): Tab aus Kacheln. view: die Seite des anderen Bundles unverändert (technischer Rückfall, ohne Anpassen)
+```
+
+### Wenn sich die Schnittstelle ändert
+
+Das Log-Statistik-Bundle ist ein 0.x-Bundle; die Kacheln lesen nur dessen JSON (`totals`, `days`, `pageViewsByHourOfDay`, `topPages`, `topNotFound`, `topServerErrors`, `responseTime`). Fehlende Felder gelten als leer, aber nie stillschweigend: Eine Kachel, der erwartete Felder fehlen, zeigt „Die Log-Statistik liefert andere Daten als erwartet. Es fehlt: …“ mit den Namen der Felder. Die erwartete Form ist in `tests/fixtures/log-stats-response.json` festgehalten und wird mit `node --test tests/js/*.test.mjs` geprüft. Dieses Bundle schlägt deshalb nur die Version `~0.1` vor; bei einer neuen Hauptversion zuerst Fixture und Test an die neue Antwort anpassen.
+
+Die Besucherstatistik stammt aus dem Bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) von Amoifr. Danke für ein so schlankes und datensparsames Bundle: Es liefert Import, Aggregation, das Datenschutzkonzept (gesalzene Tages-Hashes, nur Zähler) und die Schnittstelle, auf der der Tab aufbaut.

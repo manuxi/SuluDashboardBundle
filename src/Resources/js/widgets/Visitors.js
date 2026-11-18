@@ -1,12 +1,13 @@
 // Tile "Visitors (7 days)" (widget sulu_visitors, only with amoifr/sulu-log-stats-bundle). Reads the admin API of the
-// log statistics (GET /admin/api/log-stats): without a period it answers with the last 30 days up to its own today, the
-// last 7 of them are added up here. The visitors are counted per day (the statistics keep no identifier across days), so the
+// log statistics (GET /admin/api/log-stats) for the last 7 days through the store that the tiles of the tab "Visitors"
+// share (logStatsStore.js), and adds them up here. The visitors are counted per day (the statistics keep no identifier across days), so the
 // sum is the sum of the daily visitors. The share of error pages is the share of the requests with status 4xx and 5xx.
 import React from 'react';
 import {Loader} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
-import {Requester} from 'sulu-admin-bundle/services';
 import {translate} from 'sulu-admin-bundle/utils';
+import {statisticsUrl} from '../logStats';
+import store from '../logStatsStore';
 import NumberTile from '../tiles/NumberTile';
 import styles from '../dashboard.scss';
 
@@ -26,7 +27,7 @@ export default class Visitors extends React.Component {
     state = {days: (this.props.cache || {}).visitors, error: undefined};
 
     componentDidMount() {
-        const {apiUrl, days} = this.props.data;
+        const {apiUrl, days, timezone} = this.props.data;
 
         if (this.state.days) {
             return;
@@ -38,7 +39,7 @@ export default class Visitors extends React.Component {
             return;
         }
 
-        Requester.get(apiUrl)
+        store.load(statisticsUrl(apiUrl, {days}, timezone))
             .then((statistics) => {
                 const lastDays = (statistics.days || []).slice(-days);
                 if (this.props.cache) {

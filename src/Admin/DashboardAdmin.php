@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Admin;
 
 use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
+use Manuxi\SuluDashboardBundle\Tab\RemovesReplacedViewsInterface;
 use Manuxi\SuluDashboardBundle\Tab\ReplacesNavigationItemInterface;
 use Manuxi\SuluDashboardBundle\Tab\TabRegistry;
 use Manuxi\SuluDashboardBundle\Tab\TilesTabProviderInterface;
@@ -37,6 +38,12 @@ class DashboardAdmin extends Admin
 
     /** views of the tabs of other bundles: prefix plus the key of the tab */
     private const TAB_VIEW_PREFIX = 'sulu_dashboard.tab_';
+
+    /** React view that opens a tab; stands on the path of a view that the tab has replaced */
+    public const REDIRECT_VIEW_TYPE = 'sulu_dashboard.redirect';
+
+    /** views that redirect to a tab: prefix plus the name of the replaced view */
+    private const REDIRECT_VIEW_PREFIX = 'sulu_dashboard.redirect.';
 
     public const NAVIGATION_ITEM = 'sulu_dashboard.dashboard';
 
@@ -101,7 +108,8 @@ class DashboardAdmin extends Admin
                 if ($tab instanceof ReplacesNavigationItemInterface && $navigationItemCollection->has($tab->getReplacedNavigationItem())) {
                     $navigationItemCollection->remove($tab->getReplacedNavigationItem());
                     foreach ($tab->getReplacedViews() as $view) {
-                        $item->addChildView($view);
+                        // a removed view is replaced by one that redirects (configureViews): that one keeps the item lit
+                        $item->addChildView($tab instanceof RemovesReplacedViewsInterface ? self::REDIRECT_VIEW_PREFIX . $view : $view);
                     }
                 }
             }
@@ -163,6 +171,42 @@ class DashboardAdmin extends Admin
             }
 
             $viewCollection->add($view);
+        }
+
+        $this->redirectReplacedViews($viewCollection, $tabs);
+    }
+
+    /**
+     * A tab that shows the content of another bundle's page as tiles ({@see RemovesReplacedViewsInterface}) takes that
+     * page away: the view leaves Sulu's view collection (this class runs after all others, so it exists) and a view on
+     * the same path sends the browser to the tab, so bookmarks and links keep working. Only together with the replaced
+     * menu item: without it the item would lead to a view that is gone.
+     *
+     * @param list<DashboardTabProviderInterface> $tabs
+     */
+    private function redirectReplacedViews(ViewCollection $viewCollection, array $tabs): void
+    {
+        if (!$this->replaceNavigation) {
+            return;
+        }
+
+        foreach ($tabs as $tab) {
+            if (!$tab instanceof RemovesReplacedViewsInterface) {
+                continue;
+            }
+
+            foreach ($tab->getReplacedViews() as $name) {
+                if (!$viewCollection->has($name)) {
+                    continue;
+                }
+
+                $path = $viewCollection->get($name)->getView()->getPath();
+                $viewCollection->remove($name);
+                $viewCollection->add(
+                    $this->viewBuilderFactory->createViewBuilder(self::REDIRECT_VIEW_PREFIX . $name, $path, self::REDIRECT_VIEW_TYPE)
+                        ->setOption('redirectTo', self::TAB_VIEW_PREFIX . $tab->getKey()),
+                );
+            }
         }
     }
 

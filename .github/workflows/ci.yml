@@ -48,5 +48,5 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Layout and chart functions (JavaScript)
-        run: node --test tests/js/layout.test.mjs tests/js/chartMath.test.mjs
+      - name: Functions of the dashboard (JavaScript)
+        run: node --test tests/js/*.test.mjs

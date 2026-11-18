@@ -1,0 +1,219 @@
+{
+  "timezone": "Europe/Berlin",
+  "from": "2026-11-10",
+  "to": "2026-11-14",
+  "totals": {
+    "requests": 5920,
+    "pageViews": 4680,
+    "botRequests": 230,
+    "bytes": 27852800,
+    "visitors": 1599,
+    "statusClasses": {
+      "1": 0,
+      "2": 5350,
+      "3": 356,
+      "4": 191,
+      "5": 23
+    }
+  },
+  "days": [
+    {
+      "day": "2026-11-10",
+      "requests": 1180,
+      "pageViews": 940,
+      "botRequests": 40,
+      "bytes": 5529600,
+      "visitors": 310,
+      "statusClasses": {
+        "1": 0,
+        "2": 1080,
+        "3": 70,
+        "4": 28,
+        "5": 2
+      },
+      "responseTime": {
+        "requests": 1180,
+        "averageMs": 182.4,
+        "p95": {
+          "boundMs": 500,
+          "beyond": false
+        },
+        "histogram": {
+          "100": 400,
+          "200": 500,
+          "500": 280
+        }
+      }
+    },
+    {
+      "day": "2026-11-11",
+      "requests": 1320,
+      "pageViews": 1050,
+      "botRequests": 52,
+      "bytes": 6246400,
+      "visitors": 360,
+      "statusClasses": {
+        "1": 0,
+        "2": 1190,
+        "3": 80,
+        "4": 45,
+        "5": 5
+      },
+      "responseTime": {
+        "requests": 1320,
+        "averageMs": 175.0,
+        "p95": {
+          "boundMs": 500,
+          "beyond": false
+        },
+        "histogram": {
+          "100": 400,
+          "200": 500,
+          "500": 420
+        }
+      }
+    },
+    {
+      "day": "2026-11-12",
+      "requests": 1250,
+      "pageViews": 980,
+      "botRequests": 47,
+      "bytes": 5939200,
+      "visitors": 334,
+      "statusClasses": {
+        "1": 0,
+        "2": 1120,
+        "3": 76,
+        "4": 50,
+        "5": 4
+      },
+      "responseTime": {
+        "requests": 1250,
+        "averageMs": 210.9,
+        "p95": {
+          "boundMs": 750,
+          "beyond": false
+        },
+        "histogram": {
+          "100": 400,
+          "200": 500,
+          "500": 350
+        }
+      }
+    },
+    {
+      "day": "2026-11-13",
+      "requests": 1410,
+      "pageViews": 1120,
+      "botRequests": 60,
+      "bytes": 6758400,
+      "visitors": 390,
+      "statusClasses": {
+        "1": 0,
+        "2": 1270,
+        "3": 90,
+        "4": 40,
+        "5": 10
+      },
+      "responseTime": {
+        "requests": 1410,
+        "averageMs": 168.2,
+        "p95": {
+          "boundMs": 300,
+          "beyond": false
+        },
+        "histogram": {
+          "100": 400,
+          "200": 500,
+          "500": 510
+        }
+      }
+    },
+    {
+      "day": "2026-11-14",
+      "requests": 760,
+      "pageViews": 590,
+      "botRequests": 31,
+      "bytes": 3379200,
+      "visitors": 205,
+      "statusClasses": {
+        "1": 0,
+        "2": 690,
+        "3": 40,
+        "4": 28,
+        "5": 2
+      },
+      "responseTime": null
+    }
+  ],
+  "pageViewsByHourOfDay": [
+    12,
+    6,
+    3,
+    2,
+    2,
+    5,
+    18,
+    60,
+    140,
+    210,
+    260,
+    280,
+    270,
+    250,
+    240,
+    230,
+    220,
+    200,
+    190,
+    170,
+    130,
+    90,
+    50,
+    25
+  ],
+  "responseTime": {
+    "requests": 4160,
+    "averageMs": 184.1,
+    "p95": {
+      "boundMs": 500,
+      "beyond": false
+    },
+    "histogram": {
+      "100": 1300,
+      "200": 1600,
+      "500": 1100,
+      "750": 160
+    }
+  },
+  "topPages": [
+    {
+      "path": "/",
+      "count": 1520
+    },
+    {
+      "path": "/blog",
+      "count": 640
+    },
+    {
+      "path": "/kontakt",
+      "count": 410
+    }
+  ],
+  "topNotFound": [
+    {
+      "path": "/wp-login.php",
+      "count": 88
+    },
+    {
+      "path": "/old-page",
+      "count": 12
+    }
+  ],
+  "topServerErrors": [
+    {
+      "path": "/search",
+      "count": 7
+    }
+  ]
+}
