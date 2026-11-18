@@ -14,7 +14,11 @@ import styles from '../dashboard.scss';
 
 const VISIBLE_ROWS = 10;
 
-const Wrap = ({children}) => <span className={styles.wrap}>{children}</span>;
+// a cell that never breaks: a package name or an ID is cut with an ellipsis when it is very long, the full text is the title
+const Fixed = ({children}) => <span className={styles.fixedCell} title={typeof children === 'string' ? children : undefined}>{children}</span>;
+
+// the description breaks at word boundaries
+const Words = ({children}) => <span className={styles.wordsCell}>{children}</span>;
 
 const formatDay = (value) => {
     const date = reportedDay(value);
@@ -64,19 +68,19 @@ export default class SystemVulnerabilities extends React.Component {
 
                             return (
                                 <Table.Row id={index} key={index}>
-                                    <Table.Cell><Wrap>{advisory.package}</Wrap></Table.Cell>
-                                    <Table.Cell><Wrap>{advisory.installed || '–'}</Wrap></Table.Cell>
-                                    <Table.Cell><Wrap>{advisoryName(advisory) || '–'}</Wrap></Table.Cell>
+                                    <Table.Cell><Fixed>{advisory.package}</Fixed></Table.Cell>
+                                    <Table.Cell><Fixed>{advisory.installed || '–'}</Fixed></Table.Cell>
+                                    <Table.Cell><Fixed>{advisoryName(advisory) || '–'}</Fixed></Table.Cell>
                                     <Table.Cell>
-                                        <Wrap>
+                                        <Words>
                                             {isWebLink(advisory.link)
                                                 ? <a className={styles.externalLink} href={advisory.link} rel="noopener noreferrer" target="_blank" title={translate('sulu_dashboard.system_opens_new_tab')}>{title}</a>
                                                 : title
                                             }
-                                        </Wrap>
+                                        </Words>
                                     </Table.Cell>
-                                    <Table.Cell><Wrap>{severity ? translate(severity) : '–'}</Wrap></Table.Cell>
-                                    <Table.Cell><Wrap>{formatDay(advisory.reportedAt)}</Wrap></Table.Cell>
+                                    <Table.Cell><Fixed>{severity ? translate(severity) : '–'}</Fixed></Table.Cell>
+                                    <Table.Cell><Fixed>{formatDay(advisory.reportedAt)}</Fixed></Table.Cell>
                                 </Table.Row>
                             );
                         })}
@@ -109,8 +113,8 @@ export default class SystemVulnerabilities extends React.Component {
                         <Table.Body>
                             {abandoned.map((entry, index) => (
                                 <Table.Row id={index} key={index}>
-                                    <Table.Cell><Wrap>{entry.package}</Wrap></Table.Cell>
-                                    <Table.Cell><Wrap>{entry.replacement || translate('sulu_dashboard.system_no_replacement')}</Wrap></Table.Cell>
+                                    <Table.Cell><Fixed>{entry.package}</Fixed></Table.Cell>
+                                    <Table.Cell><Fixed>{entry.replacement || translate('sulu_dashboard.system_no_replacement')}</Fixed></Table.Cell>
                                 </Table.Row>
                             ))}
                         </Table.Body>

@@ -445,6 +445,23 @@
     min-width: 0;
 }
 
+/* cells of the table of vulnerabilities: package, version, ID, severity and date never break (Sulu's cells are nowrap, a very
+   long name is cut with an ellipsis); only the description breaks, at word boundaries */
+.fixedCell {
+    display: block;
+    max-width: 260px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.wordsCell {
+    display: block;
+    min-width: 200px;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
 /* the title of an advisory is a link to its source */
 .externalLink {
     color: inherit;
