@@ -6,7 +6,7 @@ A tile is a small PHP class. It needs no JavaScript, no route and no template: t
 DashboardWidgetInterface
   getKey()              unique key, lower case, digits, underscores ("testimonials_stars")
   getTitle()            translation key of the admin domain, or plain text
-  getType()             number | progress | list | bars | custom
+  getType()             number | progress | list | bars | chart | custom
   getSecurityContext()  Sulu security context the user needs (view), or null
   getColumn()           row | main | side | auto
   getPriority()         order inside the column, higher first
@@ -124,6 +124,28 @@ return [
     ],
 ];
 ```
+
+### chart
+
+A line chart (one or two series) or a bar chart (simple or stacked), drawn as SVG without a library. The chart takes the width of the tile, rounds the axis to pleasant values (always including zero), thins out the labels of the x axis when there are many, shows a tooltip per point or bar, a legend from two series on, and the numbers as a table under "Show data as a table". Without labels or series the tile says that there are no entries.
+
+```php
+return [
+    'kind' => 'line',                 // line (default) | bar
+    'stacked' => false,               // only for bar with at least two series
+    'labels' => ['1 Nov', '2 Nov', '3 Nov'],
+    'series' => [
+        ['label' => 'Page views', 'values' => [120, 98, 143]],
+        ['label' => 'Visitors', 'values' => [40, 35, 51], 'color' => 'green'],
+    ],
+    'unit' => 'ms',                   // optional, shown in the tooltips, the table and above the axis
+];
+```
+
+- `values` has one number per label. Something that is not a number (`null`) is a gap in a line and zero in a bar.
+- `color` is optional: `blue`, `green`, `yellow`, `red`, `gray` (Sulu's own colours) or a hex colour like `#52b6ca`. Without it the series take the five colours in this order.
+- The title of the tile, `label` of a series and `unit` may be plain text, an admin translation key or `['key' => ..., 'parameters' => [...]]`. The labels of the x axis are shown as they are.
+- More than two series work, but the chart stays readable best with up to two (line) or up to five (stacked bars).
 
 ### custom
 

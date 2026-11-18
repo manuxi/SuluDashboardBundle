@@ -1,5 +1,5 @@
-// One tile: loads its own data (so an error stays inside the tile) and shows it by type. Types number, progress, list and
-// bars are built in; "custom" looks up a React component in the widgetRegistry under the key of the tile.
+// One tile: loads its own data (so an error stays inside the tile) and shows it by type. Types number, progress, list, bars
+// and chart are built in; "custom" looks up a React component in the widgetRegistry under the key of the tile.
 // The answer is kept in props.cache (owned by the dashboard) so that a tile the dashboard moves to the other column, which
 // mounts it again, shows its data at once. props.onSettled(key) tells the dashboard that the data arrived or failed.
 import React from 'react';
@@ -8,6 +8,7 @@ import Card from 'sulu-admin-bundle/components/Card';
 import {Requester} from 'sulu-admin-bundle/services';
 import {translate} from 'sulu-admin-bundle/utils';
 import BarsTile from './tiles/BarsTile';
+import ChartTile from './tiles/ChartTile';
 import ListTile from './tiles/ListTile';
 import NumberTile from './tiles/NumberTile';
 import ProgressTile from './tiles/ProgressTile';
@@ -19,6 +20,7 @@ const TYPES = {
     progress: ProgressTile,
     list: ListTile,
     bars: BarsTile,
+    chart: ChartTile,
 };
 
 export default class WidgetTile extends React.Component {

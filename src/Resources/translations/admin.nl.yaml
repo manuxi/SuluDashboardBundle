@@ -34,6 +34,7 @@ sulu_dashboard:
     activities: "Recente activiteit"
     no_activities: "Nog geen activiteit."
     empty: "Geen items."
+    chart_data_table: "Gegevens als tabel tonen"
     seo: "Zoekmachinegegevens"
     seo_hint: "{count, plural, one {# gepubliceerde pagina of artikel} other {# gepubliceerde pagina's en artikelen}} in deze taal"
     seo_title: "SEO-titel"

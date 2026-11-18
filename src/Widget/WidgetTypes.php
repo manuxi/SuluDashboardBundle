@@ -21,6 +21,9 @@ final class WidgetTypes
     /** Bars that compare values with each other. */
     public const BARS = 'bars';
 
+    /** A line chart or a bar chart (simple or stacked), drawn as SVG. */
+    public const CHART = 'chart';
+
     /** A React component of its own, registered in the JavaScript widgetRegistry under the key of the tile. */
     public const CUSTOM = 'custom';
 
@@ -29,6 +32,6 @@ final class WidgetTypes
      */
     public static function all(): array
     {
-        return [self::NUMBER, self::PROGRESS, self::LIST, self::BARS, self::CUSTOM];
+        return [self::NUMBER, self::PROGRESS, self::LIST, self::BARS, self::CHART, self::CUSTOM];
     }
 }

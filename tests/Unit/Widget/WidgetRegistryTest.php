@@ -8,6 +8,7 @@ use LogicException;
 use Manuxi\SuluDashboardBundle\Tests\Unit\Widget\Fixtures\ArrayWidget;
 use Manuxi\SuluDashboardBundle\Widget\WidgetColumns;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
+use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
@@ -88,6 +89,14 @@ class WidgetRegistryTest extends TestCase
         $this->expectExceptionMessage('"same" is used twice');
 
         $registry->all();
+    }
+
+    public function testChartIsAKnownType(): void
+    {
+        $registry = new WidgetRegistry([new ArrayWidget('traffic', type: WidgetTypes::CHART)], $this->checker([]));
+
+        $this->assertCount(1, $registry->all());
+        $this->assertContains(WidgetTypes::CHART, WidgetTypes::all());
     }
 
     #[DataProvider('invalidWidgets')]
