@@ -46,7 +46,7 @@ class SystemCheckCommandTest extends TestCase
 
     public function testVulnerabilitiesAreListedAndStillASuccessBecauseTheCheckWorked(): void
     {
-        $tester = $this->tester(AuditResult::vulnerable([['package' => 'a/b', 'title' => 'Bug', 'cve' => 'CVE-1']]));
+        $tester = $this->tester(AuditResult::vulnerable([['package' => 'a/b', 'installed' => '1.0.0', 'id' => 'PKSA-1', 'cve' => 'CVE-1', 'title' => 'Bug', 'link' => null, 'severity' => null, 'reportedAt' => null]]));
 
         $this->assertSame(0, $tester->execute([]));
         $this->assertStringContainsString('1 known vulnerabilities', $tester->getDisplay());

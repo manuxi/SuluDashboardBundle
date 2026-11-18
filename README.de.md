@@ -26,6 +26,7 @@ Jeder Benutzer kann die Kacheln nach seinem Geschmack anordnen. Im Anpassen-Modu
 - **Rechte** - Eigenes Recht für das Dashboard; jede Kachel beachtet die Rechte der Inhalte und ihren eigenen Sicherheitskontext
 - **Kachel-Schnittstelle** - `DashboardWidgetInterface`, Darstellungsarten `number`, `progress`, `list`, `bars`, `chart` (Linien- und Balkendiagramme in SVG) und `custom` (eigene React-Komponente)
 - **Tabs** - Bundles können eine ganze Seite als Tab ergänzen (`DashboardTabProviderInterface`); mit `amoifr/sulu-log-stats-bundle` (`~0.1`) bekommt das Dashboard den Tab „Besucher“ aus Kacheln (Kennzahlen, Diagramme, Top-Listen, Tagestabelle; anordnen, ausblenden, Zeitraum wählen) und eine Kachel. Die Besucherstatistik stammt aus dem Bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) von Amoifr. Danke für ein so schlankes und datensparsames Bundle.
+- **Tab „System“** - Nur für Administratoren (eigenes Recht): ein Tab aus Kacheln mit einer Tabelle der bekannten Sicherheitslücken (`composer audit` per Cronjob, mit Paket, Version, Kennung, Titel als Link, Schweregrad, Datum), Versionen, Warnung bei Debug-Modus im Livebetrieb, Speicherbelegung, offene Migrationen, fehlgeschlagene Nachrichten und dem Alter der letzten Prüfung. Auf der Übersicht bleibt eine kleine Ampel-Kachel mit Link in den Tab.
 - **Fehler bleiben in ihrer Kachel** - Jede Kachel lädt ihre Daten einzeln
 
 ## 📋 Voraussetzungen
@@ -124,7 +125,7 @@ sulu_dashboard:
     layout:
         balance: true      # nach dem Laden Kacheln vom Ende der längeren in die kürzere Spalte schieben (einmal); false: Kacheln bleiben in ihrer Spalte
     system:
-        composer_binary: composer   # Kachel „System“: Befehl im PATH oder Pfad zu einer composer.phar
+        composer_binary: composer   # Tab „System“: Befehl im PATH oder Pfad zu einer composer.phar
         max_age: 48                 # Stunden, nach denen die letzte Hintergrundprüfung als zu alt gilt
     disabled_widgets: []   # Schlüssel von Kacheln, die nicht erscheinen, z. B. ['sulu_activities']
 ```
@@ -136,7 +137,7 @@ Sulus Suche und das Dashboard wollen beide den Pfad `/`. Der Router des Admins n
 - [Eigene Kachel in 5 Minuten](docs/widgets.de.md) - Interface, Darstellungsarten, optionale Abhängigkeit, Tag
 - [Dashboard anpassen](docs/customize.de.md) - Kacheln je Benutzer anordnen, ausblenden und zurücksetzen ([Bildschirmfoto](docs/img/dashboard-customize.de.png))
 - [Tabs](docs/tabs.de.md) - Eine ganze Seite eines Bundles als Tab, Besucher aus der Log-Statistik
-- [System](docs/system.de.md) - Kachel für Administratoren: Versionen, Debug-Warnung, Sicherheitsprüfung, Cronjob
+- [System](docs/system.de.md) - Tab für Administratoren: Sicherheitslücken, Versionen, Debug-Warnung, Speicher, Cronjob
 - [Eingebaute Kacheln](docs/built-in-widgets.de.md) - Kacheln, Rechte, das Recht für das Dashboard
 
 ## 👩‍🍳 Mitwirken

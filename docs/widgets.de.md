@@ -94,7 +94,7 @@ Ein Text darf auch `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 
 
 ### list
 
-Eine kurze Tabelle mit einem Link je Zeile (Stift-Button). Zehn Zeilen sind sichtbar, der Rest auf Klick. `text` ist eine optionale graue zweite Zeile unter dem Titel (zum Beispiel ein Ort), `meta` eine zweite Spalte. Ein optionaler `footer` funktioniert wie bei `progress`. Eine Zeile kann `'severity' => 'error'` (roter Titel) oder `'warning'` tragen: Davor erscheint Sulus Warn-Icon. `'limit' => 20` in den Daten legt fest, wie viele Zeilen vor „Alle anzeigen“ sichtbar sind (Standard 10).
+Eine kurze Tabelle mit einem Link je Zeile (Stift-Button). Zehn Zeilen sind sichtbar, der Rest auf Klick. `text` ist eine optionale graue zweite Zeile unter dem Titel (zum Beispiel ein Ort), `meta` eine zweite Spalte. Ein optionaler `footer` funktioniert wie bei `progress`. Eine Zeile kann `'severity' => 'error'` (roter Titel), `'warning'` oder `'ok'` (grüner Haken) tragen: Davor erscheint Sulus Icon. `'header' => false` in den Daten lässt den Tabellenkopf weg, für Zeilen aus Schlüssel und Wert („PHP“, „8.4“), für die „Titel“ keine passende Spaltenüberschrift wäre (Standard: Kopf mit „Titel“). `footer.title` darf fehlen. `'limit' => 20` in den Daten legt fest, wie viele Zeilen vor „Alle anzeigen“ sichtbar sind (Standard 10).
 
 ```php
 return [

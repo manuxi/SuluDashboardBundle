@@ -28,7 +28,7 @@ Every user can arrange the tiles to their liking. In customize mode a tile can b
 - **Permissions** - Own permission for the dashboard; every tile respects the permissions of the content and its own security context
 - **Tile interface** - `DashboardWidgetInterface`, display types `number`, `progress`, `list`, `bars`, `chart` (line and bar charts in SVG) and `custom` (own React component)
 - **Tabs** - Bundles can add a whole page as a tab (`DashboardTabProviderInterface`); with `amoifr/sulu-log-stats-bundle` (`~0.1`) the dashboard gets the tab "Visitors" made of tiles (figures, charts, top lists, table of days; arrange, hide, choose the period) and a tile. The visitor statistics come from the bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) by Amoifr. Thank you for such a lean bundle that keeps data to a minimum.
-- **System tile** - For administrators only (own permission): versions, warning for debug mode in production, known vulnerabilities (`composer audit` by cron job), open migrations, failed messages, disk use
+- **System tab** - For administrators only (own permission): a tab of tiles with a table of known vulnerabilities (`composer audit` by cron job, with package, version, ID, title as a link, severity, date), versions, warning for debug mode in production, disk use, open migrations, failed messages and the age of the last check. The overview keeps one small tile as a traffic light with a link to the tab.
 - **Errors stay in their tile** - Every tile loads its data on its own
 
 ## 📋 Prerequisites
@@ -127,7 +127,7 @@ sulu_dashboard:
     layout:
         balance: true      # after loading, move tiles from the end of the longer column into the shorter one (once); false: tiles stay in their column
     system:
-        composer_binary: composer   # tile "System": command in the PATH or path to a composer.phar
+        composer_binary: composer   # tab "System": command in the PATH or path to a composer.phar
         max_age: 48                 # hours after which the last background check counts as too old
     disabled_widgets: []   # keys of tiles that are not shown, e.g. ['sulu_activities']
 ```
@@ -139,7 +139,7 @@ Sulu's search and the dashboard both want the path `/`. The router of the admin 
 - [Your own tile in 5 minutes](docs/widgets.en.md) - Interface, display types, optional dependency, tag
 - [Customize the dashboard](docs/customize.en.md) - Arrange, hide and reset tiles per user ([screenshot](docs/img/dashboard-customize.de.png), admin in German)
 - [Tabs](docs/tabs.en.md) - A whole page of a bundle as a tab, visitors from the log statistics
-- [System](docs/system.en.md) - Tile for administrators: versions, debug warning, security check, cron job
+- [System](docs/system.en.md) - Tab for administrators: vulnerabilities, versions, debug warning, storage, cron job
 - [Built-in tiles](docs/built-in-widgets.en.md) - Tiles, permissions, the permission of the dashboard
 
 ## 👩‍🍳 Contributing

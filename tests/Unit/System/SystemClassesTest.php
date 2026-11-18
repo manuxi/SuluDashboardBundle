@@ -106,7 +106,7 @@ class SystemClassesTest extends TestCase
         $store = new SystemCheckStore($pool);
         $this->assertNull($store->load());
 
-        $check = new SystemCheck(1_800_000_000, AuditResult::vulnerable([['package' => 'a/b', 'title' => 'T', 'cve' => 'CVE-1']]), [['path' => 'var', 'bytes' => 5]]);
+        $check = new SystemCheck(1_800_000_000, AuditResult::vulnerable([['package' => 'a/b', 'installed' => '1.0.0', 'id' => 'PKSA-1', 'cve' => 'CVE-1', 'title' => 'T', 'link' => 'https://example.com/1', 'severity' => 'high', 'reportedAt' => '2026-10-18T14:45:00+00:00']], [['package' => 'a/old', 'replacement' => 'a/new']]), [['path' => 'var', 'bytes' => 5]]);
         $store->save($check);
         $this->assertSame($check->toArray(), $store->load()?->toArray());
 
@@ -154,27 +154,77 @@ class SystemClassesTest extends TestCase
         return $file;
     }
 
-    public function testComposerAuditIsParsedIntoPackageTitleAndCve(): void
+    public function testComposerAuditIsParsedIntoTheFieldsOfTheTable(): void
     {
         $json = json_encode([
             'advisories' => [
                 'vendor/one' => [
-                    ['advisoryId' => 'PKSA-1', 'packageName' => 'vendor/one', 'title' => "Remote\ncode execution", 'cve' => 'CVE-2026-1', 'link' => 'https://example.com/1', 'affectedVersions' => '<1.2'],
-                    ['advisoryId' => 'PKSA-2', 'packageName' => 'vendor/one', 'title' => 'XSS', 'cve' => null],
+                    ['advisoryId' => 'PKSA-1', 'packageName' => 'vendor/one', 'title' => 'Remote
+code execution', 'cve' => 'CVE-2026-1', 'link' => 'https://example.com/1', 'affectedVersions' => '<1.2', 'reportedAt' => '2026-10-18T14:45:00+00:00', 'severity' => 'High', 'sources' => [['name' => 'x', 'remoteId' => 'y']]],
+                    ['advisoryId' => 'PKSA-2', 'packageName' => 'vendor/one', 'title' => 'XSS', 'cve' => null, 'link' => null, 'reportedAt' => null, 'severity' => null],
                 ],
             ],
-            'abandoned' => ['vendor/old' => null],
+            'abandoned' => ['vendor/old' => null, 'vendor/older' => 'vendor/new'],
         ]);
         $composer = $this->fakeComposer('echo ' . var_export($json, true) . '; exit(1);');
 
-        $result = (new ComposerAuditRunner($this->directory, $composer, 30))->run();
+        $result = (new ComposerAuditRunner($this->directory, $composer, 30, static fn (string $package): ?string => 'vendor/one' === $package ? 'v1.1.0' : null))->run();
 
         $this->assertSame(AuditResult::VULNERABLE, $result->status);
         $this->assertSame(
-            [['package' => 'vendor/one', 'title' => 'Remote code execution', 'cve' => 'CVE-2026-1'], ['package' => 'vendor/one', 'title' => 'XSS', 'cve' => null]],
+            [
+                ['package' => 'vendor/one', 'installed' => 'v1.1.0', 'id' => 'PKSA-1', 'cve' => 'CVE-2026-1', 'title' => 'Remote code execution', 'link' => 'https://example.com/1', 'severity' => 'high', 'reportedAt' => '2026-10-18T14:45:00+00:00'],
+                ['package' => 'vendor/one', 'installed' => 'v1.1.0', 'id' => 'PKSA-2', 'cve' => null, 'title' => 'XSS', 'link' => null, 'severity' => null, 'reportedAt' => null],
+            ],
             $result->advisories,
         );
-        $this->assertStringNotContainsString('example.com', (string) json_encode($result->toArray()));
+        $this->assertSame([['package' => 'vendor/old', 'replacement' => null], ['package' => 'vendor/older', 'replacement' => 'vendor/new']], $result->abandoned);
+        // raw output ("sources", "affectedVersions") is not kept
+        $this->assertStringNotContainsString('remoteId', (string) json_encode($result->toArray()));
+    }
+
+    public function testOnlyAWebLinkAndAKnownSeverityAreKept(): void
+    {
+        $json = json_encode(['advisories' => ['a/b' => [
+            ['packageName' => 'a/b', 'title' => 'One', 'link' => 'javascript:alert(1)', 'severity' => 'urgent'],
+            ['packageName' => 'a/b', 'title' => 'Two', 'link' => 'https://example.com/a b', 'severity' => 'critical'],
+            ['packageName' => 'a/b', 'title' => 'Three', 'link' => 'http://example.com/ok?x=1', 'severity' => 'low'],
+        ]]]);
+        $composer = $this->fakeComposer('echo ' . var_export($json, true) . '; exit(1);');
+
+        $advisories = (new ComposerAuditRunner($this->directory, $composer, 30, static fn (): ?string => null))->run()->advisories;
+
+        $this->assertSame([null, null, 'http://example.com/ok?x=1'], array_column($advisories, 'link'));
+        $this->assertSame([null, 'critical', 'low'], array_column($advisories, 'severity'));
+    }
+
+    public function testAbandonedPackagesAloneAreAnOkResultWithTheListOfPackages(): void
+    {
+        $composer = $this->fakeComposer('echo ' . var_export('{"advisories":[],"abandoned":{"vendor/old":"vendor/new"}}', true) . '; exit(0);');
+
+        $result = (new ComposerAuditRunner($this->directory, $composer))->run();
+
+        $this->assertSame(AuditResult::OK, $result->status);
+        $this->assertSame([['package' => 'vendor/old', 'replacement' => 'vendor/new']], $result->abandoned);
+    }
+
+    public function testAnOldCacheEntryWithoutTheNewFieldsIsStillUnderstood(): void
+    {
+        $audit = AuditResult::fromArray(['status' => 'vulnerable', 'advisories' => [['package' => 'a/b', 'title' => 'T', 'cve' => 'CVE-1']], 'error' => null]);
+
+        $this->assertSame(AuditResult::VULNERABLE, $audit?->status);
+        $this->assertSame(['package' => 'a/b', 'installed' => null, 'id' => null, 'cve' => 'CVE-1', 'title' => 'T', 'link' => null, 'severity' => null, 'reportedAt' => null], $audit->advisories[0]);
+        $this->assertSame([], $audit->abandoned);
+    }
+
+    public function testTheInstalledVersionOfARealPackageIsReadFromComposer(): void
+    {
+        $json = json_encode(['advisories' => ['phpunit/phpunit' => [['packageName' => 'phpunit/phpunit', 'title' => 'T']]]]);
+        $composer = $this->fakeComposer('echo ' . var_export($json, true) . '; exit(1);');
+
+        $advisories = (new ComposerAuditRunner($this->directory, $composer))->run()->advisories;
+
+        $this->assertMatchesRegularExpression('/^\d+\./', (string) $advisories[0]['installed']);
     }
 
     public function testComposerAuditWithoutAdvisoriesIsOk(): void

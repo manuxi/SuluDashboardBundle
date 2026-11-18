@@ -411,6 +411,7 @@
 
 /* a row of the list tile with a severity: Sulu's warning icon in front of the title */
 .severityError,
+.severityOk,
 .severityWarning {
     flex-shrink: 0;
     margin-right: 10px;
@@ -420,12 +421,46 @@
     color: $persianRed;
 }
 
+.severityOk {
+    color: $mantis;
+}
+
 .severityWarning {
     color: $gold;
 }
 
 .severityTitleError {
     color: $persianRed;
+}
+
+/* a message at the top of a tile ("No known vulnerabilities"): icon and text side by side */
+.systemMessage {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    line-height: 20px;
+}
+
+.systemMessage > div {
+    min-width: 0;
+}
+
+/* the title of an advisory is a link to its source */
+.externalLink {
+    color: inherit;
+    text-decoration: underline;
+}
+
+/* a second table in the card of the first, with its own small title */
+.systemSection {
+    margin-top: 30px;
+}
+
+.systemSubtitle {
+    font-size: 14px;
+    font-weight: normal;
+    color: $black;
+    margin: 0 0 5px;
 }
 
 /* the bar of the custom period (tabs of tiles): two date pickers and the buttons in one row, below 520 px under each other */

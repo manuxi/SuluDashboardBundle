@@ -37,7 +37,7 @@ class DashboardAdmin extends Admin
     public const TABS_VIEW = 'sulu_dashboard.tabs';
 
     /** views of the tabs of other bundles: prefix plus the key of the tab */
-    private const TAB_VIEW_PREFIX = 'sulu_dashboard.tab_';
+    public const TAB_VIEW_PREFIX = 'sulu_dashboard.tab_';
 
     /** React view that opens a tab; stands on the path of a view that the tab has replaced */
     public const REDIRECT_VIEW_TYPE = 'sulu_dashboard.redirect';

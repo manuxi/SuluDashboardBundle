@@ -134,7 +134,8 @@ services:
     Manuxi\SuluDashboardBundle\Widget\Builtin\ActivitiesWidget:
         tags: ['sulu_dashboard.widget']
 
-    Manuxi\SuluDashboardBundle\Widget\Builtin\SystemWidget:
+    # "System": the data of the tab and of the small tile on the overview
+    Manuxi\SuluDashboardBundle\Widget\System\SystemTileData:
         arguments:
             - '@Manuxi\SuluDashboardBundle\System\SystemVersions'
             - '%kernel.environment%'
@@ -144,4 +145,11 @@ services:
             - '@Manuxi\SuluDashboardBundle\System\FailedMessages'
             - '%sulu_dashboard.system.max_age%'
             - '@?logger'
+
+    Manuxi\SuluDashboardBundle\Widget\Builtin\SystemWidget:
+        arguments: ['@Manuxi\SuluDashboardBundle\Widget\System\SystemTileData']
         tags: ['sulu_dashboard.widget']
+
+    # the tab "System"; its tiles (one service per entry of SystemTileWidget::TILES) are registered by the extension
+    Manuxi\SuluDashboardBundle\Widget\System\SystemTabProvider:
+        tags: ['sulu_dashboard.tab']

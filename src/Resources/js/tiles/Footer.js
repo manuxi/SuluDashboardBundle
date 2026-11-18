@@ -1,5 +1,5 @@
 // The footer of a tile: a small title and a list of entries with an icon and a link, for example "Add first".
-// footer: {title, rows: [{title, icon?, link?: {view, attributes}}]}; texts as in tx().
+// footer: {title?, rows: [{title, icon?, link?: {view, attributes}}]}; texts as in tx().
 import React from 'react';
 import {Button, Icon} from 'sulu-admin-bundle/components';
 import {navigate, tx} from '../utils';
@@ -8,7 +8,7 @@ import styles from '../dashboard.scss';
 export default function Footer({footer, router}) {
     return (
         <div className={styles.footer}>
-            <div className={styles.meta}>{tx(footer.title)}</div>
+            {footer.title && <div className={styles.meta}>{tx(footer.title)}</div>}
             <ul>
                 {footer.rows.map((row, index) => (
                     <li className={styles.footerEntry} key={index}>

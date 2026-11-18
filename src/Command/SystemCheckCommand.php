@@ -48,6 +48,10 @@ class SystemCheckCommand extends Command
             }
         }
 
+        foreach ($audit->abandoned as $package) {
+            $io->writeln(\sprintf('Abandoned: %s%s', $package['package'], null === $package['replacement'] ? '' : ' (use ' . $package['replacement'] . ' instead)'));
+        }
+
         foreach ($check->storage as $folder) {
             $io->writeln(\sprintf('Storage %s: %s', $folder['path'], ByteFormatter::format($folder['bytes'], 'en')));
         }

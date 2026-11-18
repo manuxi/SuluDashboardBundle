@@ -11,6 +11,8 @@ use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTilesTabProvider;
 use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTileWidget;
 use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
 use Manuxi\SuluDashboardBundle\Widget\DashboardWidgetInterface;
+use Manuxi\SuluDashboardBundle\Widget\System\SystemTileData;
+use Manuxi\SuluDashboardBundle\Widget\System\SystemTileWidget;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -40,6 +42,14 @@ class SuluDashboardExtension extends Extension
         $container->registerForAutoconfiguration(DashboardTabProviderInterface::class)->addTag(DashboardTabPass::TAG);
 
         $loader->load('services.yaml');
+
+        // the tab "System": one tile service per entry
+        foreach (array_keys(SystemTileWidget::TILES) as $name) {
+            $container->register(SystemTileWidget::KEY_PREFIX . $name, SystemTileWidget::class)
+                ->setArguments([new Reference(SystemTileData::class), $name])
+                ->setPublic(false)
+                ->addTag(DashboardWidgetPass::TAG);
+        }
 
         // optional integration: the statistics of amoifr/sulu-log-stats-bundle as the tab "Visitors" and a tile
         $bundles = $container->hasParameter('kernel.bundles') ? $container->getParameter('kernel.bundles') : [];

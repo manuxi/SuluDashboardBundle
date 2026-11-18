@@ -6,7 +6,11 @@ namespace Manuxi\SuluDashboardBundle\System;
 
 /**
  * Result of "composer audit": no vulnerabilities, a list of them, or the reason why the check could not run. Only
- * package names and the public title and CVE of an advisory are kept, never paths or raw output.
+ * public data of an advisory is kept (package, installed version, advisory id, CVE, title, link, severity, date), never
+ * paths or raw output. Abandoned packages are reported next to them.
+ *
+ * @phpstan-type Advisory array{package: string, installed: ?string, id: ?string, cve: ?string, title: string, link: ?string, severity: ?string, reportedAt: ?string}
+ * @phpstan-type Abandoned array{package: string, replacement: ?string}
  */
 final class AuditResult
 {
@@ -23,26 +27,32 @@ final class AuditResult
     public const ERROR_TIMEOUT = 'timeout';
 
     /**
-     * @param list<array{package: string, title: string, cve: ?string}> $advisories
+     * @param list<Advisory>  $advisories
+     * @param list<Abandoned> $abandoned
      */
     private function __construct(
         public readonly string $status,
         public readonly array $advisories,
         public readonly ?string $error,
+        public readonly array $abandoned = [],
     ) {
     }
 
-    public static function ok(): self
+    /**
+     * @param list<Abandoned> $abandoned
+     */
+    public static function ok(array $abandoned = []): self
     {
-        return new self(self::OK, [], null);
+        return new self(self::OK, [], null, $abandoned);
     }
 
     /**
-     * @param list<array{package: string, title: string, cve: ?string}> $advisories
+     * @param list<Advisory>  $advisories
+     * @param list<Abandoned> $abandoned
      */
-    public static function vulnerable(array $advisories): self
+    public static function vulnerable(array $advisories, array $abandoned = []): self
     {
-        return [] === $advisories ? self::ok() : new self(self::VULNERABLE, $advisories, null);
+        return [] === $advisories ? self::ok($abandoned) : new self(self::VULNERABLE, $advisories, null, $abandoned);
     }
 
     public static function unavailable(string $error): self
@@ -51,21 +61,26 @@ final class AuditResult
     }
 
     /**
-     * @return array{status: string, advisories: list<array{package: string, title: string, cve: ?string}>, error: ?string}
+     * @return array{status: string, advisories: list<Advisory>, abandoned: list<Abandoned>, error: ?string}
      */
     public function toArray(): array
     {
-        return ['status' => $this->status, 'advisories' => $this->advisories, 'error' => $this->error];
+        return ['status' => $this->status, 'advisories' => $this->advisories, 'abandoned' => $this->abandoned, 'error' => $this->error];
     }
 
     /**
+     * Reads what {@see toArray()} wrote. An older cache entry (fewer fields) is still understood: the missing fields
+     * are empty until the command runs again.
+     *
      * @param array<mixed> $data
      */
     public static function fromArray(array $data): ?self
     {
         $status = $data['status'] ?? null;
+        $abandoned = self::abandonedFrom($data['abandoned'] ?? null);
+
         if (self::OK === $status) {
-            return self::ok();
+            return self::ok($abandoned);
         }
 
         if (self::UNAVAILABLE === $status) {
@@ -81,12 +96,40 @@ final class AuditResult
             if (\is_array($advisory) && \is_string($advisory['package'] ?? null) && \is_string($advisory['title'] ?? null)) {
                 $advisories[] = [
                     'package' => $advisory['package'],
+                    'installed' => self::string($advisory, 'installed'),
+                    'id' => self::string($advisory, 'id'),
+                    'cve' => self::string($advisory, 'cve'),
                     'title' => $advisory['title'],
-                    'cve' => \is_string($advisory['cve'] ?? null) ? $advisory['cve'] : null,
+                    'link' => self::string($advisory, 'link'),
+                    'severity' => self::string($advisory, 'severity'),
+                    'reportedAt' => self::string($advisory, 'reportedAt'),
                 ];
             }
         }
 
-        return self::vulnerable($advisories);
+        return self::vulnerable($advisories, $abandoned);
+    }
+
+    /**
+     * @return list<Abandoned>
+     */
+    private static function abandonedFrom(mixed $data): array
+    {
+        $result = [];
+        foreach (\is_array($data) ? $data : [] as $entry) {
+            if (\is_array($entry) && \is_string($entry['package'] ?? null)) {
+                $result[] = ['package' => $entry['package'], 'replacement' => self::string($entry, 'replacement')];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    private static function string(array $data, string $key): ?string
+    {
+        return \is_string($data[$key] ?? null) && '' !== $data[$key] ? $data[$key] : null;
     }
 }

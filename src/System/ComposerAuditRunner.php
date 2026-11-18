@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\System;
 
+use Closure;
+use Composer\InstalledVersions;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -13,16 +15,23 @@ use Throwable;
 /**
  * Runs "composer audit --locked" in the project folder. Only used by the console command: starting a process has no
  * place in a web request. The command is passed as a list (no shell), the output is read as JSON and reduced to
- * package, title and CVE.
+ * the fields the "System" tab shows (package, installed version, advisory id, CVE, title, link, severity, date) and the
+ * abandoned packages.
+ *
+ * @phpstan-import-type Advisory from AuditResult
+ * @phpstan-import-type Abandoned from AuditResult
  */
 final class ComposerAuditRunner implements AuditRunnerInterface
 {
-    private const MAX_ADVISORIES = 50;
+    private const MAX_ADVISORIES = 200;
+
+    private const SEVERITIES = ['critical', 'high', 'medium', 'low'];
 
     public function __construct(
         private readonly string $projectDir,
         private readonly string $composer = 'composer',
         private readonly int $timeout = 120,
+        private readonly ?Closure $installedVersion = null,
     ) {
     }
 
@@ -49,7 +58,7 @@ final class ComposerAuditRunner implements AuditRunnerInterface
             return AuditResult::unavailable(AuditResult::ERROR_FAILED);
         }
 
-        return AuditResult::vulnerable($this->advisories($data));
+        return AuditResult::vulnerable($this->advisories($data), $this->abandoned($data));
     }
 
     /**
@@ -71,7 +80,7 @@ final class ComposerAuditRunner implements AuditRunnerInterface
     /**
      * @param array<mixed> $data
      *
-     * @return list<array{package: string, title: string, cve: ?string}>
+     * @return list<Advisory>
      */
     private function advisories(array $data): array
     {
@@ -84,14 +93,18 @@ final class ComposerAuditRunner implements AuditRunnerInterface
                     continue;
                 }
 
-                $package = \is_string($advisory['packageName'] ?? null) ? $advisory['packageName'] : (string) $name;
-                $title = \is_string($advisory['title'] ?? null) ? $advisory['title'] : '';
-                $cve = \is_string($advisory['cve'] ?? null) && '' !== $advisory['cve'] ? $advisory['cve'] : null;
+                $package = $this->clean(\is_string($advisory['packageName'] ?? null) ? $advisory['packageName'] : (string) $name, 100);
+                $severity = \is_string($advisory['severity'] ?? null) ? strtolower(trim($advisory['severity'])) : null;
 
                 $result[] = [
-                    'package' => $this->clean($package, 100),
-                    'title' => $this->clean($title, 120),
-                    'cve' => null === $cve ? null : $this->clean($cve, 30),
+                    'package' => $package,
+                    'installed' => $this->installed($package),
+                    'id' => $this->optional($advisory['advisoryId'] ?? null, 60),
+                    'cve' => $this->optional($advisory['cve'] ?? null, 30),
+                    'title' => $this->clean(\is_string($advisory['title'] ?? null) ? $advisory['title'] : '', 160),
+                    'link' => $this->link($advisory['link'] ?? null),
+                    'severity' => \in_array($severity, self::SEVERITIES, true) ? $severity : null,
+                    'reportedAt' => $this->optional($advisory['reportedAt'] ?? null, 40),
                 ];
 
                 if (\count($result) >= self::MAX_ADVISORIES) {
@@ -101,6 +114,68 @@ final class ComposerAuditRunner implements AuditRunnerInterface
         }
 
         return $result;
+    }
+
+    /**
+     * "abandoned" is a map package => replacement package (or null/false without a replacement).
+     *
+     * @param array<mixed> $data
+     *
+     * @return list<Abandoned>
+     */
+    private function abandoned(array $data): array
+    {
+        $result = [];
+        foreach (\is_array($data['abandoned'] ?? null) ? $data['abandoned'] : [] as $package => $replacement) {
+            if (!\is_string($package) || '' === $package) {
+                continue;
+            }
+
+            $result[] = ['package' => $this->clean($package, 100), 'replacement' => $this->optional($replacement, 100)];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Version of the package as installed in this project; null if it cannot be read.
+     */
+    private function installed(string $package): ?string
+    {
+        try {
+            if (null !== $this->installedVersion) {
+                $version = ($this->installedVersion)($package);
+            } else {
+                $version = class_exists(InstalledVersions::class) && InstalledVersions::isInstalled($package) ? InstalledVersions::getPrettyVersion($package) : null;
+            }
+        } catch (Throwable) {
+            return null;
+        }
+
+        return \is_string($version) && '' !== $version ? $this->clean($version, 40) : null;
+    }
+
+    /**
+     * Only a web link is kept: the title in the tab is a link, and "javascript:" or "data:" must never get that far.
+     */
+    private function link(mixed $value): ?string
+    {
+        if (!\is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return 1 === preg_match('#^https?://[^\s<>"\']+$#i', $value) && \strlen($value) <= 500 ? $value : null;
+    }
+
+    private function optional(mixed $value, int $length): ?string
+    {
+        if (!\is_string($value) || '' === trim($value)) {
+            return null;
+        }
+
+        return $this->clean($value, $length);
     }
 
     private function clean(string $text, int $length): string

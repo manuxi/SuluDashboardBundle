@@ -20,6 +20,7 @@ use Manuxi\SuluDashboardBundle\Widget\Builtin\SystemWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\TranslationsWidget;
 use Manuxi\SuluDashboardBundle\Widget\ConditionalDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\DashboardWidgetInterface;
+use Manuxi\SuluDashboardBundle\Widget\System\SystemTileData;
 use Manuxi\SuluDashboardBundle\Widget\WidgetColumns;
 use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
 use PHPUnit\Framework\TestCase;
@@ -117,7 +118,7 @@ class BuiltinWidgetsTest extends TestCase
             new SeoWidget($this->reader()),
             new TranslationsWidget($this->reader(), $localizations),
             new ActivitiesWidget(),
-            new SystemWidget(SystemVersions::detect(), 'prod', false, new SystemCheckStore(new ArrayAdapter()), new PendingMigrations(), new FailedMessages()),
+            new SystemWidget(new SystemTileData(SystemVersions::detect(), 'prod', false, new SystemCheckStore(new ArrayAdapter()), new PendingMigrations(), new FailedMessages())),
         ];
 
         $keys = [];

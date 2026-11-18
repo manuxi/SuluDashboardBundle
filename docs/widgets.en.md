@@ -94,7 +94,7 @@ A text may also be `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 
 
 ### list
 
-A short table with a link per row (pen button). Ten rows are shown, the rest on demand. `text` is an optional grey second line under the title (for example a place), `meta` a second column. An optional `footer` works as with `progress`. A row may carry `'severity' => 'error'` (red title) or `'warning'`: Sulu's warning icon is shown in front of it. `'limit' => 20` in the data sets the number of rows shown before "Show all" (default 10).
+A short table with a link per row (pen button). Ten rows are shown, the rest on demand. `text` is an optional grey second line under the title (for example a place), `meta` a second column. An optional `footer` works as with `progress`. A row may carry `'severity' => 'error'` (red title), `'warning'` or `'ok'` (green check): Sulu's icon is shown in front of it. `'header' => false` in the data leaves out the table head, for rows that are key and value ("PHP", "8.4") where "Title" would be a wrong column heading (default: a head with "Title"). `footer.title` may be left out. `'limit' => 20` in the data sets the number of rows shown before "Show all" (default 10).
 
 ```php
 return [
