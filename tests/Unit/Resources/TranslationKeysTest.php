@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Tests\Unit\Resources;
 
 use FilesystemIterator;
+use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTileWidget;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -61,8 +62,8 @@ class TranslationKeysTest extends TestCase
             }
             preg_match_all('/[\'"](sulu_dashboard\.[a-z_]+)[\'"]/', (string) file_get_contents($file->getPathname()), $matches);
             foreach ($matches[1] as $key) {
-                if (str_starts_with($key, 'sulu_dashboard.get_') || str_ends_with($key, '_') || \in_array($key, ['sulu_dashboard.tabs', 'sulu_dashboard.layout'], true)) {
-                    continue; // route name, name of a user setting, or the start of a key put together in code (checked below)
+                if (str_starts_with($key, 'sulu_dashboard.get_') || str_ends_with($key, '_') || \in_array($key, ['sulu_dashboard.tabs', 'sulu_dashboard.layout', 'sulu_dashboard.redirect'], true)) {
+                    continue; // route name, name of a user setting or of a view, or the start of a key put together in code (checked below)
                 }
                 $used[$key] = $file->getFilename();
             }
@@ -71,6 +72,11 @@ class TranslationKeysTest extends TestCase
         $this->assertNotEmpty($used);
         foreach ($used as $key => $file) {
             $this->assertArrayHasKey($key, $keys, $key . ' is used in ' . $file);
+        }
+
+        // titles of the tiles of the tab "Visitors" (PHP), and the texts the tiles put together in code
+        foreach (LogStatsTileWidget::TILES as [$title]) {
+            $this->assertArrayHasKey($title, $keys);
         }
 
         // keys that are put together in code

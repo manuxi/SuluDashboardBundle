@@ -26,3 +26,4 @@ The arrangement is a user setting of Sulu (`sulu_dashboard.layout`, saved on the
 - A tile that comes later (a new bundle, a new permission) is not in the list. It is placed automatically, in the shorter column after the others, and the arrangement of the other tiles stays. A tile the user has hidden stays hidden.
 - Tiles the user may not see at the moment (permission, `disabled_widgets`) are skipped; their hidden state is kept.
 - Tiles cannot be dragged from one column into the other, because the library behind Sulu's block lists (react-sortable-hoc) only sorts within one list. The arrow button does that part.
+- Every tab of tiles (see [Tabs](tabs.en.md), "A tab of tiles") saves its arrangement under its own key (`sulu_dashboard.layout.<group>`), so the overview and each tab are arranged and reset separately. "Reset" in a tab does not touch the others, and not the chosen period.

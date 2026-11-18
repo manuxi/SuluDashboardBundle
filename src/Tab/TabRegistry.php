@@ -16,6 +16,9 @@ final class TabRegistry
 {
     private const KEY_PATTERN = '/^[a-z][a-z0-9_]*$/';
 
+    /** the longest period of a tab: a year and a leap day, like the API of the log statistics */
+    public const MAX_PERIOD_DAYS = 366;
+
     /** keys that would clash with the tab "Overview" or the tab view itself */
     private const RESERVED_KEYS = ['overview', 'dashboard', 'tabs'];
 
@@ -55,10 +58,27 @@ final class TabRegistry
                 throw new LogicException(\sprintf('The dashboard tab "%s" (%s) needs a title and a view type.', $key, $tab::class));
             }
 
+            if ($tab instanceof TilesTabProviderInterface) {
+                $this->validateTiles($tab, $key);
+            }
+
             $tabs[$key] = $tab;
         }
 
         return $this->tabs = $tabs;
+    }
+
+    private function validateTiles(TilesTabProviderInterface $tab, string $key): void
+    {
+        if (1 !== preg_match(self::KEY_PATTERN, $tab->getGroup())) {
+            throw new LogicException(\sprintf('The dashboard tab "%s" (%s) has the invalid group "%s": use lower case letters, digits and underscores, starting with a letter.', $key, $tab::class, $tab->getGroup()));
+        }
+
+        foreach ($tab->getPeriods() as $days) {
+            if (!\is_int($days) || $days < 1 || $days > self::MAX_PERIOD_DAYS) {
+                throw new LogicException(\sprintf('The dashboard tab "%s" (%s) has the invalid period "%s": use whole days from 1 to %d.', $key, $tab::class, \is_scalar($days) ? (string) $days : get_debug_type($days), self::MAX_PERIOD_DAYS));
+            }
+        }
     }
 
     /**

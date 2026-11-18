@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\Admin;
 
+use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
+use Manuxi\SuluDashboardBundle\Tab\RemovesReplacedViewsInterface;
 use Manuxi\SuluDashboardBundle\Tab\ReplacesNavigationItemInterface;
 use Manuxi\SuluDashboardBundle\Tab\TabRegistry;
+use Manuxi\SuluDashboardBundle\Tab\TilesTabProviderInterface;
 use Manuxi\SuluDashboardBundle\Widget\PinnedDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use Sulu\Article\Domain\Model\ArticleInterface;
@@ -36,9 +39,18 @@ class DashboardAdmin extends Admin
     /** views of the tabs of other bundles: prefix plus the key of the tab */
     private const TAB_VIEW_PREFIX = 'sulu_dashboard.tab_';
 
+    /** React view that opens a tab; stands on the path of a view that the tab has replaced */
+    public const REDIRECT_VIEW_TYPE = 'sulu_dashboard.redirect';
+
+    /** views that redirect to a tab: prefix plus the name of the replaced view */
+    private const REDIRECT_VIEW_PREFIX = 'sulu_dashboard.redirect.';
+
     public const NAVIGATION_ITEM = 'sulu_dashboard.dashboard';
 
     public const SECURITY_CONTEXT = 'sulu.settings.dashboard';
+
+    /** user setting of the arrangement of the overview; a tab of tiles adds a dot and its group */
+    public const SETTING_KEY = 'sulu_dashboard.layout';
 
     /** permission for the "System" tile (versions, security check, disk use); not part of the dashboard permission */
     public const SYSTEM_SECURITY_CONTEXT = 'sulu.settings.dashboard_system';
@@ -99,7 +111,8 @@ class DashboardAdmin extends Admin
                 if ($tab instanceof ReplacesNavigationItemInterface && $navigationItemCollection->has($tab->getReplacedNavigationItem())) {
                     $navigationItemCollection->remove($tab->getReplacedNavigationItem());
                     foreach ($tab->getReplacedViews() as $view) {
-                        $item->addChildView($view);
+                        // a removed view is replaced by one that redirects (configureViews): that one keeps the item lit
+                        $item->addChildView($tab instanceof RemovesReplacedViewsInterface ? self::REDIRECT_VIEW_PREFIX . $view : $view);
                     }
                 }
             }
@@ -112,17 +125,6 @@ class DashboardAdmin extends Admin
     {
         if (!$this->mayView()) {
             return;
-        }
-
-        $widgets = [];
-        foreach ($this->widgetRegistry->available() as $widget) {
-            $widgets[] = [
-                'key' => $widget->getKey(),
-                'title' => $widget->getTitle(),
-                'type' => $widget->getType(),
-                'column' => $widget->getColumn(),
-                'pinned' => $widget instanceof PinnedDashboardWidgetInterface && $widget->isPinned(),
-            ];
         }
 
         if ($this->startPage) {
@@ -139,7 +141,7 @@ class DashboardAdmin extends Admin
                 'articles' => $this->templateTitles(ArticleInterface::TEMPLATE_TYPE),
             ])
             ->setOption('balance', $this->balance)
-            ->setOption('widgets', $widgets);
+            ->setOption('widgets', $this->widgetOptions(null));
 
         if ([] === $tabs) {
             // no tab, no tab bar: the plain view
@@ -161,18 +163,107 @@ class DashboardAdmin extends Admin
         );
 
         foreach ($tabs as $index => $tab) {
-            $view = $this->viewBuilderFactory->createViewBuilder(self::TAB_VIEW_PREFIX . $tab->getKey(), $this->childPath($tab->getKey()), $tab->getViewType())
+            $view = $this->viewBuilderFactory->createViewBuilder(self::TAB_VIEW_PREFIX . $tab->getKey(), $this->childPath($tab->getKey()), $tab instanceof TilesTabProviderInterface ? self::VIEW : $tab->getViewType())
                 ->setParent(self::TABS_VIEW)
                 ->setOption('tabTitle', $tab->getTitle())
                 ->setOption('tabOrder', $index + 1)
                 ->setOption('tabPriority', 0);
 
-            foreach ($tab->getViewOptions() as $name => $value) {
+            foreach ($this->tabOptions($tab) as $name => $value) {
                 $view->setOption($name, $value);
             }
 
             $viewCollection->add($view);
         }
+
+        $this->redirectReplacedViews($viewCollection, $tabs);
+    }
+
+    /**
+     * A tab that shows the content of another bundle's page as tiles ({@see RemovesReplacedViewsInterface}) takes that
+     * page away: the view leaves Sulu's view collection (this class runs after all others, so it exists) and a view on
+     * the same path sends the browser to the tab, so bookmarks and links keep working. Only together with the replaced
+     * menu item: without it the item would lead to a view that is gone.
+     *
+     * @param list<DashboardTabProviderInterface> $tabs
+     */
+    private function redirectReplacedViews(ViewCollection $viewCollection, array $tabs): void
+    {
+        if (!$this->replaceNavigation) {
+            return;
+        }
+
+        foreach ($tabs as $tab) {
+            if (!$tab instanceof RemovesReplacedViewsInterface) {
+                continue;
+            }
+
+            foreach ($tab->getReplacedViews() as $name) {
+                if (!$viewCollection->has($name)) {
+                    continue;
+                }
+
+                $path = $viewCollection->get($name)->getView()->getPath();
+                $viewCollection->remove($name);
+                $viewCollection->add(
+                    $this->viewBuilderFactory->createViewBuilder(self::REDIRECT_VIEW_PREFIX . $name, $path, self::REDIRECT_VIEW_TYPE)
+                        ->setOption('redirectTo', self::TAB_VIEW_PREFIX . $tab->getKey()),
+                );
+            }
+        }
+    }
+
+    /**
+     * The tiles of the overview (no group) or of a group, as the view needs them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function widgetOptions(?string $group): array
+    {
+        $widgets = [];
+        foreach ($this->widgetRegistry->available($group) as $widget) {
+            $widgets[] = [
+                'key' => $widget->getKey(),
+                'title' => $widget->getTitle(),
+                'type' => $widget->getType(),
+                'column' => $widget->getColumn(),
+                'pinned' => $widget instanceof PinnedDashboardWidgetInterface && $widget->isPinned(),
+            ];
+        }
+
+        return $widgets;
+    }
+
+    /**
+     * Options of the view of a tab. A tab of tiles gets the options of the dashboard view for its group; the options of
+     * the provider come on top.
+     *
+     * @return array<string, mixed>
+     */
+    private function tabOptions(DashboardTabProviderInterface $tab): array
+    {
+        if (!$tab instanceof TilesTabProviderInterface) {
+            return $tab->getViewOptions();
+        }
+
+        $periods = array_values(array_unique($tab->getPeriods()));
+        $options = [
+            'locales' => array_values($this->localizationManager->getLocales()),
+            'balance' => $this->balance,
+            'widgets' => $this->widgetOptions($tab->getGroup()),
+            'settingKey' => self::SETTING_KEY . '.' . $tab->getGroup(),
+            'showLocale' => $tab->showLocale(),
+        ];
+
+        if ([] !== $periods) {
+            $options['period'] = [
+                'days' => $periods,
+                'default' => \in_array($tab->getDefaultPeriod(), $periods, true) ? $tab->getDefaultPeriod() : $periods[0],
+                'maxDays' => TabRegistry::MAX_PERIOD_DAYS,
+            ];
+        }
+
+        return $tab->getViewOptions() + $options;
     }
 
     /**
@@ -185,7 +276,7 @@ class DashboardAdmin extends Admin
     }
 
     /**
-     * @return list<\Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface>
+     * @return list<DashboardTabProviderInterface>
      */
     private function tabs(): array
     {

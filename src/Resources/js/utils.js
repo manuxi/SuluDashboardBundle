@@ -28,8 +28,8 @@ export const navigate = (router, link) => {
 
 // something that looks like a translation key ("sulu_dashboard.pages", "app.my_tile"): dot-separated words without spaces.
 // Sulu's translate() returns an unknown key unchanged but logs a warning, so plain texts ("Hall 3", "Berlin") are not
-// sent through it at all.
-const KEY_PATTERN = /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
+// sent through it at all. A key has a letter: a number written with a thousands separator ("1.204") is not one.
+const KEY_PATTERN = /^(?=.*[A-Za-z_])[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
 
 // a text in tile data: plain text, an admin translation key, {key, parameters} for a key with parameters, or {text} for a
 // text that is shown exactly as it is (a version such as "8.4.27" looks like a key, but is none)

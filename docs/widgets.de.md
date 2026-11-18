@@ -6,7 +6,7 @@ Eine Kachel ist eine kleine PHP-Klasse. Sie braucht kein JavaScript, keine Route
 DashboardWidgetInterface
   getKey()              eindeutiger Schlüssel, klein, Ziffern, Unterstriche ("testimonials_stars")
   getTitle()            Übersetzungsschlüssel der Domain admin, oder Klartext
-  getType()             number | progress | list | bars | custom
+  getType()             number | progress | list | bars | chart | custom
   getSecurityContext()  Sulu-Sicherheitskontext, den der Benutzer braucht (Ansehen), oder null
   getColumn()           row | main | side | auto
   getPriority()         Reihenfolge in der Spalte, höhere zuerst
@@ -125,6 +125,28 @@ return [
 ];
 ```
 
+### chart
+
+Liniendiagramm (eine oder zwei Reihen) oder Balkendiagramm (einfach oder gestapelt), als SVG gezeichnet, ohne Bibliothek. Das Diagramm nutzt die Breite der Kachel, rundet die Achse auf glatte Werte (Null ist immer dabei), dünnt die Beschriftung der x-Achse bei vielen Werten aus, zeigt je Punkt oder Balken einen Tooltip, ab zwei Reihen eine Legende und die Zahlen als Tabelle unter "Daten als Tabelle anzeigen". Ohne Beschriftungen oder Reihen meldet die Kachel, dass es keine Einträge gibt.
+
+```php
+return [
+    'kind' => 'line',                 // line (Standard) | bar
+    'stacked' => false,               // nur bei bar mit mindestens zwei Reihen
+    'labels' => ['1. Nov.', '2. Nov.', '3. Nov.'],
+    'series' => [
+        ['label' => 'Seitenaufrufe', 'values' => [120, 98, 143]],
+        ['label' => 'Besucher', 'values' => [40, 35, 51], 'color' => 'green'],
+    ],
+    'unit' => 'ms',                   // optional, steht in Tooltips, Tabelle und über der Achse
+];
+```
+
+- `values` enthält eine Zahl je Beschriftung. Was keine Zahl ist (`null`), ist in einer Linie eine Lücke und in einem Balken null.
+- `color` ist optional: `blue`, `green`, `yellow`, `red`, `gray` (die Farben von Sulu) oder eine Hex-Farbe wie `#52b6ca`. Ohne Angabe nehmen die Reihen die fünf Farben in dieser Reihenfolge.
+- Titel der Kachel, `label` einer Reihe und `unit` dürfen Klartext, ein Übersetzungsschlüssel des Admins oder `['key' => ..., 'parameters' => [...]]` sein. Die Beschriftungen der x-Achse erscheinen unverändert.
+- Mehr als zwei Reihen funktionieren, am lesbarsten bleibt das Diagramm mit bis zu zwei (Linie) oder bis zu fünf (gestapelte Balken).
+
 ### custom
 
 Eine eigene React-Komponente für alles, was die Arten oben nicht zeigen können. `getData()` liefert weiterhin die Daten. Die Komponente wird in der `widgetRegistry` unter dem Schlüssel der Kachel angemeldet (wie eine View in Sulus `viewRegistry`):
@@ -210,9 +232,10 @@ Der Compiler-Pass prüft das Tag beim Kompilieren des Containers (Schlüssel, Ar
 ```bash
 php bin/console sulu:dashboard:dump --user=admin --locale=de
 php bin/console sulu:dashboard:dump --user=admin --widget=projects
+php bin/console sulu:dashboard:dump --user=admin --group=visitors
 ```
 
-Der Befehl gibt die Kacheln, die der Benutzer sieht, mit ihren Daten als JSON aus. Ein Fehler in einer Kachel erscheint als `error` und setzt den Exit-Code auf 1.
+Mit `--group` kommen die Kacheln eines Tabs aus Kacheln statt die der Übersicht. Der Befehl gibt die Kacheln, die der Benutzer sieht, mit ihren Daten als JSON aus. Ein Fehler in einer Kachel erscheint als `error` und setzt den Exit-Code auf 1.
 
 ## Ausgleich der Spalten
 

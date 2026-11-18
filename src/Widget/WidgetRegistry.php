@@ -57,15 +57,16 @@ final class WidgetRegistry
     }
 
     /**
-     * The tiles the current user may see, sorted by priority (highest first).
+     * The tiles the current user may see, sorted by priority (highest first). Without a group the tiles of the overview:
+     * those that belong to no group. With a group the tiles of that group.
      *
      * @return list<DashboardWidgetInterface>
      */
-    public function available(): array
+    public function available(?string $group = null): array
     {
         $available = [];
         foreach ($this->all() as $widget) {
-            if ($this->isVisible($widget)) {
+            if (self::groupOf($widget) === $group && $this->isVisible($widget)) {
                 $available[] = $widget;
             }
         }
@@ -83,6 +84,14 @@ final class WidgetRegistry
         $widget = $this->all()[$key] ?? null;
 
         return null !== $widget && $this->isVisible($widget) ? $widget : null;
+    }
+
+    /**
+     * Group of a tile; null for a tile of the overview.
+     */
+    public static function groupOf(DashboardWidgetInterface $widget): ?string
+    {
+        return $widget instanceof GroupedDashboardWidgetInterface ? $widget->getGroup() : null;
     }
 
     private function isVisible(DashboardWidgetInterface $widget): bool
@@ -114,6 +123,10 @@ final class WidgetRegistry
 
         if (!\in_array($widget->getColumn(), WidgetColumns::all(), true)) {
             throw new LogicException(\sprintf('The dashboard widget "%s" (%s) has the unknown column "%s". Allowed: %s.', $key, $class, $widget->getColumn(), implode(', ', WidgetColumns::all())));
+        }
+
+        if ($widget instanceof GroupedDashboardWidgetInterface && 1 !== preg_match(self::KEY_PATTERN, $widget->getGroup())) {
+            throw new LogicException(\sprintf('The dashboard widget "%s" (%s) has the invalid group "%s": use lower case letters, digits and underscores, starting with a letter.', $key, $class, $widget->getGroup()));
         }
 
         if ('' === trim($widget->getTitle())) {

@@ -26,8 +26,8 @@ Every user can arrange the tiles to their liking. In customize mode a tile can b
 - **Recent activity** - From Sulu's activity API
 - **Customize** - Every user can arrange, hide and reset tiles; the columns balance themselves until then
 - **Permissions** - Own permission for the dashboard; every tile respects the permissions of the content and its own security context
-- **Tile interface** - `DashboardWidgetInterface`, display types `number`, `progress`, `list`, `bars` and `custom` (own React component)
-- **Tabs** - Bundles can add a whole page as a tab (`DashboardTabProviderInterface`); with `amoifr/sulu-log-stats-bundle` the dashboard gets the tab "Visitors" and a tile. The visitor statistics come from the bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) by Amoifr. Thank you for such a lean bundle that keeps data to a minimum.
+- **Tile interface** - `DashboardWidgetInterface`, display types `number`, `progress`, `list`, `bars`, `chart` (line and bar charts in SVG) and `custom` (own React component)
+- **Tabs** - Bundles can add a whole page as a tab (`DashboardTabProviderInterface`); with `amoifr/sulu-log-stats-bundle` (`~0.1`) the dashboard gets the tab "Visitors" made of tiles (figures, charts, top lists, table of days; arrange, hide, choose the period) and a tile. The visitor statistics come from the bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) by Amoifr. Thank you for such a lean bundle that keeps data to a minimum.
 - **System tile** - For administrators only (own permission): versions, warning for debug mode in production, known vulnerabilities (`composer audit` by cron job), open migrations, failed messages, disk use
 - **Errors stay in their tile** - Every tile loads its data on its own
 
@@ -122,6 +122,8 @@ sulu_dashboard:
     start_page: true       # true: dashboard on "/", Sulu's search moves to "/search"; false: dashboard on "/dashboard", search stays on "/"
     tabs:
         replace_navigation: true   # a tab may replace a menu item of another bundle (the statistics of the log statistics)
+    log_stats:
+        tab: tiles                 # tiles: the tab "Visitors" is made of tiles; view: the page of the log statistics bundle unchanged
     layout:
         balance: true      # after loading, move tiles from the end of the longer column into the shorter one (once); false: tiles stay in their column
     system:

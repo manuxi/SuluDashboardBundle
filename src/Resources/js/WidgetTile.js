@@ -1,13 +1,16 @@
-// One tile: loads its own data (so an error stays inside the tile) and shows it by type. Types number, progress, list and
-// bars are built in; "custom" looks up a React component in the widgetRegistry under the key of the tile.
+// One tile: loads its own data (so an error stays inside the tile) and shows it by type. Types number, progress, list, bars
+// and chart are built in; "custom" looks up a React component in the widgetRegistry under the key of the tile.
 // The answer is kept in props.cache (owned by the dashboard) so that a tile the dashboard moves to the other column, which
 // mounts it again, shows its data at once. props.onSettled(key) tells the dashboard that the data arrived or failed.
+// props.period ({days} or {from, to}, days as YYYY-MM-DD) is the period of the tab; the component gets it as a prop. The
+// dashboard mounts the tile again when the period changes.
 import React from 'react';
 import {Loader} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
 import {Requester} from 'sulu-admin-bundle/services';
 import {translate} from 'sulu-admin-bundle/utils';
 import BarsTile from './tiles/BarsTile';
+import ChartTile from './tiles/ChartTile';
 import ListTile from './tiles/ListTile';
 import NumberTile from './tiles/NumberTile';
 import ProgressTile from './tiles/ProgressTile';
@@ -19,6 +22,7 @@ const TYPES = {
     progress: ProgressTile,
     list: ListTile,
     bars: BarsTile,
+    chart: ChartTile,
 };
 
 export default class WidgetTile extends React.Component {
@@ -72,7 +76,7 @@ export default class WidgetTile extends React.Component {
     }
 
     render() {
-        const {cache, widget, locale, locales, options, router} = this.props;
+        const {cache, widget, locale, locales, options, period, router} = this.props;
         const {data, error} = this.state;
 
         if (error) {
@@ -103,6 +107,6 @@ export default class WidgetTile extends React.Component {
             Component = TYPES[widget.type];
         }
 
-        return <Component cache={cache} data={data} locale={locale} locales={locales} options={options} router={router} widget={widget} />;
+        return <Component cache={cache} data={data} locale={locale} locales={locales} options={options} period={period} router={router} widget={widget} />;
     }
 }

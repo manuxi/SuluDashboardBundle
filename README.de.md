@@ -24,8 +24,8 @@ Jeder Benutzer kann die Kacheln nach seinem Geschmack anordnen. Im Anpassen-Modu
 - **Letzte Aktivität** - Aus Sulus Aktivitäts-API
 - **Anpassen** - Jeder Benutzer kann Kacheln anordnen, ausblenden und zurücksetzen; bis dahin gleichen sich die Spalten selbst aus
 - **Rechte** - Eigenes Recht für das Dashboard; jede Kachel beachtet die Rechte der Inhalte und ihren eigenen Sicherheitskontext
-- **Kachel-Schnittstelle** - `DashboardWidgetInterface`, Darstellungsarten `number`, `progress`, `list`, `bars` und `custom` (eigene React-Komponente)
-- **Tabs** - Bundles können eine ganze Seite als Tab ergänzen (`DashboardTabProviderInterface`); mit `amoifr/sulu-log-stats-bundle` bekommt das Dashboard den Tab „Besucher“ und eine Kachel. Die Besucherstatistik stammt aus dem Bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) von Amoifr. Danke für ein so schlankes und datensparsames Bundle.
+- **Kachel-Schnittstelle** - `DashboardWidgetInterface`, Darstellungsarten `number`, `progress`, `list`, `bars`, `chart` (Linien- und Balkendiagramme in SVG) und `custom` (eigene React-Komponente)
+- **Tabs** - Bundles können eine ganze Seite als Tab ergänzen (`DashboardTabProviderInterface`); mit `amoifr/sulu-log-stats-bundle` (`~0.1`) bekommt das Dashboard den Tab „Besucher“ aus Kacheln (Kennzahlen, Diagramme, Top-Listen, Tagestabelle; anordnen, ausblenden, Zeitraum wählen) und eine Kachel. Die Besucherstatistik stammt aus dem Bundle [amoifr/sulu-log-stats-bundle](https://github.com/Amoifr/sulu-log-stats-bundle) von Amoifr. Danke für ein so schlankes und datensparsames Bundle.
 - **Fehler bleiben in ihrer Kachel** - Jede Kachel lädt ihre Daten einzeln
 
 ## 📋 Voraussetzungen
@@ -119,6 +119,8 @@ sulu_dashboard:
     start_page: true       # true: Dashboard auf "/", Sulus Suche zieht nach "/search"; false: Dashboard auf "/dashboard", Suche bleibt auf "/"
     tabs:
         replace_navigation: true   # ein Tab darf einen Menüpunkt eines anderen Bundles ersetzen (die Statistik der Log-Statistik)
+    log_stats:
+        tab: tiles                 # tiles: der Tab „Besucher“ besteht aus Kacheln; view: die Seite des Log-Statistik-Bundles unverändert
     layout:
         balance: true      # nach dem Laden Kacheln vom Ende der längeren in die kürzere Spalte schieben (einmal); false: Kacheln bleiben in ihrer Spalte
     system:
