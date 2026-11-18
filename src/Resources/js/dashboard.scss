@@ -455,6 +455,18 @@
     text-overflow: ellipsis;
 }
 
+/* a second line below the first in a cell: Sulu's cells are flex boxes that put children side by side, so the lines get a
+   block of their own; the grey line may use the whole width and is cut with an ellipsis only if it is longer */
+.cellStack {
+    display: block;
+    flex: 1;
+    min-width: 0;
+}
+
+.fullLine {
+    max-width: none;
+}
+
 .wordsCell {
     display: block;
     min-width: 0;

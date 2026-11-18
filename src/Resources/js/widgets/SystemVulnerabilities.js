@@ -73,17 +73,21 @@ export default class SystemVulnerabilities extends React.Component {
                                 <Table.Row id={index} key={index}>
                                     {[
                                         <Table.Cell key="package">
-                                            <Fixed>{advisory.package}</Fixed>
-                                            {advisory.installed && <Fixed className={styles.rowText}>{advisory.installed}</Fixed>}
+                                            <div className={styles.cellStack}>
+                                                <Fixed>{advisory.package}</Fixed>
+                                                {advisory.installed && <Fixed className={[styles.rowText, styles.fullLine].join(' ')}>{advisory.installed}</Fixed>}
+                                            </div>
                                         </Table.Cell>,
                                         <Table.Cell key="title">
-                                            <Words>
-                                                {isWebLink(advisory.link)
-                                                    ? <a className={styles.externalLink} href={advisory.link} rel="noopener noreferrer" target="_blank" title={translate('sulu_dashboard.system_opens_new_tab')}>{title}</a>
-                                                    : title
-                                                }
-                                            </Words>
-                                            {name && <Fixed className={styles.rowText}>{name}</Fixed>}
+                                            <div className={styles.cellStack}>
+                                                <Words>
+                                                    {isWebLink(advisory.link)
+                                                        ? <a className={styles.externalLink} href={advisory.link} rel="noopener noreferrer" target="_blank" title={translate('sulu_dashboard.system_opens_new_tab')}>{title}</a>
+                                                        : title
+                                                    }
+                                                </Words>
+                                                {name && <Fixed className={[styles.rowText, styles.fullLine].join(' ')}>{name}</Fixed>}
+                                            </div>
                                         </Table.Cell>,
                                         ...(showSeverity ? [<Table.Cell key="severity"><Fixed>{severity ? translate(severity) : '–'}</Fixed></Table.Cell>] : []),
                                         <Table.Cell key="reported"><Fixed>{formatDay(advisory.reportedAt)}</Fixed></Table.Cell>,
