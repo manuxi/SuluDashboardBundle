@@ -9,23 +9,39 @@
 // column into the shorter one, once (option sulu_dashboard.layout.balance). A user can arrange the tiles ("Customize" in
 // the toolbar): drag with the handle of Sulu's blocks (react-sortable-hoc, like Sulu's block lists), hide, move to the
 // other column. That arrangement is stored per user (user setting) and wins over the balance.
+//
+// Tabs of tiles (route.options.settingKey, widgets of a group) save their arrangement under their own key. With the option
+// "period" ({days: [7, 30, 90, 365], default, maxDays}) the toolbar gets a select for the period; "Custom period" opens a bar
+// above the tiles with two date pickers (from, to) and "Apply". The period is saved per tab as a user setting and given to
+// every tile as the prop "period": {days} or {from, to} (days as YYYY-MM-DD). The overview has no period.
 import React from 'react';
 import classNames from 'classnames';
 import {action, observable} from 'mobx';
 import {observer} from 'mobx-react';
 import {SortableContainer, SortableElement} from 'react-sortable-hoc';
-import {Grid, Icon} from 'sulu-admin-bundle/components';
+import {Button, DatePicker, Grid, Icon} from 'sulu-admin-bundle/components';
 import SortableHandle from 'sulu-admin-bundle/components/BlockCollection/SortableHandle';
 import Card from 'sulu-admin-bundle/components/Card';
 import {withToolbar} from 'sulu-admin-bundle/containers';
 import {userStore} from 'sulu-admin-bundle/stores';
 import {translate} from 'sulu-admin-bundle/utils';
 import {arrange, move, sameArrangement} from './layout';
+import {CUSTOM, customStart, fromIsoDay, periodKey, resolvePeriod, selectValue, toIsoDay, validateRange} from './period';
 import {tx} from './utils';
 import WidgetTile from './WidgetTile';
 import styles from './dashboard.scss';
 
-const SETTING_KEY = 'sulu_dashboard.layout';
+// user setting of the arrangement; a tab of tiles brings its own (route.options.settingKey), so every tab is arranged on its own
+const DEFAULT_SETTING_KEY = 'sulu_dashboard.layout';
+// the period of a tab is saved next to its arrangement, under the same key plus this suffix
+const PERIOD_SUFFIX = '.period';
+
+// a day 'YYYY-MM-DD' as the language of the user writes it
+const formatDay = (value) => {
+    const date = fromIsoDay(value);
+
+    return date ? date.toLocaleDateString(undefined, {year: 'numeric', month: '2-digit', day: '2-digit'}) : '';
+};
 
 // space between two tiles (the margin of .cell in dashboard.scss)
 const GAP = 20;
@@ -89,6 +105,14 @@ class Dashboard extends React.Component {
     @observable.ref arrangement;
     // keys of the tiles the last balance moved (they fade in, unless the user prefers reduced motion)
     @observable.ref movedKeys = [];
+    // {days} or {from, to}; null in a view without a period
+    @observable.ref period = null;
+    // the bar with the two date pickers is open; its days are Date objects (the value of the picker) until "Apply"
+    @observable customOpen = false;
+    @observable.ref customFrom = undefined;
+    @observable.ref customTo = undefined;
+    // why the custom period is refused: 'missing', 'order' or 'too_long'
+    @observable customError = null;
 
     // data of the tiles for as long as the page is open: a tile that moves to the other column is mounted again
     cache = {};
@@ -106,8 +130,12 @@ class Dashboard extends React.Component {
         const locales = this.locales;
         this.locale = locales.includes(userStore.contentLocale) ? userStore.contentLocale : locales[0];
 
-        const saved = userStore.getPersistentSetting(SETTING_KEY);
+        const saved = userStore.getPersistentSetting(this.settingKey);
         this.saved = saved && 'object' === typeof saved ? saved : null;
+
+        if (this.periodConfig) {
+            this.period = resolvePeriod(userStore.getPersistentSetting(this.settingKey + PERIOD_SUFFIX), this.periodConfig);
+        }
 
         // first placement without measuring: tiles by their wish, tiles without a wish by count
         this.arrangement = arrange(this.widgets, this.saved, {}, {balance: false, gap: GAP});
@@ -146,6 +174,24 @@ class Dashboard extends React.Component {
         return this.props.route.options.widgets || [];
     }
 
+    get settingKey() {
+        return this.props.route.options.settingKey || DEFAULT_SETTING_KEY;
+    }
+
+    // the language select of the toolbar, off for tiles whose data does not depend on the language
+    get showLocale() {
+        return false !== this.props.route.options.showLocale;
+    }
+
+    // {days: [7, 30, 90, 365], default: 30, maxDays: 366}, or null when the tiles of this view have no period
+    get periodConfig() {
+        const config = this.props.route.options.period;
+
+        return config && Array.isArray(config.days) && config.days.length > 0
+            ? {days: config.days, default: config.default || config.days[0], maxDays: config.maxDays || 366}
+            : null;
+    }
+
     get balance() {
         return false !== this.props.route.options.balance;
     }
@@ -160,6 +206,125 @@ class Dashboard extends React.Component {
         this.locale = locale;
         userStore.updateContentLocale(locale);
     };
+
+    // --- period (tabs of tiles) ---
+
+    // sent at once, like the arrangement: whoever reloads right after the choice keeps it
+    @action choosePeriod(period) {
+        this.period = period;
+        userStore.setPersistentSetting(this.settingKey + PERIOD_SUFFIX, period);
+        this.saveNow();
+    }
+
+    @action handlePeriodSelect = (value) => {
+        if (CUSTOM === value) {
+            const start = customStart(this.period, toIsoDay(new Date()));
+            this.customFrom = fromIsoDay(start.from);
+            this.customTo = fromIsoDay(start.to);
+            this.customError = null;
+            this.customOpen = true;
+
+            return;
+        }
+
+        this.customOpen = false;
+        this.customError = null;
+        this.choosePeriod({days: value});
+    };
+
+    @action handleCustomFrom = (date) => {
+        this.customFrom = date || undefined;
+        this.customError = null;
+    };
+
+    @action handleCustomTo = (date) => {
+        this.customTo = date || undefined;
+        this.customError = null;
+    };
+
+    @action applyCustom = () => {
+        const from = toIsoDay(this.customFrom);
+        const to = toIsoDay(this.customTo);
+        const reason = validateRange(from, to, this.periodConfig.maxDays);
+
+        if (reason) {
+            // visible, never silent: the period stays as it was
+            this.customError = reason;
+
+            return;
+        }
+
+        this.customError = null;
+        this.customOpen = false;
+        this.choosePeriod({from, to});
+    };
+
+    @action closeCustom = () => {
+        this.customOpen = false;
+        this.customError = null;
+    };
+
+    // the select of the toolbar; undefined without a period. Shows "Custom period" while the bar is open or a custom period is active.
+    get periodSelect() {
+        const config = this.periodConfig;
+
+        if (!config) {
+            return undefined;
+        }
+
+        const custom = this.period && undefined === this.period.days
+            ? translate('sulu_dashboard.period_custom_range', {from: formatDay(this.period.from), to: formatDay(this.period.to)})
+            : translate('sulu_dashboard.period_custom');
+
+        return {
+            type: 'select',
+            icon: 'su-calendar',
+            value: this.customOpen ? CUSTOM : selectValue(this.period),
+            onChange: this.handlePeriodSelect,
+            options: [
+                ...config.days.map((days) => ({value: days, label: translate('sulu_dashboard.period_days', {days})})),
+                {value: CUSTOM, label: custom},
+            ],
+        };
+    }
+
+    renderCustomBar() {
+        const error = this.customError;
+
+        return (
+            <div aria-label={translate('sulu_dashboard.period_custom')} className={styles.customBar} role="group">
+                <div className={styles.customFields}>
+                    <label className={styles.customField}>
+                        <span className={styles.customLabel}>{translate('sulu_dashboard.period_from')}</span>
+                        <DatePicker
+                            onChange={this.handleCustomFrom}
+                            options={{dateFormat: true, timeFormat: false}}
+                            valid={!error}
+                            value={this.customFrom}
+                        />
+                    </label>
+                    <label className={styles.customField}>
+                        <span className={styles.customLabel}>{translate('sulu_dashboard.period_to')}</span>
+                        <DatePicker
+                            onChange={this.handleCustomTo}
+                            options={{dateFormat: true, timeFormat: false}}
+                            valid={!error}
+                            value={this.customTo}
+                        />
+                    </label>
+                    <div className={styles.customActions}>
+                        <Button onClick={this.applyCustom} skin="primary">{translate('sulu_admin.apply')}</Button>
+                        <Button onClick={this.closeCustom}>{translate('sulu_admin.cancel')}</Button>
+                    </div>
+                </div>
+                {error &&
+                    <p className={styles.customError} role="alert">
+                        {translate('sulu_dashboard.period_error_' + error, {max: this.periodConfig.maxDays})}
+                    </p>
+                }
+            </div>
+        );
+    }
 
     // --- balance: once, after the tiles have loaded ---
 
@@ -281,7 +446,7 @@ class Dashboard extends React.Component {
         };
 
         this.saved = value;
-        userStore.setPersistentSetting(SETTING_KEY, value);
+        userStore.setPersistentSetting(this.settingKey, value);
     }
 
     @action change(changes) {
@@ -313,7 +478,7 @@ class Dashboard extends React.Component {
 
     // deletes the arrangement: from now on the balance decides again, with the sizes measured before (no second wait)
     @action reset = () => {
-        userStore.setPersistentSetting(SETTING_KEY, null);
+        userStore.setPersistentSetting(this.settingKey, null);
         this.saved = null;
         this.editing = false;
         this.settled = true;
@@ -349,11 +514,12 @@ class Dashboard extends React.Component {
                 tile={hidden ? null : (
                     <WidgetTile
                         cache={this.cache}
-                        key={key + ':' + this.locale}
+                        key={key + ':' + this.locale + (this.period ? ':' + periodKey(this.period) : '')}
                         locale={this.locale}
                         locales={this.locales}
                         onSettled={this.handleSettled}
                         options={this.props.route.options}
+                        period={this.period || undefined}
                         router={this.props.router}
                         widget={widget}
                     />
@@ -396,6 +562,8 @@ class Dashboard extends React.Component {
             <div className={styles.dashboard}>
                 {!this.props.route.parent && <h1>{translate('sulu_dashboard.dashboard')}</h1>}
 
+                {this.period && this.customOpen && this.renderCustomBar()}
+
                 {this.editing && <p className={styles.hint}>{translate('sulu_dashboard.layout_hint')}</p>}
 
                 <Grid>
@@ -433,8 +601,12 @@ export default withToolbar(Dashboard, function() {
         items = [{type: 'button', label: translate('sulu_dashboard.layout_customize'), icon: 'su-cog', onClick: this.startEditing}];
     }
 
+    if (this.periodSelect) {
+        items = [this.periodSelect, ...items];
+    }
+
     return {
-        locale: locales.length > 1
+        locale: locales.length > 1 && this.showLocale
             ? {
                 value: this.locale,
                 onChange: this.setLocale,

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Tile groups: `GroupedDashboardWidgetInterface` (`getGroup()`). A tile with a group appears only in the tab of that group, the overview shows only tiles without a group. `WidgetRegistry::available()` takes the group as an optional argument.
+- Tabs of tiles: `TilesTabProviderInterface` (extends the tab interface) builds a tab from the tiles of a group instead of a view of another bundle. The tab is the dashboard view with the tiles of its group and the options `settingKey`, `period` and `showLocale`.
+- Every tab of tiles saves its arrangement under its own user setting (`sulu_dashboard.layout.<group>`); the overview keeps `sulu_dashboard.layout`. The view reads the key from the option `settingKey`.
+- Period for tabs of tiles (`getPeriods()`, `getDefaultPeriod()`): a select in the toolbar (for example 7, 30, 90, 365 days) and "Custom period ..." with a bar of two date pickers (from, to) and "Apply" above the tiles. A missing day, a start after the end and more than 366 days show an error in the bar. The choice is saved per tab as a user setting at once. Tiles get the prop `period`: `{days}` or `{from, to}` (`YYYY-MM-DD`). The overview has no period.
+- `showLocale(): false` hides the language select of a tab of tiles.
+- The period functions live in `src/Resources/js/period.js` without React and can be tested with `node --test tests/js`.
+
 ## 1.1.0 - 2026-11-14
 
 ### Added
