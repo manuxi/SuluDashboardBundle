@@ -232,9 +232,10 @@ The compiler pass checks the tag while the container is compiled (key, type, col
 ```bash
 php bin/console sulu:dashboard:dump --user=admin --locale=en
 php bin/console sulu:dashboard:dump --user=admin --widget=projects
+php bin/console sulu:dashboard:dump --user=admin --group=visitors
 ```
 
-The command prints the tiles the user sees with their data as JSON. An error in a tile appears as `error` and sets the exit code to 1.
+With `--group` it prints the tiles of a tab of tiles instead of those of the overview. The command prints the tiles the user sees with their data as JSON. An error in a tile appears as `error` and sets the exit code to 1.
 
 ## Balance of the columns
 

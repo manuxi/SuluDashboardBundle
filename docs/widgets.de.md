@@ -232,9 +232,10 @@ Der Compiler-Pass prüft das Tag beim Kompilieren des Containers (Schlüssel, Ar
 ```bash
 php bin/console sulu:dashboard:dump --user=admin --locale=de
 php bin/console sulu:dashboard:dump --user=admin --widget=projects
+php bin/console sulu:dashboard:dump --user=admin --group=visitors
 ```
 
-Der Befehl gibt die Kacheln, die der Benutzer sieht, mit ihren Daten als JSON aus. Ein Fehler in einer Kachel erscheint als `error` und setzt den Exit-Code auf 1.
+Mit `--group` kommen die Kacheln eines Tabs aus Kacheln statt die der Übersicht. Der Befehl gibt die Kacheln, die der Benutzer sieht, mit ihren Daten als JSON aus. Ein Fehler in einer Kachel erscheint als `error` und setzt den Exit-Code auf 1.
 
 ## Ausgleich der Spalten
 
