@@ -77,3 +77,14 @@ test('the sum, the age, the media and the hints are taken over, wrong shapes are
     assert.equal(normalize({items: [{bytes: 1, max: 1}], media: {count: 'x', text: 'y'}}).media, null);
     assert.equal(normalize({items: [{bytes: 1, max: 1}], stale: 'yes'}).stale, false);
 });
+
+test('a folder named by its own path shows the path once, a speaking name keeps the path as a grey addition', () => {
+    const storage = normalize({items: [
+        {label: {text: 'var/content-transfer'}, path: 'var/content-transfer', bytes: 1, max: 1},
+        {label: 'sulu_dashboard.system_storage_cache', path: 'var/cache', bytes: 1, max: 1},
+    ]});
+
+    assert.equal(storage.items[0].path, null);
+    assert.deepEqual(storage.items[0].label, {text: 'var/content-transfer'});
+    assert.equal(storage.items[1].path, 'var/cache');
+});

@@ -29,7 +29,8 @@ export const normalize = (data) => {
     const source = isObject(data) ? data : {};
     const items = (Array.isArray(source.items) ? source.items : []).filter(isObject).map((item) => ({
         label: item.label === undefined || item.label === null ? '' : item.label,
-        path: typeof item.path === 'string' && item.path !== '' ? item.path : null,
+        // a folder without a speaking name is shown by its path as the name: the path is not repeated in grey
+        path: typeof item.path === 'string' && item.path !== '' && !(isObject(item.label) && item.label.text === item.path) ? item.path : null,
         text: typeof item.text === 'string' ? item.text : '',
         bytes: Math.max(0, number(item.bytes, 0)),
         max: Math.max(1, number(item.max, 1)),
