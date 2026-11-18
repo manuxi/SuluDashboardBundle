@@ -37,7 +37,7 @@ class DashboardAdmin extends Admin
     public const TABS_VIEW = 'sulu_dashboard.tabs';
 
     /** views of the tabs of other bundles: prefix plus the key of the tab */
-    private const TAB_VIEW_PREFIX = 'sulu_dashboard.tab_';
+    public const TAB_VIEW_PREFIX = 'sulu_dashboard.tab_';
 
     /** React view that opens a tab; stands on the path of a view that the tab has replaced */
     public const REDIRECT_VIEW_TYPE = 'sulu_dashboard.redirect';
@@ -51,6 +51,9 @@ class DashboardAdmin extends Admin
 
     /** user setting of the arrangement of the overview; a tab of tiles adds a dot and its group */
     public const SETTING_KEY = 'sulu_dashboard.layout';
+
+    /** permission for the "System" tile (versions, security check, disk use); not part of the dashboard permission */
+    public const SYSTEM_SECURITY_CONTEXT = 'sulu.settings.dashboard_system';
 
     /** view of Sulu's search (SearchAdmin::SEARCH_VIEW), by name so the search package stays optional */
     private const SEARCH_VIEW = 'sulu_search.search';
@@ -289,6 +292,9 @@ class DashboardAdmin extends Admin
             self::SULU_ADMIN_SECURITY_SYSTEM => [
                 'Settings' => [
                     self::SECURITY_CONTEXT => [
+                        PermissionTypes::VIEW,
+                    ],
+                    self::SYSTEM_SECURITY_CONTEXT => [
                         PermissionTypes::VIEW,
                     ],
                 ],

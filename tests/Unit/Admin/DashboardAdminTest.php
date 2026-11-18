@@ -181,5 +181,6 @@ class DashboardAdminTest extends TestCase
         $contexts = $this->admin([])->getSecurityContexts();
 
         $this->assertSame(['view'], $contexts['Sulu']['Settings'][DashboardAdmin::SECURITY_CONTEXT]);
+        $this->assertSame(['view'], $contexts['Sulu']['Settings'][DashboardAdmin::SYSTEM_SECURITY_CONTEXT]);
     }
 }

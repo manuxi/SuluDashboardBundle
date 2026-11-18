@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0 - 2026-11-18
+
+### Added
+
+- The tab "System" for administrators, a tab of tiles like "Visitors" (group `system`, own setting key `sulu_dashboard.layout.system`, "Customize" mode, no period, no language select). Tab and every tile need the permission `sulu.settings.dashboard_system`; without it there is no tab. Tiles: **Security vulnerabilities** (wide column, pinned: Sulu table with package, installed version, CVE or advisory ID, title as a link to the source in a new tab, severity, date reported, the worst first, ten rows and "Show all"; the message "No known security vulnerabilities." without findings; below it the packages that are no longer maintained), **Last check** (age, warning for never or too old, always with the command as text), **Versions**, **Environment** (red warning for debug mode in `prod`), **Storage**, **Database migrations** and **Failed messages** (the last two only where there is something to read). See [docs/system.en.md](docs/system.en.md).
+- Own permission `sulu.settings.dashboard_system` (view) under Settings; it is needed besides `sulu.settings.dashboard` for the tab and for the tile on the overview.
+- Command `sulu:dashboard:system-check` for a cron job: runs `composer audit --locked` (no shell, command as a list) and measures the folders, and saves the result in the cache (`cache.app` of the admin context). Nothing slow runs in a web request. It now saves per advisory the package, the installed version, the advisory ID, CVE, title, link (only `http`/`https`), severity (`critical`, `high`, `medium`, `low`, if Composer delivers it) and the date reported, up to 200 advisories, and the abandoned packages with their replacement. A result of an older version is still read (the new fields are empty until the command runs again). Exit code 1 when the check could not run, not when vulnerabilities were found.
+- Options `sulu_dashboard.system.composer_binary` (default `composer`, also a path to a `composer.phar`) and `sulu_dashboard.system.max_age` (hours until the last check counts as too old, default 48).
+- List tiles: rows may carry `severity` `error`, `warning` or `ok` (Sulu's icons, a green check for `ok`); the data may carry `limit` (rows before "Show all", default 10) and `header: false` (no table head, for key/value rows). `footer.title` may be left out. Texts may be `['text' => '8.4.27']` to be shown as they are, never taken for a translation key. What the list derives from its data lives in `src/Resources/js/list.js` and is tested with `node --test tests/js/*.test.mjs`.
+- New requirement `symfony/process` (always present in a Sulu project); `doctrine/doctrine-migrations-bundle` and `symfony/messenger` only under `suggest`.
+
+### Changed
+
+- The tile `sulu_system` on the overview is small now: a traffic light with a row per problem (or "Everything is in order"), the age of the last check and a link "Details" to the tab "System". Its key stays, so saved arrangements keep working.
+- For users with the system permission the dashboard is a tab view (`#/overview`, `#/system`) and the root path `/` opens the overview, as with the tab "Visitors". Without the permission nothing changes.
+
 ## 1.2.0 - 2026-11-18
 
 ### Added

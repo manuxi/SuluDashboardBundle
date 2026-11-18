@@ -31,14 +31,15 @@ export const navigate = (router, link) => {
 // sent through it at all. A key has a letter: a number written with a thousands separator ("1.204") is not one.
 const KEY_PATTERN = /^(?=.*[A-Za-z_])[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)+$/;
 
-// a text in tile data: plain text, an admin translation key, or {key, parameters} for a key with parameters
+// a text in tile data: plain text, an admin translation key, {key, parameters} for a key with parameters, or {text} for a
+// text that is shown exactly as it is (a version such as "8.4.27" looks like a key, but is none)
 export const tx = (value) => {
     if (value === null || value === undefined) {
         return '';
     }
 
     if (typeof value === 'object') {
-        return translate(value.key, value.parameters);
+        return value.key === undefined && value.text !== undefined ? String(value.text) : translate(value.key, value.parameters);
     }
 
     const text = String(value);

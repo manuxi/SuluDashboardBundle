@@ -11,6 +11,8 @@ use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTilesTabProvider;
 use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTileWidget;
 use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
 use Manuxi\SuluDashboardBundle\Widget\DashboardWidgetInterface;
+use Manuxi\SuluDashboardBundle\Widget\System\SystemTileData;
+use Manuxi\SuluDashboardBundle\Widget\System\SystemTileWidget;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -29,6 +31,8 @@ class SuluDashboardExtension extends Extension
         $container->setParameter('sulu_dashboard.tabs.replace_navigation', $config['tabs']['replace_navigation']);
         $container->setParameter('sulu_dashboard.log_stats.tab', $config['log_stats']['tab']);
         $container->setParameter('sulu_dashboard.layout.balance', $config['layout']['balance']);
+        $container->setParameter('sulu_dashboard.system.composer_binary', $config['system']['composer_binary']);
+        $container->setParameter('sulu_dashboard.system.max_age', $config['system']['max_age']);
         $container->setParameter('sulu_dashboard.disabled_widgets', array_values($config['disabled_widgets']));
 
         // every service that implements the interface becomes a tile, without any further configuration
@@ -38,6 +42,14 @@ class SuluDashboardExtension extends Extension
         $container->registerForAutoconfiguration(DashboardTabProviderInterface::class)->addTag(DashboardTabPass::TAG);
 
         $loader->load('services.yaml');
+
+        // the tab "System": one tile service per entry
+        foreach (array_keys(SystemTileWidget::TILES) as $name) {
+            $container->register(SystemTileWidget::KEY_PREFIX . $name, SystemTileWidget::class)
+                ->setArguments([new Reference(SystemTileData::class), $name])
+                ->setPublic(false)
+                ->addTag(DashboardWidgetPass::TAG);
+        }
 
         // optional integration: the statistics of amoifr/sulu-log-stats-bundle as the tab "Visitors" and a tile
         $bundles = $container->hasParameter('kernel.bundles') ? $container->getParameter('kernel.bundles') : [];

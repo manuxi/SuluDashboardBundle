@@ -54,7 +54,7 @@ Add the title to `translations/admin.en.yaml` (`app.dashboard_projects: "Project
 
 ## Texts and links in tile data
 
-- Every text of a tile (titles, labels, rows, notes, `empty`, footer) may be an admin translation key, plain text or `['key' => ..., 'parameters' => [...]]`. Text that looks like a key (words joined by dots without spaces, such as `app.dashboard_projects`) goes through Sulu's translation, a key that does not exist is shown as it is. Anything else, such as `Berlin` or `Hall 3`, is shown unchanged.
+- Every text of a tile (titles, labels, rows, notes, `empty`, footer) may be an admin translation key, plain text or `['key' => ..., 'parameters' => [...]]`. Text that looks like a key (words joined by dots without spaces, such as `app.dashboard_projects`) goes through Sulu's translation, a key that does not exist is shown as it is. Anything else, such as `Berlin` or `Hall 3`, is shown unchanged. A text that must never be taken for a key although it looks like one (a version such as `8.4.27`) is passed as `['text' => '8.4.27']`.
 - A link is never a URL but a Sulu view with attributes: `['view' => 'sulu_page.page_edit_form', 'attributes' => ['id' => $id, 'webspace' => 'your_webspace', 'locale' => $locale]]`.
 - An error in `getData()` stays inside its tile: it is logged and the tile shows a message. Nothing is swallowed silently, and the message of the exception is never sent to the browser.
 
@@ -94,7 +94,7 @@ A text may also be `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 
 
 ### list
 
-A short table with a link per row (pen button). Ten rows are shown, the rest on demand. `text` is an optional grey second line under the title (for example a place), `meta` a second column. An optional `footer` works as with `progress`.
+A short table with a link per row (pen button). Ten rows are shown, the rest on demand. `text` is an optional grey second line under the title (for example a place), `meta` a second column. An optional `footer` works as with `progress`. A row may carry `'severity' => 'error'` (red title), `'warning'` or `'ok'` (green check): Sulu's icon is shown in front of it. `'header' => false` in the data leaves out the table head, for rows that are key and value ("PHP", "8.4") where "Title" would be a wrong column heading (default: a head with "Title"). `footer.title` may be left out. `'limit' => 20` in the data sets the number of rows shown before "Show all" (default 10).
 
 ```php
 return [

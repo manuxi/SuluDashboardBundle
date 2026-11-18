@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Tests\Unit\Widget;
 
 use Manuxi\SuluDashboardBundle\Content\ContentReader;
+use Manuxi\SuluDashboardBundle\System\FailedMessages;
+use Manuxi\SuluDashboardBundle\System\PendingMigrations;
+use Manuxi\SuluDashboardBundle\System\SystemCheckStore;
+use Manuxi\SuluDashboardBundle\System\SystemVersions;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\ActivitiesWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\ArticlesCountWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\MediaCountWidget;
@@ -12,13 +16,16 @@ use Manuxi\SuluDashboardBundle\Widget\Builtin\OpenItemsWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\PagesCountWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\SeoWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\SnippetsCountWidget;
+use Manuxi\SuluDashboardBundle\Widget\Builtin\SystemWidget;
 use Manuxi\SuluDashboardBundle\Widget\Builtin\TranslationsWidget;
 use Manuxi\SuluDashboardBundle\Widget\ConditionalDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\DashboardWidgetInterface;
+use Manuxi\SuluDashboardBundle\Widget\System\SystemTileData;
 use Manuxi\SuluDashboardBundle\Widget\WidgetColumns;
 use Manuxi\SuluDashboardBundle\Widget\WidgetTypes;
 use PHPUnit\Framework\TestCase;
 use Sulu\Component\Localization\Manager\LocalizationManagerInterface;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 class BuiltinWidgetsTest extends TestCase
 {
@@ -111,6 +118,7 @@ class BuiltinWidgetsTest extends TestCase
             new SeoWidget($this->reader()),
             new TranslationsWidget($this->reader(), $localizations),
             new ActivitiesWidget(),
+            new SystemWidget(new SystemTileData(SystemVersions::detect(), 'prod', false, new SystemCheckStore(new ArrayAdapter()), new PendingMigrations(), new FailedMessages())),
         ];
 
         $keys = [];

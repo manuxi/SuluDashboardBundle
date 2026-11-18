@@ -401,6 +401,97 @@
     color: $gray;
 }
 
+/* text of a row with a severity: a message is shown in full, in several lines */
+.wrap {
+    display: block;
+    min-width: 0;
+    white-space: normal; /* Sulu's table cells are nowrap */
+    overflow-wrap: anywhere;
+}
+
+/* a row of the list tile with a severity: Sulu's warning icon in front of the title */
+.severityError,
+.severityOk,
+.severityWarning {
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+
+.severityError {
+    color: $persianRed;
+}
+
+.severityOk {
+    color: $mantis;
+}
+
+.severityWarning {
+    color: $gold;
+}
+
+.severityTitleError {
+    color: $persianRed;
+}
+
+/* a message at the top of a tile ("No known vulnerabilities"): icon and text side by side */
+.systemMessage {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    line-height: 20px;
+}
+
+.systemMessage > div {
+    min-width: 0;
+}
+
+/* cells of the table of vulnerabilities: package, version, ID, severity and date never break (Sulu's cells are nowrap, a very
+   long name is cut with an ellipsis); only the description breaks, at word boundaries */
+.fixedCell {
+    display: block;
+    max-width: 240px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* a second line below the first in a cell: Sulu's cells are flex boxes that put children side by side, so the lines get a
+   block of their own; the grey line may use the whole width and is cut with an ellipsis only if it is longer */
+.cellStack {
+    display: block;
+    flex: 1;
+    min-width: 0;
+}
+
+.fullLine {
+    max-width: none;
+}
+
+.wordsCell {
+    display: block;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+/* the title of an advisory is a link to its source */
+.externalLink {
+    color: inherit;
+    text-decoration: underline;
+}
+
+/* a second table in the card of the first, with its own small title */
+.systemSection {
+    margin-top: 30px;
+}
+
+.systemSubtitle {
+    font-size: 14px;
+    font-weight: normal;
+    color: $black;
+    margin: 0 0 5px;
+}
+
 /* the bar of the custom period (tabs of tiles): two date pickers and the buttons in one row, below 520 px under each other */
 .customBar {
     margin-bottom: 20px;

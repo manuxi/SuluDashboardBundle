@@ -54,7 +54,7 @@ Den Titel in `translations/admin.de.yaml` eintragen (`app.dashboard_projects: "P
 
 ## Texte und Links in den Kacheldaten
 
-- Jeder Text einer Kachel (Titel, Beschriftungen, Zeilen, Hinweise, `empty`, Footer) darf ein Übersetzungsschlüssel der Domain admin, Klartext oder `['key' => ..., 'parameters' => [...]]` sein. Was wie ein Schlüssel aussieht (Wörter mit Punkten ohne Leerzeichen, etwa `app.dashboard_projects`), läuft durch Sulus Übersetzung, ein unbekannter Schlüssel wird unverändert angezeigt. Alles andere, etwa `Berlin` oder `Halle 3`, bleibt unverändert.
+- Jeder Text einer Kachel (Titel, Beschriftungen, Zeilen, Hinweise, `empty`, Footer) darf ein Übersetzungsschlüssel der Domain admin, Klartext oder `['key' => ..., 'parameters' => [...]]` sein. Was wie ein Schlüssel aussieht (Wörter mit Punkten ohne Leerzeichen, etwa `app.dashboard_projects`), läuft durch Sulus Übersetzung, ein unbekannter Schlüssel wird unverändert angezeigt. Alles andere, etwa `Berlin` oder `Halle 3`, bleibt unverändert. Ein Text, der nie für einen Schlüssel gehalten werden darf, obwohl er so aussieht (eine Version wie `8.4.27`), wird als `['text' => '8.4.27']` übergeben.
 - Ein Link ist nie eine URL, sondern eine Sulu-View mit Attributen: `['view' => 'sulu_page.page_edit_form', 'attributes' => ['id' => $id, 'webspace' => 'your_webspace', 'locale' => $locale]]`.
 - Ein Fehler in `getData()` bleibt in seiner Kachel: Er wird protokolliert, die Kachel zeigt eine Meldung. Nichts wird still verschluckt, und die Meldung der Exception geht nie an den Browser.
 
@@ -94,7 +94,7 @@ Ein Text darf auch `['key' => 'app.dashboard_hint', 'parameters' => ['count' => 
 
 ### list
 
-Eine kurze Tabelle mit einem Link je Zeile (Stift-Button). Zehn Zeilen sind sichtbar, der Rest auf Klick. `text` ist eine optionale graue zweite Zeile unter dem Titel (zum Beispiel ein Ort), `meta` eine zweite Spalte. Ein optionaler `footer` funktioniert wie bei `progress`.
+Eine kurze Tabelle mit einem Link je Zeile (Stift-Button). Zehn Zeilen sind sichtbar, der Rest auf Klick. `text` ist eine optionale graue zweite Zeile unter dem Titel (zum Beispiel ein Ort), `meta` eine zweite Spalte. Ein optionaler `footer` funktioniert wie bei `progress`. Eine Zeile kann `'severity' => 'error'` (roter Titel), `'warning'` oder `'ok'` (grüner Haken) tragen: Davor erscheint Sulus Icon. `'header' => false` in den Daten lässt den Tabellenkopf weg, für Zeilen aus Schlüssel und Wert („PHP“, „8.4“), für die „Titel“ keine passende Spaltenüberschrift wäre (Standard: Kopf mit „Titel“). `footer.title` darf fehlen. `'limit' => 20` in den Daten legt fest, wie viele Zeilen vor „Alle anzeigen“ sichtbar sind (Standard 10).
 
 ```php
 return [
