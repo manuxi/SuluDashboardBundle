@@ -51,6 +51,6 @@ final class VisitorsWidget implements DashboardWidgetInterface
 
     public function getData(string $locale): array
     {
-        return ['apiUrl' => $this->provider->apiUrl(), 'days' => 7];
+        return ['apiUrl' => $this->provider->apiUrl(), 'timezone' => $this->provider->getTimezone(), 'days' => 7];
     }
 }

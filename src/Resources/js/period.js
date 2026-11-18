@@ -1,4 +1,4 @@
-// The period of a tab of tiles as plain functions, without React or the DOM, so they can be tested with `node --test`
+// The period of a tab of tiles as plain functions, without React or the DOM, so they can be tested with `node --test tests/js/*.test.mjs`
 // (tests/js/period.test.mjs).
 //
 // A period is {days: 30} (the last days up to today) or {from: 'YYYY-MM-DD', to: 'YYYY-MM-DD'} (a custom period, both days

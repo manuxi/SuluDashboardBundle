@@ -31,6 +31,23 @@ class ConfigurationTest extends TestCase
         $this->assertFalse($this->process(['layout' => ['balance' => false]])['layout']['balance']);
     }
 
+    public function testTheTabOfTheLogStatisticsIsMadeOfTilesByDefault(): void
+    {
+        $this->assertSame('tiles', $this->process([])['log_stats']['tab']);
+    }
+
+    public function testTheTabOfTheLogStatisticsCanShowTheOriginalView(): void
+    {
+        $this->assertSame('view', $this->process(['log_stats' => ['tab' => 'view']])['log_stats']['tab']);
+    }
+
+    public function testTheTabOfTheLogStatisticsRefusesOtherModes(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['log_stats' => ['tab' => 'chart']]);
+    }
+
     public function testBalanceMustBeABoolean(): void
     {
         $this->expectException(InvalidConfigurationException::class);

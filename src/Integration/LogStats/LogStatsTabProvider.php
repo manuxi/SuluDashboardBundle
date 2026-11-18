@@ -9,11 +9,12 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * The statistics page of amoifr/sulu-log-stats-bundle as the tab "Visitors". Loaded only when that bundle is installed
- * and enabled (see SuluDashboardExtension). The view type and the options are the ones its own admin class sets for its
- * menu item, so the page is the same one; nothing of that bundle is referenced by class.
+ * The statistics page of amoifr/sulu-log-stats-bundle as the tab "Visitors" (sulu_dashboard.log_stats.tab: view).
+ * Loaded only when that bundle is installed and enabled (see SuluDashboardExtension). The view type and the options are
+ * the ones its own admin class sets for its menu item, so the page is the same one; nothing of that bundle is referenced
+ * by class. In the mode "tiles" (the default) {@see LogStatsTilesTabProvider} takes its place.
  */
-final class LogStatsTabProvider implements ReplacesNavigationItemInterface
+class LogStatsTabProvider implements ReplacesNavigationItemInterface
 {
     public const SECURITY_CONTEXT = 'sulu.settings.log_stats';
 
@@ -28,6 +29,11 @@ final class LogStatsTabProvider implements ReplacesNavigationItemInterface
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly string $timezone,
     ) {
+    }
+
+    public function getTimezone(): string
+    {
+        return $this->timezone;
     }
 
     public function getKey(): string

@@ -1,4 +1,4 @@
-// Run with: node --test tests/js   (Node 22 or newer, no packages needed)
+// Run with: node --test tests/js/*.test.mjs   (Node 22 or newer, no packages needed)
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {customStart, fromIsoDay, periodKey, resolvePeriod, selectValue, spanDays, toIsoDay, validateRange} from '../../src/Resources/js/period.js';

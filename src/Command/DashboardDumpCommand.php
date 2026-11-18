@@ -42,7 +42,8 @@ class DashboardDumpCommand extends Command
         $this
             ->addOption('user', 'u', InputOption::VALUE_REQUIRED, 'Username of the admin user whose permissions apply')
             ->addOption('locale', 'l', InputOption::VALUE_REQUIRED, 'Content locale (default: first locale of the site)')
-            ->addOption('widget', 'w', InputOption::VALUE_REQUIRED, 'Only this tile (key)');
+            ->addOption('widget', 'w', InputOption::VALUE_REQUIRED, 'Only this tile (key)')
+            ->addOption('group', 'g', InputOption::VALUE_REQUIRED, 'Tiles of this group (a tab of tiles, for example visitors) instead of those of the overview');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -77,10 +78,11 @@ class DashboardDumpCommand extends Command
         $this->tokenStorage->setToken(new UsernamePasswordToken($user, 'admin', $user->getRoles()));
 
         $only = $input->getOption('widget');
+        $group = $input->getOption('group');
         $failed = false;
         $tiles = [];
 
-        foreach ($this->widgetRegistry->available() as $widget) {
+        foreach ($this->widgetRegistry->available(\is_string($group) && '' !== $group ? $group : null) as $widget) {
             if (\is_string($only) && '' !== $only && $widget->getKey() !== $only) {
                 continue;
             }

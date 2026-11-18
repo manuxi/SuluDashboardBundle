@@ -48,23 +48,30 @@ export default class ListTile extends React.Component {
                         placeholderText={tx(data.empty || 'sulu_dashboard.empty')}
                         skin="light"
                     >
+                        {/* Sulu's Table maps its children and reads their props: no false or null entries. */}
                         <Table.Header>
-                            <Table.HeaderCell>{translate('sulu_admin.title')}</Table.HeaderCell>
-                            {hasMeta && <Table.HeaderCell>{' '}</Table.HeaderCell>}
+                            {[
+                                <Table.HeaderCell key="title">{translate('sulu_admin.title')}</Table.HeaderCell>,
+                                ...(hasMeta ? [<Table.HeaderCell key="meta">{' '}</Table.HeaderCell>] : []),
+                            ]}
                         </Table.Header>
                         <Table.Body>
                             {visible.map((row, index) => (
                                 <Table.Row id={index} key={index}>
-                                    <Table.Cell>
-                                        {row.state && INDICATOR[row.state] &&
-                                            <PublishIndicator className={styles.indicator} {...INDICATOR[row.state]} />
-                                        }
-                                        <div className={styles.rowTexts}>
-                                            <Ellipsis title={tx(row.title)}>{tx(row.title)}</Ellipsis>
-                                            {row.text && <Ellipsis className={styles.rowText}>{tx(row.text)}</Ellipsis>}
-                                        </div>
-                                    </Table.Cell>
-                                    {hasMeta && <Table.Cell><Ellipsis>{tx(row.meta)}</Ellipsis></Table.Cell>}
+                                    {[
+                                        <Table.Cell key="title">
+                                            {row.state && INDICATOR[row.state] &&
+                                                <PublishIndicator className={styles.indicator} {...INDICATOR[row.state]} />
+                                            }
+                                            <div className={styles.rowTexts}>
+                                                <Ellipsis title={tx(row.title)}>{tx(row.title)}</Ellipsis>
+                                                {row.text && <Ellipsis className={styles.rowText}>{tx(row.text)}</Ellipsis>}
+                                            </div>
+                                        </Table.Cell>,
+                                        ...(hasMeta
+                                            ? [<Table.Cell key="meta"><Ellipsis>{tx(row.meta)}</Ellipsis></Table.Cell>]
+                                            : []),
+                                    ]}
                                 </Table.Row>
                             ))}
                         </Table.Body>

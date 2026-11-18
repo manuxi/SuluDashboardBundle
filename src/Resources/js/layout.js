@@ -1,4 +1,4 @@
-// Layout of the dashboard as plain functions, without React or the DOM, so they can be tested with `node --test`
+// Layout of the dashboard as plain functions, without React or the DOM, so they can be tested with `node --test tests/js/*.test.mjs`
 // (tests/js/layout.test.mjs).
 //
 // A tile is {key, rank, height, pinned, hidden, place}:

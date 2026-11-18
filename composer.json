@@ -30,7 +30,7 @@
         "symfony/security-core": "^6.4 | ^7.0"
     },
     "suggest": {
-        "amoifr/sulu-log-stats-bundle": "Adds the tab \"Visitors\" and the tile \"Visitors (7 days)\" to the dashboard"
+        "amoifr/sulu-log-stats-bundle": "~0.1, adds the tab \"Visitors\" (tiles, charts, top lists) and the tile \"Visitors (7 days)\" to the dashboard"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.64",
@@ -62,7 +62,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "1.1.x-dev"
+            "dev-main": "1.2.x-dev"
         }
     },
     "config": {
