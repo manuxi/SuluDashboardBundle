@@ -1,5 +1,5 @@
 // The tiles of the tab "Visitors" (group "visitors", only with amoifr/sulu-log-stats-bundle) as plain functions, without
-// React and without Sulu, so that they can be tested with `node --test tests/js` (tests/js/logStats.test.mjs).
+// React and without Sulu, so that they can be tested with `node --test tests/js/*.test.mjs` (tests/js/logStats.test.mjs).
 //
 // All tiles read the same answer of the admin API of the log statistics, GET /admin/api/log-stats?from=&to=. The shape
 // they rely on (tested with tests/fixtures/log-stats-response.json):
@@ -248,7 +248,7 @@ export const chartData = (metric, statistics) => {
                 series: [
                     series('sulu_dashboard.visitors_status_success', days.map((day) => statusClass(day.statusClasses, 2)), 'green'),
                     // the class 1xx (information) is added to the redirects, like the view of the log statistics does
-                    series('sulu_dashboard.visitors_status_redirect', days.map((day) => statusClass(day.statusClasses, 3) + statusClass(day.statusClasses, 1)), 'gray'),
+                    series('sulu_dashboard.visitors_status_redirect', days.map((day) => statusClass(day.statusClasses, 3) + statusClass(day.statusClasses, 1)), 'blue'),
                     series('sulu_dashboard.visitors_status_client', days.map((day) => statusClass(day.statusClasses, 4)), 'yellow'),
                     series('sulu_dashboard.visitors_status_server', days.map((day) => statusClass(day.statusClasses, 5)), 'red'),
                 ],
@@ -272,7 +272,7 @@ export const chartData = (metric, statistics) => {
                 labels: dayLabels(statistics),
                 series: [
                     series('sulu_dashboard.visitors_series_average', days.map((day) => (time(day) ? Math.round(num(time(day).averageMs)) : null)), 'blue'),
-                    series('sulu_dashboard.visitors_series_p95', days.map((day) => (time(day) && isObject(time(day).p95) ? num(time(day).p95.boundMs) : null)), 'gray'),
+                    series('sulu_dashboard.visitors_series_p95', days.map((day) => (time(day) && isObject(time(day).p95) ? num(time(day).p95.boundMs) : null)), 'yellow'),
                 ],
             };
         }

@@ -1,4 +1,4 @@
-// Run with: node --test tests/js   (Node 22 or newer, no packages needed)
+// Run with: node --test tests/js/*.test.mjs   (Node 22 or newer, no packages needed)
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {test} from 'node:test';
@@ -88,7 +88,7 @@ test('charts', () => {
 
     const status = chartData('chart_status', data);
     assert.equal(status.stacked, true);
-    assert.deepEqual(status.series.map((entry) => entry.color), ['green', 'gray', 'yellow', 'red']);
+    assert.deepEqual(status.series.map((entry) => entry.color), ['green', 'blue', 'yellow', 'red']);
     assert.deepEqual(status.series[1].values, [70, 80, 76, 90, 40]);
 
     const hours = chartData('chart_hours', data);

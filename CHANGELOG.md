@@ -13,9 +13,10 @@
 - In the mode `tiles` the dashboard also removes the view `amoifr_log_stats.dashboard` of the log statistics (`RemovesReplacedViewsInterface`); its path (`#/log-stats`) redirects to the tab through the new view `sulu_dashboard.redirect`. Only together with the replaced menu item.
 - All tiles of the tab share one request per period (`logStats.js`, `logStatsStore.js`); the tile "Visitors (7 days)" uses it too. A tile that lacks fields it expects says which ones, instead of showing zeros. The expected answer is kept in `tests/fixtures/log-stats-response.json` and tested with `node --test tests/js/*.test.mjs`. `suggest` names the version `~0.1`.
 - A text in tile data that is only digits and dots ("1.204") is no longer taken for a translation key.
-- The period functions live in `src/Resources/js/period.js` without React and can be tested with `node --test tests/js`.
+- The period functions live in `src/Resources/js/period.js` without React and can be tested with `node --test tests/js/*.test.mjs`.
 - Display type `chart` (`WidgetTypes::CHART`): a line chart (one or two series) or a bar chart (simple or stacked) drawn as SVG without a library, with rounded axis values, thinned x labels, a tooltip per point or bar, a legend from two series on, a table of the data as a fallback, an accessible name (`role="img"`) and a message for empty data. The series colours are Sulu's own palette. Data: `{kind, stacked?, labels, series: [{label, values, color?}], unit?}`, see `docs/widgets.en.md`.
-- The calculations of the chart (axis, thinning, stacking) live in `src/Resources/js/chartMath.js` without React and are tested with `node --test` in CI.
+- The calculations of the chart (axis, thinning, stacking) live in `src/Resources/js/chartMath.js` without React and are tested with `node --test tests/js/*.test.mjs` in CI.
+- Contrast of the chart colours: blue, green and yellow are mixed with 35% black (Sass `mix()` of Sulu's variables) so lines and bars reach 3:1 on the white tile (5.2, 4.6 and 3.5); the axis labels use `$doveGray` (5.1:1 instead of 3.6:1). Stacked bars get a white 1px gap, the status chart uses green, blue, yellow and red (2xx to 5xx) and the response time blue and yellow, so neighbours differ in lightness and hue. Legend, tooltips and the table of the data stay as a second way to read the values. The Sulu 3.0 admin has no dark mode, so there is nothing to follow.
 
 ## 1.1.0 - 2026-11-14
 
@@ -28,7 +29,7 @@
 - Customize the dashboard: the toolbar button "Customize" shows a handle on every tile (Sulu's block handle, react-sortable-hoc), an eye button to hide a tile and an arrow button to move it to the other column. "Done" ends the mode, "Reset" deletes the own arrangement so the balance decides again. The row of figures can be reordered and hidden but stays a row. Hidden tiles show dimmed while arranging and do not load their data otherwise.
 - The arrangement is saved with every change as the user setting `sulu_dashboard.layout`, wins over the balance, and leaves tiles that are new since then to the balance.
 - "Done", "Reset" and leaving the page send the arrangement at once instead of after the 2.5 s pause of Sulu's user store.
-- The layout functions live in `src/Resources/js/layout.js` without React and can be tested with `node --test tests/js`.
+- The layout functions live in `src/Resources/js/layout.js` without React and can be tested with `node --test tests/js/*.test.mjs`.
 
 ## 1.0.0 - 2026-11-14
 

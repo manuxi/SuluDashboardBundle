@@ -1,4 +1,4 @@
-// The calculations of the chart tile without React, so that they can be tested with `node --test tests/js`.
+// The calculations of the chart tile without React, so that they can be tested with `node --test tests/js/*.test.mjs`.
 
 // palette names a series may use as `color` in the data; the order is the default order of the series
 export const PALETTE = ['blue', 'green', 'yellow', 'red', 'gray'];
