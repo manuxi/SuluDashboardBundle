@@ -26,17 +26,22 @@
         "symfony/framework-bundle": "^6.4 | ^7.0",
         "symfony/http-foundation": "^6.4 | ^7.0",
         "symfony/http-kernel": "^6.4 | ^7.0",
+        "symfony/process": "^6.4 | ^7.0 | ^8.0",
         "symfony/routing": "^6.4 | ^7.0",
         "symfony/security-core": "^6.4 | ^7.0"
     },
     "suggest": {
+        "doctrine/doctrine-migrations-bundle": "Shows the open database migrations on the tile \"System\"",
+        "symfony/messenger": "Shows the failed messages (failure_transport) on the tile \"System\"",
         "amoifr/sulu-log-stats-bundle": "Adds the tab \"Visitors\" and the tile \"Visitors (7 days)\" to the dashboard"
     },
     "require-dev": {
+        "doctrine/migrations": "^3.7",
         "friendsofphp/php-cs-fixer": "^3.64",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10.5 | ^11.0",
         "symfony/browser-kit": "^6.4 | ^7.0",
+        "symfony/messenger": "^6.4 | ^7.0 | ^8.0",
         "symfony/phpunit-bridge": "^6.4 | ^7.0",
         "symfony/var-exporter": "^6.4 | ^7.0",
         "cmsig/seal-memory-adapter": "^0.12"

@@ -40,6 +40,9 @@ class DashboardAdmin extends Admin
 
     public const SECURITY_CONTEXT = 'sulu.settings.dashboard';
 
+    /** permission for the "System" tile (versions, security check, disk use); not part of the dashboard permission */
+    public const SYSTEM_SECURITY_CONTEXT = 'sulu.settings.dashboard_system';
+
     /** view of Sulu's search (SearchAdmin::SEARCH_VIEW), by name so the search package stays optional */
     private const SEARCH_VIEW = 'sulu_search.search';
 
@@ -198,6 +201,9 @@ class DashboardAdmin extends Admin
             self::SULU_ADMIN_SECURITY_SYSTEM => [
                 'Settings' => [
                     self::SECURITY_CONTEXT => [
+                        PermissionTypes::VIEW,
+                    ],
+                    self::SYSTEM_SECURITY_CONTEXT => [
                         PermissionTypes::VIEW,
                     ],
                 ],

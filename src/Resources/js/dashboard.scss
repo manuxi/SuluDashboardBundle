@@ -400,3 +400,29 @@
 .rowText {
     color: $gray;
 }
+
+/* text of a row with a severity: a message is shown in full, in several lines */
+.wrap {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* a row of the list tile with a severity: Sulu's warning icon in front of the title */
+.severityError,
+.severityWarning {
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+
+.severityError {
+    color: $persianRed;
+}
+
+.severityWarning {
+    color: $gold;
+}
+
+.severityTitleError {
+    color: $persianRed;
+}

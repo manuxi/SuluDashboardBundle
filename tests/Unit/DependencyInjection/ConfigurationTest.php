@@ -31,6 +31,18 @@ class ConfigurationTest extends TestCase
         $this->assertFalse($this->process(['layout' => ['balance' => false]])['layout']['balance']);
     }
 
+    public function testTheSystemTileHasDefaults(): void
+    {
+        $this->assertSame(['composer_binary' => 'composer', 'max_age' => 48], $this->process([])['system']);
+    }
+
+    public function testTheMaximumAgeOfTheSystemCheckMustBePositive(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->process(['system' => ['max_age' => 0]]);
+    }
+
     public function testBalanceMustBeABoolean(): void
     {
         $this->expectException(InvalidConfigurationException::class);

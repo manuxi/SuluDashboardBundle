@@ -7,6 +7,7 @@ namespace Manuxi\SuluDashboardBundle\Tests\Functional;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use Sulu\Bundle\AdminBundle\Admin\View\ViewRegistry;
 use Sulu\Bundle\TestBundle\Testing\KernelTestCase;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
@@ -29,9 +30,33 @@ class ContainerTest extends KernelTestCase
         sort($keys);
 
         $this->assertSame(
-            ['sulu_activities', 'sulu_articles', 'sulu_media', 'sulu_open_items', 'sulu_pages', 'sulu_seo', 'sulu_snippets', 'sulu_translations'],
+            ['sulu_activities', 'sulu_articles', 'sulu_media', 'sulu_open_items', 'sulu_pages', 'sulu_seo', 'sulu_snippets', 'sulu_system', 'sulu_translations'],
             $keys,
         );
+    }
+
+    /**
+     * The tile "System" with its real services (cache pool, optional migrations and Messenger): it renders in a booted
+     * kernel without any result of the console command and reports that the check never ran.
+     */
+    public function testTheSystemTileRendersWithTheRealServices(): void
+    {
+        /** @var WidgetRegistry $registry */
+        $registry = self::getContainer()->get('sulu_dashboard.widget_registry');
+
+        $rows = $registry->all()['sulu_system']->getData('en')['rows'];
+        $titles = array_map(static fn (array $row): mixed => $row['title'], $rows);
+
+        $this->assertContains('sulu_dashboard.system_not_run', $titles);
+        $this->assertContains('PHP', $titles);
+    }
+
+    public function testTheCommandsAreRegistered(): void
+    {
+        $application = new Application(self::$kernel);
+
+        $this->assertTrue($application->has('sulu:dashboard:system-check'));
+        $this->assertTrue($application->has('sulu:dashboard:dump'));
     }
 
     public function testTheWidgetRouteIsRegistered(): void

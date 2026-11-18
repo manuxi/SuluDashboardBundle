@@ -121,6 +121,9 @@ sulu_dashboard:
         replace_navigation: true   # ein Tab darf einen Menüpunkt eines anderen Bundles ersetzen (die Statistik der Log-Statistik)
     layout:
         balance: true      # nach dem Laden Kacheln vom Ende der längeren in die kürzere Spalte schieben (einmal); false: Kacheln bleiben in ihrer Spalte
+    system:
+        composer_binary: composer   # Kachel „System“: Befehl im PATH oder Pfad zu einer composer.phar
+        max_age: 48                 # Stunden, nach denen die letzte Hintergrundprüfung als zu alt gilt
     disabled_widgets: []   # Schlüssel von Kacheln, die nicht erscheinen, z. B. ['sulu_activities']
 ```
 
@@ -131,6 +134,7 @@ Sulus Suche und das Dashboard wollen beide den Pfad `/`. Der Router des Admins n
 - [Eigene Kachel in 5 Minuten](docs/widgets.de.md) - Interface, Darstellungsarten, optionale Abhängigkeit, Tag
 - [Dashboard anpassen](docs/customize.de.md) - Kacheln je Benutzer anordnen, ausblenden und zurücksetzen ([Bildschirmfoto](docs/img/dashboard-customize.de.png))
 - [Tabs](docs/tabs.de.md) - Eine ganze Seite eines Bundles als Tab, Besucher aus der Log-Statistik
+- [System](docs/system.de.md) - Kachel für Administratoren: Versionen, Debug-Warnung, Sicherheitsprüfung, Cronjob
 - [Eingebaute Kacheln](docs/built-in-widgets.de.md) - Kacheln, Rechte, das Recht für das Dashboard
 
 ## 👩‍🍳 Mitwirken

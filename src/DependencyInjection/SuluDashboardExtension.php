@@ -24,6 +24,8 @@ class SuluDashboardExtension extends Extension
         $container->setParameter('sulu_dashboard.start_page', $config['start_page']);
         $container->setParameter('sulu_dashboard.tabs.replace_navigation', $config['tabs']['replace_navigation']);
         $container->setParameter('sulu_dashboard.layout.balance', $config['layout']['balance']);
+        $container->setParameter('sulu_dashboard.system.composer_binary', $config['system']['composer_binary']);
+        $container->setParameter('sulu_dashboard.system.max_age', $config['system']['max_age']);
         $container->setParameter('sulu_dashboard.disabled_widgets', array_values($config['disabled_widgets']));
 
         // every service that implements the interface becomes a tile, without any further configuration

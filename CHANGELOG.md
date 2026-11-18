@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Built-in tile "System" (`sulu_system`, list) for administrators: versions of PHP, Symfony and Sulu, environment and debug mode with a red warning when debug is on in `prod`, known vulnerabilities from `composer audit`, open Doctrine migrations (only with `doctrine/doctrine-migrations-bundle`), failed Messenger messages (only with a `failure_transport`) and the space used by `public/uploads` and `var`. Nothing secret is shown (no connection strings, keys or absolute paths). See [docs/system.en.md](docs/system.en.md).
+- Own permission `sulu.settings.dashboard_system` (view) under Settings; the tile is only on the dashboard of users who have it besides `sulu.settings.dashboard`.
+- Command `sulu:dashboard:system-check` for a cron job: runs `composer audit --locked` (no shell, command as a list) and measures the folders, and saves the result in the cache (`cache.app` of the admin context). Nothing slow runs in a web request. The tile shows the age of the check, says so when the command never ran and warns when the last run is older than `sulu_dashboard.system.max_age` hours (default 48). Exit code 1 when the check could not run, not when vulnerabilities were found.
+- Options `sulu_dashboard.system.composer_binary` (default `composer`, also a path to a `composer.phar`) and `sulu_dashboard.system.max_age`.
+- List tiles: rows may carry `severity` (`error`, `warning`, with Sulu's warning icon) and the data a `limit` (rows before "Show all", default 10). Texts may be `['text' => '8.4.27']` to be shown as they are, never taken for a translation key.
+- New requirement `symfony/process` (always present in a Sulu project); `doctrine/doctrine-migrations-bundle` and `symfony/messenger` only under `suggest`.
+
 ## 1.1.0 - 2026-11-14
 
 ### Added
