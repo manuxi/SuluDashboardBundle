@@ -405,6 +405,7 @@
 .wrap {
     display: block;
     min-width: 0;
+    white-space: normal; /* Sulu's table cells are nowrap */
     overflow-wrap: anywhere;
 }
 
