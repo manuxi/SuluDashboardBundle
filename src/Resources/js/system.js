@@ -56,3 +56,6 @@ export const normalize = (data) => {
 
 // rows shown before "Show all"
 export const visibleRows = (rows, expanded, limit) => (expanded ? rows : rows.slice(0, limit));
+
+// the column "Severity" is shown only if at least one advisory has a known severity (Composer often delivers none)
+export const hasSeverity = (advisories) => advisories.some((advisory) => severityKey(advisory.severity) !== null);

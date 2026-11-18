@@ -8,14 +8,14 @@ import React from 'react';
 import {Button, Icon, Table} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
 import {translate} from 'sulu-admin-bundle/utils';
-import {advisoryName, isWebLink, normalize, reportedDay, severityKey, visibleRows} from '../system';
+import {advisoryName, hasSeverity, isWebLink, normalize, reportedDay, severityKey, visibleRows} from '../system';
 import {tx} from '../utils';
 import styles from '../dashboard.scss';
 
 const VISIBLE_ROWS = 10;
 
 // a cell that never breaks: a package name or an ID is cut with an ellipsis when it is very long, the full text is the title
-const Fixed = ({children}) => <span className={styles.fixedCell} title={typeof children === 'string' ? children : undefined}>{children}</span>;
+const Fixed = ({children, className}) => <span className={[styles.fixedCell, className].filter(Boolean).join(' ')} title={typeof children === 'string' ? children : undefined}>{children}</span>;
 
 // the description breaks at word boundaries
 const Words = ({children}) => <span className={styles.wordsCell}>{children}</span>;
@@ -49,38 +49,45 @@ export default class SystemVulnerabilities extends React.Component {
     renderAdvisories(advisories) {
         const {expanded} = this.state;
         const visible = visibleRows(advisories, expanded, VISIBLE_ROWS);
+        const showSeverity = hasSeverity(advisories);
 
         return (
             <div className={styles.tableWrap}>
                 <Table skin="light">
+                    {/* Sulu's Table.Header and Table.Row read their children: arrays without false entries */}
                     <Table.Header>
-                        <Table.HeaderCell>{translate('sulu_dashboard.system_col_package')}</Table.HeaderCell>
-                        <Table.HeaderCell>{translate('sulu_dashboard.system_col_installed')}</Table.HeaderCell>
-                        <Table.HeaderCell>{translate('sulu_dashboard.system_col_id')}</Table.HeaderCell>
-                        <Table.HeaderCell>{translate('sulu_dashboard.system_col_title')}</Table.HeaderCell>
-                        <Table.HeaderCell>{translate('sulu_dashboard.system_col_severity')}</Table.HeaderCell>
-                        <Table.HeaderCell>{translate('sulu_dashboard.system_col_reported')}</Table.HeaderCell>
+                        {[
+                            <Table.HeaderCell key="package">{translate('sulu_dashboard.system_col_package')}</Table.HeaderCell>,
+                            <Table.HeaderCell key="title">{translate('sulu_dashboard.system_col_title')}</Table.HeaderCell>,
+                            ...(showSeverity ? [<Table.HeaderCell key="severity">{translate('sulu_dashboard.system_col_severity')}</Table.HeaderCell>] : []),
+                            <Table.HeaderCell key="reported">{translate('sulu_dashboard.system_col_reported')}</Table.HeaderCell>,
+                        ]}
                     </Table.Header>
                     <Table.Body>
                         {visible.map((advisory, index) => {
                             const severity = severityKey(advisory.severity);
                             const title = advisory.title || advisory.id || advisory.package;
+                            const name = advisoryName(advisory);
 
                             return (
                                 <Table.Row id={index} key={index}>
-                                    <Table.Cell><Fixed>{advisory.package}</Fixed></Table.Cell>
-                                    <Table.Cell><Fixed>{advisory.installed || '–'}</Fixed></Table.Cell>
-                                    <Table.Cell><Fixed>{advisoryName(advisory) || '–'}</Fixed></Table.Cell>
-                                    <Table.Cell>
-                                        <Words>
-                                            {isWebLink(advisory.link)
-                                                ? <a className={styles.externalLink} href={advisory.link} rel="noopener noreferrer" target="_blank" title={translate('sulu_dashboard.system_opens_new_tab')}>{title}</a>
-                                                : title
-                                            }
-                                        </Words>
-                                    </Table.Cell>
-                                    <Table.Cell><Fixed>{severity ? translate(severity) : '–'}</Fixed></Table.Cell>
-                                    <Table.Cell><Fixed>{formatDay(advisory.reportedAt)}</Fixed></Table.Cell>
+                                    {[
+                                        <Table.Cell key="package">
+                                            <Fixed>{advisory.package}</Fixed>
+                                            {advisory.installed && <Fixed className={styles.rowText}>{advisory.installed}</Fixed>}
+                                        </Table.Cell>,
+                                        <Table.Cell key="title">
+                                            <Words>
+                                                {isWebLink(advisory.link)
+                                                    ? <a className={styles.externalLink} href={advisory.link} rel="noopener noreferrer" target="_blank" title={translate('sulu_dashboard.system_opens_new_tab')}>{title}</a>
+                                                    : title
+                                                }
+                                            </Words>
+                                            {name && <Fixed className={styles.rowText}>{name}</Fixed>}
+                                        </Table.Cell>,
+                                        ...(showSeverity ? [<Table.Cell key="severity"><Fixed>{severity ? translate(severity) : '–'}</Fixed></Table.Cell>] : []),
+                                        <Table.Cell key="reported"><Fixed>{formatDay(advisory.reportedAt)}</Fixed></Table.Cell>,
+                                    ]}
                                 </Table.Row>
                             );
                         })}

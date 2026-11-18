@@ -1,7 +1,7 @@
 // Run with: node --test tests/js/*.test.mjs   (Node 22 or newer, no packages needed)
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {advisoryName, isWebLink, normalize, reportedDay, severityKey, visibleRows} from '../../src/Resources/js/system.js';
+import {advisoryName, hasSeverity, isWebLink, normalize, reportedDay, severityKey, visibleRows} from '../../src/Resources/js/system.js';
 
 test('only a web link becomes a link', () => {
     assert.equal(isWebLink('https://github.com/advisories/GHSA-1'), true);
@@ -65,4 +65,10 @@ test('ten rows are shown until the rest is asked for', () => {
     assert.equal(visibleRows(rows, false, 10).length, 10);
     assert.equal(visibleRows(rows, true, 10).length, 13);
     assert.equal(visibleRows([], false, 10).length, 0);
+});
+
+test('the severity column exists only when an advisory has a known severity', () => {
+    assert.equal(hasSeverity([{severity: null}, {severity: undefined}, {severity: 'urgent'}]), false);
+    assert.equal(hasSeverity([{severity: null}, {severity: 'high'}]), true);
+    assert.equal(hasSeverity([]), false);
 });

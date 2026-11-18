@@ -449,7 +449,7 @@
    long name is cut with an ellipsis); only the description breaks, at word boundaries */
 .fixedCell {
     display: block;
-    max-width: 260px;
+    max-width: 240px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -457,7 +457,7 @@
 
 .wordsCell {
     display: block;
-    min-width: 200px;
+    min-width: 0;
     white-space: normal;
     overflow-wrap: break-word;
 }
