@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\Admin;
 
+use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
 use Manuxi\SuluDashboardBundle\Tab\ReplacesNavigationItemInterface;
 use Manuxi\SuluDashboardBundle\Tab\TabRegistry;
+use Manuxi\SuluDashboardBundle\Tab\TilesTabProviderInterface;
 use Manuxi\SuluDashboardBundle\Widget\PinnedDashboardWidgetInterface;
 use Manuxi\SuluDashboardBundle\Widget\WidgetRegistry;
 use Sulu\Article\Domain\Model\ArticleInterface;
@@ -39,6 +41,9 @@ class DashboardAdmin extends Admin
     public const NAVIGATION_ITEM = 'sulu_dashboard.dashboard';
 
     public const SECURITY_CONTEXT = 'sulu.settings.dashboard';
+
+    /** user setting of the arrangement of the overview; a tab of tiles adds a dot and its group */
+    public const SETTING_KEY = 'sulu_dashboard.layout';
 
     /** view of Sulu's search (SearchAdmin::SEARCH_VIEW), by name so the search package stays optional */
     private const SEARCH_VIEW = 'sulu_search.search';
@@ -111,17 +116,6 @@ class DashboardAdmin extends Admin
             return;
         }
 
-        $widgets = [];
-        foreach ($this->widgetRegistry->available() as $widget) {
-            $widgets[] = [
-                'key' => $widget->getKey(),
-                'title' => $widget->getTitle(),
-                'type' => $widget->getType(),
-                'column' => $widget->getColumn(),
-                'pinned' => $widget instanceof PinnedDashboardWidgetInterface && $widget->isPinned(),
-            ];
-        }
-
         if ($this->startPage) {
             $this->moveSearchAway($viewCollection);
         }
@@ -136,7 +130,7 @@ class DashboardAdmin extends Admin
                 'articles' => $this->templateTitles(ArticleInterface::TEMPLATE_TYPE),
             ])
             ->setOption('balance', $this->balance)
-            ->setOption('widgets', $widgets);
+            ->setOption('widgets', $this->widgetOptions(null));
 
         if ([] === $tabs) {
             // no tab, no tab bar: the plain view
@@ -158,18 +152,71 @@ class DashboardAdmin extends Admin
         );
 
         foreach ($tabs as $index => $tab) {
-            $view = $this->viewBuilderFactory->createViewBuilder(self::TAB_VIEW_PREFIX . $tab->getKey(), $this->childPath($tab->getKey()), $tab->getViewType())
+            $view = $this->viewBuilderFactory->createViewBuilder(self::TAB_VIEW_PREFIX . $tab->getKey(), $this->childPath($tab->getKey()), $tab instanceof TilesTabProviderInterface ? self::VIEW : $tab->getViewType())
                 ->setParent(self::TABS_VIEW)
                 ->setOption('tabTitle', $tab->getTitle())
                 ->setOption('tabOrder', $index + 1)
                 ->setOption('tabPriority', 0);
 
-            foreach ($tab->getViewOptions() as $name => $value) {
+            foreach ($this->tabOptions($tab) as $name => $value) {
                 $view->setOption($name, $value);
             }
 
             $viewCollection->add($view);
         }
+    }
+
+    /**
+     * The tiles of the overview (no group) or of a group, as the view needs them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function widgetOptions(?string $group): array
+    {
+        $widgets = [];
+        foreach ($this->widgetRegistry->available($group) as $widget) {
+            $widgets[] = [
+                'key' => $widget->getKey(),
+                'title' => $widget->getTitle(),
+                'type' => $widget->getType(),
+                'column' => $widget->getColumn(),
+                'pinned' => $widget instanceof PinnedDashboardWidgetInterface && $widget->isPinned(),
+            ];
+        }
+
+        return $widgets;
+    }
+
+    /**
+     * Options of the view of a tab. A tab of tiles gets the options of the dashboard view for its group; the options of
+     * the provider come on top.
+     *
+     * @return array<string, mixed>
+     */
+    private function tabOptions(DashboardTabProviderInterface $tab): array
+    {
+        if (!$tab instanceof TilesTabProviderInterface) {
+            return $tab->getViewOptions();
+        }
+
+        $periods = array_values(array_unique($tab->getPeriods()));
+        $options = [
+            'locales' => array_values($this->localizationManager->getLocales()),
+            'balance' => $this->balance,
+            'widgets' => $this->widgetOptions($tab->getGroup()),
+            'settingKey' => self::SETTING_KEY . '.' . $tab->getGroup(),
+            'showLocale' => $tab->showLocale(),
+        ];
+
+        if ([] !== $periods) {
+            $options['period'] = [
+                'days' => $periods,
+                'default' => \in_array($tab->getDefaultPeriod(), $periods, true) ? $tab->getDefaultPeriod() : $periods[0],
+                'maxDays' => TabRegistry::MAX_PERIOD_DAYS,
+            ];
+        }
+
+        return $tab->getViewOptions() + $options;
     }
 
     /**
@@ -182,7 +229,7 @@ class DashboardAdmin extends Admin
     }
 
     /**
-     * @return list<\Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface>
+     * @return list<DashboardTabProviderInterface>
      */
     private function tabs(): array
     {

@@ -400,3 +400,41 @@
 .rowText {
     color: $gray;
 }
+
+/* the bar of the custom period (tabs of tiles): two date pickers and the buttons in one row, below 520 px under each other */
+.customBar {
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background: $white;
+    border: 1px solid $silver;
+    border-radius: 3px;
+}
+
+.customFields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 15px 20px;
+}
+
+.customField {
+    display: block;
+    width: 200px;
+    max-width: 100%;
+}
+
+.customLabel {
+    display: block;
+    margin-bottom: 5px;
+    color: $scorpion;
+}
+
+.customActions {
+    display: flex;
+    gap: 10px;
+}
+
+.customError {
+    margin: 10px 0 0;
+    color: $persianRed;
+}

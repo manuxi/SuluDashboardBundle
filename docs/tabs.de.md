@@ -21,6 +21,44 @@ final class VisitorsTab implements DashboardTabProviderInterface
 - Der Benutzer sieht den Tab nur mit dem Recht „Ansehen“ für `getSecurityContext()`.
 - Schlüssel müssen eindeutig sein; `overview`, `dashboard` und `tabs` sind reserviert.
 
+## Ein Tab aus Kacheln
+
+Statt einer eigenen View kann ein Tab Kacheln zeigen. Sie werden im selben Modus „Anpassen“ angeordnet wie die Übersicht (siehe [Das Dashboard anpassen](customize.de.md)), und jeder Tab speichert seine Anordnung für sich.
+
+1. Den Kacheln eine Gruppe geben: `GroupedDashboardWidgetInterface` implementieren (erweitert das Kachel-Interface, eine Methode `getGroup()`). Eine Kachel mit Gruppe erscheint nur im Tab dieser Gruppe; die Übersicht zeigt nur Kacheln ohne Gruppe.
+2. Für den Tab `TilesTabProviderInterface` implementieren (erweitert das Tab-Interface):
+
+```php
+use Manuxi\SuluDashboardBundle\Admin\DashboardAdmin;
+use Manuxi\SuluDashboardBundle\Tab\TilesTabProviderInterface;
+
+final class VisitorsTab implements TilesTabProviderInterface
+{
+    // Schlüssel, Titel, Security-Kontext und Priorität wie bei jedem Tab ...
+    public function getViewType(): string { return DashboardAdmin::VIEW; } // wird ignoriert, das Dashboard setzt ihn
+    public function getViewOptions(): array { return []; }                 // optionale zusätzliche Optionen
+
+    public function getGroup(): string { return 'visitors'; }              // die Kacheln dieser Gruppe
+    public function getPeriods(): array { return [7, 30, 90, 365]; }       // [] = kein Zeitraum
+    public function getDefaultPeriod(): int { return 30; }
+    public function showLocale(): bool { return false; }                   // Sprachauswahl in der Toolbar
+}
+```
+
+Das Dashboard baut daraus die View: Typ `sulu_dashboard.dashboard`, die Kacheln der Gruppe, der Speicherschlüssel `sulu_dashboard.layout.<gruppe>` für die Anordnung und die Optionen unten. Optionen aus `getViewOptions()` haben Vorrang.
+
+### Zeitraum
+
+Mit Zeiträumen bekommt die Toolbar des Tabs eine Auswahl („Letzte 7 Tage“ … und „Eigener Zeitraum …“). Ein eigener Zeitraum öffnet über den Kacheln eine Leiste mit zwei Datumsfeldern (Von, Bis) und „Übernehmen“. Ein Starttag nach dem Endtag, ein fehlender Tag oder mehr als 366 Tage (Grenze der Log-Statistik-API) zeigen in der Leiste einen Fehler und ändern nichts.
+
+- Die Wahl wird je Tab sofort als Benutzereinstellung gespeichert (`sulu_dashboard.layout.<gruppe>.period`) und ist nach dem Neuladen noch da.
+- Jede Kachel des Tabs bekommt die Prop `period`: `{days: 30}` (die letzten Tage bis heute) oder `{from: '2026-10-01', to: '2026-10-31'}` (Tage als `YYYY-MM-DD`, beide eingeschlossen). Ändert sich der Zeitraum, mountet das Dashboard die Kacheln neu; eine Kachel, die Daten in `props.cache` hält, muss den Zeitraum in den Schlüssel aufnehmen.
+- Ohne `getPeriods()` gibt es keine Auswahl und keine Prop `period`. Die Übersicht hat keinen Zeitraum.
+
+### Sprachauswahl
+
+`showLocale(): false` blendet die Sprachauswahl des Tabs aus, für Kacheln, deren Zahlen nicht von der Sprache abhängen.
+
 ## Einen Menüpunkt ersetzen
 
 Ein Tab, der eine Seite mitbringt, die schon einen eigenen Menüpunkt hat, kann dessen Platz einnehmen. Das Menü hat dann einen Eintrag weniger. Dazu `ReplacesNavigationItemInterface` implementieren (erweitert das Tab-Interface):
