@@ -87,6 +87,8 @@ Wer `/` öffnet, landet auf „Übersicht“. Sulus Suche bleibt auf `/search`. 
 
 Kacheln, die andere Bundles oder das Projekt mitbringen (Bewertungen, Glossar, DeepL-Kontingent, Veranstaltungen ...), stehen nicht auf der Übersicht, sondern im Tab **Erweiterungen**. Er ist ein Tab aus Kacheln (Gruppe `extensions`, eigene Anordnung unter `sulu_dashboard.layout.extensions`, Modus „Anpassen“), hat die Sprachauswahl (die Kacheln nutzen die Sprache) und keinen Zeitraum. **Keine Erweiterungen, kein Tab:** Er erscheint nur, wenn der Benutzer mindestens eine solche Kachel sehen darf. Er steht hinter „Übersicht“ und vor „Besucher“ und „System“.
 
+![Der Tab Erweiterungen](img/dashboard-extensions.de.png)
+
 Welche Kachel dorthin kommt, entscheidet das Dashboard selbst, die anderen Bundles bleiben unverändert:
 
 - Hat die Kachel eine eigene Gruppe (`GroupedDashboardWidgetInterface`), behält sie sie.
