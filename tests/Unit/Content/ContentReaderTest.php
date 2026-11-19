@@ -246,22 +246,56 @@ class ContentReaderTest extends TestCase
         $this->assertSame(2, $seo['seoTitle']);
         $this->assertSame(2, $seo['seoDescription']);
         $this->assertSame(2, $seo['excerptImage']);
-        $this->assertSame(['a2'], array_column($seo['missing'], 'id'));
-        $this->assertSame('main', $seo['missing'][0]['webspace']);
+        $this->assertSame(['x1'], array_column($seo['missing']['seoTitle'], 'id'), 'x1 has an empty title');
+        $this->assertSame(['a2'], array_column($seo['missing']['seoDescription'], 'id'));
+        $this->assertSame(['a2'], array_column($seo['missing']['excerptImage'], 'id'));
+        $this->assertSame('main', $seo['missing']['seoDescription'][0]['webspace']);
+        $this->assertSame(['default', '2026-11-02 10:00:00'], [$seo['missing']['seoDescription'][0]['template'], $seo['missing']['seoDescription'][0]['changed']]);
     }
 
-    public function testSeoCoverageListsAtMostFiveEntriesNewestFirstAndKnowsTheArticleGroup(): void
+    public function testEachListHoldsExactlyTheEntriesThatLackThatDetail(): void
+    {
+        $this->connection->executeStatement("DELETE FROM pa_page_dimension_contents WHERE stage = 'live'");
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'a1', 'default', 'Complete', '2026-11-05 10:00:00', '{"title":"T","description":"D"}', '{"image":{"id":3}}');
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'a2', 'default', 'No title', '2026-11-04 10:00:00', '{"description":"D"}', '{"image":{"id":3}}');
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'a3', 'default', 'No image', '2026-11-03 10:00:00', '{"title":"T","description":"D"}', '{}');
+
+        $missing = $this->reader(['sulu.webspaces.main'])->seoCoverage('de')['missing'];
+
+        $this->assertSame(['a2'], array_column($missing['seoTitle'], 'id'));
+        $this->assertSame([], $missing['seoDescription']);
+        $this->assertSame(['a3'], array_column($missing['excerptImage'], 'id'));
+    }
+
+    public function testSeoCoverageListsAtMostTheLimitEntriesNewestFirstAndKnowsTheArticleGroup(): void
     {
         $this->connection->executeStatement("DELETE FROM pa_page_dimension_contents WHERE stage = 'live'");
         foreach (range(1, 7) as $i) {
             $this->live('ar_article_dimension_contents', 'articleUuid', 'z' . $i, 'blog', 'Post ' . $i, '2026-11-0' . $i . ' 10:00:00', '{}', '{}');
         }
 
-        $seo = $this->reader(['sulu.article.articles_blog'])->seoCoverage('de');
+        $seo = $this->reader(['sulu.article.articles_blog'])->seoCoverage('de', 3);
 
-        $this->assertSame(['z7', 'z6', 'z5', 'z4', 'z3'], array_column($seo['missing'], 'id'));
-        $this->assertSame('blog', $seo['missing'][0]['group']);
+        $this->assertSame(['z7', 'z6', 'z5'], array_column($seo['missing']['seoDescription'], 'id'));
+        $this->assertSame(['z7', 'z6', 'z5'], array_column($seo['missing']['seoTitle'], 'id'));
+        $this->assertSame('blog', $seo['missing']['seoTitle'][0]['group']);
         $this->assertSame(7, $seo['total']);
+        $this->assertSame(0, $seo['seoTitle'], 'the counts are not cut by the limit: seven lack it, three are listed');
+    }
+
+    public function testTheListsOnlyContainWhatTheUserMaySeeInThisLanguage(): void
+    {
+        $this->connection->executeStatement("DELETE FROM pa_page_dimension_contents WHERE stage = 'live'");
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'a1', 'default', 'Home', '2026-11-03 10:00:00', '{}', '{}');
+        $this->live('pa_page_dimension_contents', 'pageUuid', 'b1', 'default', 'Secret', '2026-11-02 10:00:00', '{}', '{}');
+        $this->live('ar_article_dimension_contents', 'articleUuid', 'x1', 'blog', 'Post', '2026-11-01 10:00:00', '{}', '{}');
+        $this->connection->update('pa_pages', ['webspaceKey' => 'other'], ['uuid' => 'b1']);
+        $this->connection->insert('pa_page_dimension_contents', ['pageUuid' => 'a1', 'stage' => 'live', 'version' => 0, 'locale' => 'en', 'workflowPlace' => 'published', 'templateKey' => 'default', 'title' => 'Home EN', 'changed' => '2026-11-03 10:00:00', 'seoData' => '{}', 'excerptData' => '{}']);
+
+        $missing = $this->reader(['sulu.webspaces.main'])->seoCoverage('de')['missing'];
+        foreach (['seoTitle', 'seoDescription', 'excerptImage'] as $detail) {
+            $this->assertSame(['a1'], array_column($missing[$detail], 'id'), $detail . ': no secret page, no article without its permission, no other language');
+        }
     }
 
     public function testSeoCoverageIsEmptyWithoutPermission(): void
@@ -269,6 +303,8 @@ class ContentReaderTest extends TestCase
         $this->connection->executeStatement("DELETE FROM pa_page_dimension_contents WHERE stage = 'live'");
         $this->live('pa_page_dimension_contents', 'pageUuid', 'a1', 'default', 'Home', '2026-11-03 10:00:00', '{}', '{}');
 
-        $this->assertSame(0, $this->reader([])->seoCoverage('de')['total']);
+        $seo = $this->reader([])->seoCoverage('de');
+        $this->assertSame(0, $seo['total']);
+        $this->assertSame(['seoTitle' => [], 'seoDescription' => [], 'excerptImage' => []], $seo['missing']);
     }
 }
