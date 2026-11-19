@@ -12,8 +12,7 @@ The tiles of this bundle use the same interface as the tiles of other bundles ([
 | `sulu_seo` | Search engine details: rings and "Add first" | progress | main | webspace and article type |
 | `sulu_translations` | Translations (only with more than one language) | custom | side | webspace and article type |
 | `sulu_activities` | Recent activity | custom | side | `sulu.activities.activities` |
-| `sulu_system` | System (small): traffic light with a link to the tab "System", see [System](system.en.md) | list | side | `sulu.settings.dashboard_system` |
-| `sulu_system_*` | Tab "System" (group `system`): security vulnerabilities (wide), last check, versions, environment, storage, migrations, failed messages | custom, list | main, side | `sulu.settings.dashboard_system` |
+| `sulu_system_*` | Tab "System" (group `system`): condition (wide, first), security vulnerabilities (wide), storage, versions, environment | custom | main, side | `sulu.settings.dashboard_system` |
 | `sulu_visitors` | Visitors (7 days), only with the log statistics and `log_stats.overview_tile: true`; otherwise the visitors are in the tab, see [Tabs](tabs.en.md) | custom | side | `sulu.settings.log_stats` |
 
 ![The dashboard](img/dashboard-overview.de.png)

@@ -91,7 +91,7 @@ Welche Kachel dorthin kommt, entscheidet das Dashboard selbst, die anderen Bundl
 
 - Hat die Kachel eine eigene Gruppe (`GroupedDashboardWidgetInterface`), behält sie sie.
 - Sonst kommt sie in „Erweiterungen“, wenn ihre Klasse nicht aus dem Namespace `Manuxi\SuluDashboardBundle\` stammt. Bei einem Dienst mit Tag, der das Interface nicht implementiert, zählt die Klasse des Dienstes. Kacheln des Projekts (`App\...`) zählen wie die anderer Bundles.
-- Die eingebauten Kacheln (Zahlen, Offene Entwürfe, Letzte Aktivität, Suchmaschinen-Angaben, Übersetzungen, System) bleiben auf der Übersicht.
+- Die eingebauten Kacheln (Zahlen, Offene Entwürfe, Letzte Aktivität, Suchmaschinen-Angaben, Übersetzungen) bleiben auf der Übersicht.
 
 ```yaml
 sulu_dashboard:

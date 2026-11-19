@@ -91,7 +91,7 @@ The dashboard decides by itself which tile goes there, the other bundles stay un
 
 - A tile with its own group (`GroupedDashboardWidgetInterface`) keeps it.
 - Otherwise it goes to "Extensions" if its class is not in the namespace `Manuxi\SuluDashboardBundle\`. For a tagged service that does not implement the interface the class of the service counts. Tiles of the project (`App\...`) count like those of other bundles.
-- The built-in tiles (figures, open drafts, recent activity, search engine details, translations, system) stay on the overview.
+- The built-in tiles (figures, open drafts, recent activity, search engine details, translations) stay on the overview.
 
 ```yaml
 sulu_dashboard:

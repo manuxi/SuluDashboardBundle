@@ -143,10 +143,10 @@ export default class SystemVulnerabilities extends React.Component {
             <Card>
                 <h2 className={styles.title}>{tx(widget.title)}</h2>
                 {'never' === state && this.renderMessage('warning', translate('sulu_dashboard.system_vulnerabilities_never'), translate('sulu_dashboard.system_vulnerabilities_never_hint', {command}))}
-                {'unavailable' === state && this.renderMessage('warning', translate('sulu_dashboard.system_audit_unavailable'), reason ? tx(reason) : null)}
+                {'unavailable' === state && this.renderMessage('warning', translate('sulu_dashboard.system_audit_could_not_run'), reason ? tx(reason) : null)}
                 {'ok' === state && this.renderMessage('ok', translate('sulu_dashboard.system_vulnerabilities_none'), translate('sulu_dashboard.system_vulnerabilities_none_hint'))}
-                {'vulnerable' === state && this.renderMessage('error', tx({key: 'sulu_dashboard.system_audit_found', parameters: {count: advisories.length}}), translate('sulu_dashboard.system_vulnerabilities_found_hint'))}
                 {advisories.length > 0 && this.renderAdvisories(advisories)}
+                {advisories.length > 0 && <p className={styles.rowText}>{translate('sulu_dashboard.system_vulnerabilities_found_hint')}</p>}
                 {abandoned.length > 0 && this.renderAbandoned(abandoned)}
             </Card>
         );
