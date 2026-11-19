@@ -106,6 +106,7 @@ sulu_dashboard:
     system_debug_in_prod_hint: "In production it must be off: visitors could otherwise see internal details. Set APP_DEBUG=0 and clear the cache."
     system_audit_found: "{count, plural, one {# known security vulnerability} other {# known security vulnerabilities}}"
     system_audit_unavailable: "not possible"
+    system_audit_could_not_run: "The security check could not run."
     system_audit_error_not_found: "Composer was not found. Enter its path in sulu_dashboard.system.composer_binary."
     system_audit_error_failed: "composer audit failed. Check on the server with “composer audit --locked” (needs composer.lock and internet)."
     system_audit_error_timeout: "composer audit took too long."

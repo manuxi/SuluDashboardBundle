@@ -106,6 +106,7 @@ sulu_dashboard:
     system_debug_in_prod_hint: "In productie moet hij uit staan: bezoekers kunnen anders interne details zien. Zet APP_DEBUG=0 en maak de cache leeg."
     system_audit_found: "{count, plural, one {# bekend beveiligingslek} other {# bekende beveiligingslekken}}"
     system_audit_unavailable: "niet mogelijk"
+    system_audit_could_not_run: "De beveiligingscontrole kon niet draaien."
     system_audit_error_not_found: "Composer is niet gevonden. Vul het pad in bij sulu_dashboard.system.composer_binary."
     system_audit_error_failed: "composer audit is mislukt. Controleer op de server met “composer audit --locked” (vereist composer.lock en internet)."
     system_audit_error_timeout: "composer audit duurde te lang."

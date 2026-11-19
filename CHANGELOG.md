@@ -12,6 +12,8 @@
 
 ### Changed
 
+- All tiles of the tab "System" are pinned to their column (wide: Condition, Vulnerabilities, Storage; narrow: Versions, Environment), so the balance does not move them. The head of the Storage tile breaks cleanly in a narrow column (the facts flush left under the total). The tile "Vulnerabilities" no longer repeats the headline with the number when it has a table (the Condition says it); the hint "composer update" is a grey line under the table.
+
 - The tiles "Versions" and "Environment" are `custom` tiles (`SystemFacts`) and no list tiles any more. Both stay in the narrow column and may be moved by the balance.
 - `SystemTileData::versions()` takes the language (for the date of the PHP support), `SystemTileData` an optional last argument `RuntimeInfo`, `SystemChecker` an optional last argument `UpdateRunnerInterface`, `SystemCheck` an optional last argument `$updates`. Results of earlier versions are still read.
 - The list tile takes its icons from `facts.js` (the same ones as the facts).

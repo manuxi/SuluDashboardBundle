@@ -106,6 +106,7 @@ sulu_dashboard:
     system_debug_in_prod_hint: "Im Livebetrieb muss er aus sein: Besucher können sonst interne Details sehen. APP_DEBUG=0 setzen und den Cache leeren."
     system_audit_found: "{count, plural, one {# bekannte Sicherheitslücke} other {# bekannte Sicherheitslücken}}"
     system_audit_unavailable: "nicht prüfbar"
+    system_audit_could_not_run: "Die Sicherheitsprüfung konnte nicht laufen."
     system_audit_error_not_found: "Composer wurde nicht gefunden. In sulu_dashboard.system.composer_binary den Pfad eintragen."
     system_audit_error_failed: "composer audit ist fehlgeschlagen. Auf dem Server mit „composer audit --locked“ prüfen (braucht composer.lock und Internet)."
     system_audit_error_timeout: "composer audit hat zu lange gebraucht."

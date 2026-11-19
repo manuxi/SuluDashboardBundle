@@ -149,7 +149,7 @@ class SystemTilesTest extends TestCase
         foreach (['versions', 'environment'] as $name) {
             $this->assertSame(WidgetTypes::CUSTOM, $this->tile($name)->getType(), $name);
             $this->assertSame('side', $this->tile($name)->getColumn(), $name);
-            $this->assertFalse($this->tile($name)->isPinned(), $name);
+            $this->assertTrue($this->tile($name)->isPinned(), $name);
         }
     }
 
@@ -163,13 +163,13 @@ class SystemTilesTest extends TestCase
         $this->assertSame('sulu_dashboard.system_vulnerabilities', $tile->getTitle());
     }
 
-    public function testTheStorageIsACustomTileInTheWideColumnThatTheBalanceMayMove(): void
+    public function testTheStorageIsACustomTileInTheWideColumnThatStaysThere(): void
     {
         $tile = $this->tile('storage');
 
         $this->assertSame(WidgetTypes::CUSTOM, $tile->getType());
         $this->assertSame('main', $tile->getColumn());
-        $this->assertFalse($tile->isPinned());
+        $this->assertTrue($tile->isPinned());
     }
 
     public function testAnUnknownTileIsRefused(): void

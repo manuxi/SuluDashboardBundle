@@ -74,12 +74,12 @@ final class SystemTileWidget implements GroupedDashboardWidgetInterface, PinnedD
     }
 
     /**
-     * The condition is the first thing to see and the table of vulnerabilities needs the wide column (six columns): the
-     * balance never moves them. The others may move.
+     * Every tile keeps its column (wide: condition, vulnerabilities, storage; narrow: versions, environment): the
+     * balance never moves them. Only the arrangement of the user changes it.
      */
     public function isPinned(): bool
     {
-        return \in_array($this->name, ['status', 'vulnerabilities'], true);
+        return \in_array($this->name, ['status', 'vulnerabilities', 'storage', 'versions', 'environment'], true);
     }
 
     public function getGroup(): string
