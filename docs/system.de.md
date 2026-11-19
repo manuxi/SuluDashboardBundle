@@ -94,12 +94,69 @@ Einmal am Tag ausführen, zum Beispiel mit diesem Cron-Eintrag (Pfad anpassen):
 15 4 * * * cd /pfad/zum/projekt && php bin/adminconsole sulu:dashboard:system-check >> var/log/system-check.log 2>&1
 ```
 
-- `bin/adminconsole` verwenden: Die Tab liest den Cache des Admins, und der Befehl speichert dort.
+- `bin/adminconsole` oder `bin/websiteconsole` verwenden: Den Befehl gibt es in beiden Kontexten, und er speichert an derselben Stelle (siehe unten). Der Tab zeigt das Ergebnis also in jedem Fall.
 - Eine gescheiterte Prüfung endet mit Exit-Code 1 (Composer nicht gefunden, kein Internet, zu langsam), eine gefundene Lücke nicht: Die Prüfung selbst hat funktioniert.
-- **Solange der Befehl nie gelaufen ist, steht im Zustand „nicht geprüft“ und „nie“**, und der Tab zeigt weder Sicherheitslücken noch Ordnergrößen. Das Ergebnis liegt im Cache und enthält auch die Messung davor (für die Veränderung). Ist der letzte Lauf älter als 48 Stunden, warnt der Tab, dass der Cronjob stehen geblieben sein könnte (`sulu_dashboard.system.max_age`, in Stunden, bei einem wöchentlichen Cronjob zum Beispiel 200).
-- `cache:clear` löscht auch dieses Ergebnis (je nach Cache-Einstellung des Projekts) und damit die Messung davor: die Veränderungsanzeige beginnt danach neu. Den Befehl am Ende eines Deployments nach `cache:clear` ausführen.
-- Hosting ohne crontab: die Cron-Funktion des Anbieters den Befehl starten lassen, oder ihn ab und zu von Hand ausführen. Ein Skript, das den Befehl über eine geheime URL aufruft, wäre nur eine Idee, das Bundle bringt keine solche Route mit.
+- **Solange der Befehl nie gelaufen ist, steht im Zustand „nicht geprüft“ und „nie“**, und der Tab zeigt weder Sicherheitslücken noch Ordnergrößen. Das Ergebnis liegt im Speicherordner (siehe unten) und enthält auch die Messung davor (für die Veränderung). Ist der letzte Lauf älter als 48 Stunden, warnt der Tab, dass der Cronjob stehen geblieben sein könnte (`sulu_dashboard.system.max_age`, in Stunden, bei einem wöchentlichen Cronjob zum Beispiel 200).
+- `cache:clear` löscht das Ergebnis nicht, ein Deployment, das die Cache-Ordner ersetzt, ebenso wenig: Das Ergebnis liegt in einem eigenen Ordner, `var/sulu-dashboard` (siehe „Wo das Ergebnis liegt“). Die Veränderung seit der letzten Messung bleibt deshalb über ein Deployment erhalten.
+- Hosting ohne crontab: siehe „Ohne crontab: Systemcheck per URL-Cron“ weiter unten.
 - Composer muss für den Benutzer des Cronjobs aufrufbar sein. Findet der Befehl Composer unter diesem Namen nicht, den Pfad eintragen: `sulu_dashboard.system.composer_binary: '/usr/local/bin/composer'` oder den Pfad zu einer `composer.phar`. Ohne `HOME`-Verzeichnis (manche Cron-Umgebungen) braucht Composer vor dem Befehl `COMPOSER_HOME=/pfad/zu/einem/beschreibbaren/ordner`. Ohne `composer.lock` im Projekt gibt es nichts zu prüfen.
+
+### Wo das Ergebnis liegt
+
+Das Ergebnis liegt in einem eigenen Cache-Pool (`sulu_dashboard.system_cache`, ein `FilesystemAdapter`) im Ordner `var/sulu-dashboard` des Projekts. Es gehört nicht in `cache.app`: Sulu gibt jedem Kontext einen eigenen Cache-Ordner (`var/cache/admin`, `var/cache/website`), ein Ergebnis in `cache.app` wäre für den anderen Kontext unsichtbar und würde von `cache:clear` gelöscht. Der eigene Ordner wird von beiden Kontexten gelesen und geschrieben und übersteht `cache:clear`. Er braucht keine Einrichtung, der Befehl legt ihn an; er muss für den Benutzer des Webservers und des Cronjobs beschreibbar sein. Wo das nicht geht, den Ordner ändern:
+
+```yaml
+sulu_dashboard:
+    system:
+        storage_dir: '%kernel.project_dir%/var/sulu-dashboard'   # Standard
+```
+
+Ergebnisse, die frühere Versionen in `cache.app` abgelegt haben, werden nicht mehr gelesen; nach dem Update steht im Tab „nie“, bis der Befehl einmal gelaufen ist. Es geht nichts kaputt.
+
+### Ohne crontab: Systemcheck per URL-Cron
+
+Manches Shared Hosting kennt nur einen „URL-Cron“: Der Anbieter ruft zu festen Zeiten eine Webadresse auf. Dafür gibt es den Befehl auch im Website-Kontext, ein kleiner Controller des Projekts kann ihn also starten. Das Beispiel nutzt ein Geheimnis in der URL (in einer Umgebungsvariable) und führt den Befehl im laufenden Kernel aus:
+
+```php
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class SystemCheckCronController
+{
+    public function __construct(private readonly string $cronToken)
+    {
+    }
+
+    #[Route('/cron/system-check/{token}', methods: ['GET'])]
+    public function __invoke(KernelInterface $kernel, string $token): Response
+    {
+        if (!hash_equals($this->cronToken, $token)) {
+            return new Response('', Response::HTTP_NOT_FOUND);
+        }
+
+        set_time_limit(300);
+
+        $application = new Application($kernel);
+        $application->setAutoExit(false);
+
+        $output = new BufferedOutput();
+        $exitCode = $application->run(new ArrayInput(['command' => 'sulu:dashboard:system-check']), $output);
+
+        return new Response($output->fetch(), 0 === $exitCode ? 200 : 500, ['Content-Type' => 'text/plain']);
+    }
+}
+```
+
+Den Controller wie jeden anderen des Projekts registrieren und mit `$cronToken` versorgen (zum Beispiel `'%env(SYSTEM_CHECK_CRON_TOKEN)%'`). In der Cron-Funktion des Anbieters die Adresse `https://example.org/cron/system-check/<geheimnis>` eintragen (einmal am Tag genügt). Die Route nicht in die Sitemap und nicht in den Cache aufnehmen, die Adresse nicht protokollieren.
+
+Zwei Dinge braucht das Web-PHP:
+
+- `proc_open` darf nicht in `disable_functions` stehen: Die Prüfung startet Composer (`composer audit`, `composer outdated`) als Prozess. Ist es gesperrt, lässt sich Composer nicht starten: Der Tab meldet die Sicherheitsprüfung dann als „konnte nicht laufen“ (die Ordnergrößen werden trotzdem gespeichert).
+- Composer muss für das PHP des Webservers aufrufbar sein. Oft gibt es den Befehl `composer` dort nicht. Dann `sulu_dashboard.system.composer_binary` auf den Pfad einer `composer.phar` im Projekt setzen (und ein `COMPOSER_HOME` in der Umgebung, wenn der Account kein Home-Verzeichnis hat). Das Web-PHP hat außerdem eine `max_execution_time`: Der Befehl braucht etwa zehn bis dreißig Sekunden, `set_time_limit()` im Controller hilft, wo der Anbieter es erlaubt.
 
 ## Prüfen ohne Login
 
@@ -117,6 +174,7 @@ Der Benutzer braucht das Recht `sulu.settings.dashboard_system`, sonst fehlen di
 sulu_dashboard:
     system:
         composer_binary: composer   # Befehl im PATH oder Pfad zu einer composer.phar
+        storage_dir: '%kernel.project_dir%/var/sulu-dashboard'   # Ordner des Ergebnisses (beide Kontexte, von cache:clear nicht gelöscht)
         max_age: 48                 # Stunden, nach denen die letzte Prüfung als zu alt gilt
         cache_limit: 1024           # MB: ab dieser Größe von var/cache gibt die Kachel „Speicher“ einen Hinweis (0 = aus)
         log_limit: 512              # MB: dasselbe für var/log (0 = aus)

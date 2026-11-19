@@ -70,16 +70,24 @@ services:
         arguments:
             - '@Manuxi\SuluDashboardBundle\System\SystemChecker'
         tags:
+            # no sulu.context tag: the command exists in the admin and in the website context, so a project without a
+            # crontab can start it from the website (URL cron)
             - { name: console.command }
-            - { name: sulu.context, context: admin }
 
-    # "System" tile: the slow checks run in the console command and are left in the cache (cache.app of the admin
-    # context, the same pool the admin reads)
+    # "System" tile: the slow checks run in the console command and are left in an own pool. cache.app is not an option:
+    # Sulu gives every context its own cache folder, and cache:clear would delete the result. The folder is shared by
+    # both contexts and lies outside of var/cache.
+    sulu_dashboard.system_cache:
+        class: Symfony\Component\Cache\Adapter\FilesystemAdapter
+        arguments:
+            - 'sulu_dashboard'
+            - 0
+            - '%sulu_dashboard.system.storage_dir%'
     Manuxi\SuluDashboardBundle\System\SystemVersions:
         factory: ['Manuxi\SuluDashboardBundle\System\SystemVersions', 'detect']
 
     Manuxi\SuluDashboardBundle\System\SystemCheckStore:
-        arguments: ['@cache.app']
+        arguments: ['@sulu_dashboard.system_cache']
 
     Manuxi\SuluDashboardBundle\System\ComposerAuditRunner:
         arguments:
