@@ -178,14 +178,18 @@ class ContentReader
 
     /**
      * Search engine details of the published pages and articles in one locale: how many have an own SEO title, a meta
-     * description and an excerpt image, and the first entries without a meta description. The JSON columns (seoData,
-     * excerptData) are read in PHP, so the query works on MySQL and SQLite alike.
+     * description and an excerpt image, and per detail the first entries that lack exactly this one (newest change
+     * first, at most $missingLimit each). The JSON columns (seoData, excerptData) are read in PHP, so the query works on
+     * MySQL and SQLite alike; one query per kind of content serves all three lists.
      *
-     * @return array{total: int, seoTitle: int, seoDescription: int, excerptImage: int, missing: list<array{resourceKey: string, id: string, webspace: string|null, group: string|null, title: string}>}
+     * @return array{total: int, seoTitle: int, seoDescription: int, excerptImage: int, missing: array{seoTitle: list<array<string, mixed>>, seoDescription: list<array<string, mixed>>, excerptImage: list<array<string, mixed>>}}
      */
-    public function seoCoverage(string $locale, int $missingLimit = 5): array
+    public function seoCoverage(string $locale, int $missingLimit = self::MAX_MISSING_LISTED): array
     {
-        $result = ['total' => 0, 'seoTitle' => 0, 'seoDescription' => 0, 'excerptImage' => 0, 'missing' => []];
+        $result = [
+            'total' => 0, 'seoTitle' => 0, 'seoDescription' => 0, 'excerptImage' => 0,
+            'missing' => ['seoTitle' => [], 'seoDescription' => [], 'excerptImage' => []],
+        ];
 
         $webspaces = $this->allowedWebspaces($locale);
         $groups = $this->allowedArticleTemplates($locale);
@@ -230,19 +234,30 @@ class ContentReader
             $excerpt = $this->decode($row['excerptData']);
 
             ++$result['total'];
-            $hasDescription = '' !== trim((string) ($seo['description'] ?? ''));
-            $result['seoTitle'] += '' !== trim((string) ($seo['title'] ?? '')) ? 1 : 0;
-            $result['seoDescription'] += $hasDescription ? 1 : 0;
-            $result['excerptImage'] += isset($excerpt['image']['id']) ? 1 : 0;
+            $has = [
+                'seoTitle' => '' !== trim((string) ($seo['title'] ?? '')),
+                'seoDescription' => '' !== trim((string) ($seo['description'] ?? '')),
+                'excerptImage' => isset($excerpt['image']['id']),
+            ];
 
-            if (!$hasDescription && \count($result['missing']) < $missingLimit) {
-                $result['missing'][] = [
+            $entry = null;
+            foreach ($has as $detail => $present) {
+                $result[$detail] += $present ? 1 : 0;
+
+                if ($present || \count($result['missing'][$detail]) >= $missingLimit) {
+                    continue;
+                }
+
+                $entry ??= [
                     'resourceKey' => (string) $row['resourceKey'],
                     'id' => (string) $row['id'],
                     'webspace' => null !== $row['webspace'] ? (string) $row['webspace'] : null,
                     'group' => 'articles' === $row['resourceKey'] ? ($groups[$row['template']]['id'] ?? null) : null,
+                    'template' => (string) $row['template'],
                     'title' => (string) $row['title'],
+                    'changed' => (string) $row['changed'],
                 ];
+                $result['missing'][$detail][] = $entry;
             }
         }
 

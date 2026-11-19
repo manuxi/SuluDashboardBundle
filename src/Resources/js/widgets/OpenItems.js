@@ -9,6 +9,7 @@ import Card from 'sulu-admin-bundle/components/Card';
 import {userStore} from 'sulu-admin-bundle/stores';
 import {translate} from 'sulu-admin-bundle/utils';
 import {formatDate, INDICATOR, toDate} from '../utils';
+import {templateTitle} from '../templates';
 import styles from '../dashboard.scss';
 
 const VISIBLE_ROWS = 10;
@@ -57,11 +58,10 @@ export default class OpenItems extends React.Component {
     // the template title as in Sulu's template select ("Blog"), in the admin language of the user; the icon already says
     // page or article
     typeLabel(item) {
-        const templateTitles = (this.props.options || {}).templateTitles || {};
-        const titles = (templateTitles[item.resourceKey] || {})[item.template] || {};
         const userLocale = userStore.user ? userStore.user.locale : null;
 
-        return titles[userLocale] || Object.values(titles)[0] || translate('sulu_dashboard.type_' + item.resourceKey);
+        return templateTitle((this.props.options || {}).templateTitles, item.resourceKey, item.template, userLocale)
+            || translate('sulu_dashboard.type_' + item.resourceKey);
     }
 
     @action changeSettings(changes) {

@@ -1,17 +1,23 @@
 # Changelog
 
-## Unreleased
+## 1.6.0 - 2026-11-19
+
+### Added
+
+- The tile **Search engine details** (`sulu_seo`) shows under each ring (SEO title, meta description, preview image) "What is missing?" (de "Was fehlt?", nl "Wat ontbreekt?"): the pages and articles that lack exactly this detail, with type icon and title, newest change first. A click opens the form in the chosen language straight in the matching tab: the SEO tab (`sulu_page.page_edit_form.seo`, `sulu_article.article.edit_tabs_<group>.seo`) for title and description, the excerpt tab (`.excerpt`) for the preview image. Ten entries at first, "Show all" shows up to 50; one list open at a time. Only entries the user may see are listed. See [docs/built-in-widgets.en.md](docs/built-in-widgets.en.md).
+
+### Changed
+
+- `sulu_seo` is a `custom` tile now (React component `SeoDetails`, logic in `seo.js`, tested with `node --test tests/js/*.test.mjs`) and no `progress` tile any more. The data has `items[]` with `key`, `label`, `value`, `max` and `missing: {count, rows}`; the footer list "Add first" (up to five entries without meta description) is part of the new lists, there is no duplicate.
+- `ContentReader::seoCoverage()` returns `missing` per detail (`seoTitle`, `seoDescription`, `excerptImage`) instead of one list; the limit per list defaults to 50 (was 5 for the one list). Same two queries as before.
+- The result is saved in an own cache pool (`sulu_dashboard.system_cache`, `FilesystemAdapter`) in `var/sulu-dashboard`. New option `sulu_dashboard.system.storage_dir` (default `%kernel.project_dir%/var/sulu-dashboard`). Results in `cache.app` of earlier versions are not read any more: the tab says "never" until the command has run once.
+- `SystemCheckStore` gets the new pool as its argument (the class is unchanged).
+- Documentation: "Where the result is kept" and "Without a crontab: the system check as a URL cron" in [docs/system.en.md](docs/system.en.md) (with an example controller, hints on `proc_open` and `composer_binary`).
 
 ### Fixed
 
 - `sulu:dashboard:system-check` exists in the admin **and** the website context (the `sulu.context: admin` tag is gone). A project without a crontab can start it from a controller in the website (URL cron) without overriding any service.
 - The result of the command is no longer lost between the contexts or by `cache:clear`: it was saved in `cache.app`, which Sulu keeps separately per context (`var/cache/admin`, `var/cache/website`) and which `cache:clear` empties.
-
-### Changed
-
-- The result is saved in an own cache pool (`sulu_dashboard.system_cache`, `FilesystemAdapter`) in `var/sulu-dashboard`. New option `sulu_dashboard.system.storage_dir` (default `%kernel.project_dir%/var/sulu-dashboard`). Results in `cache.app` of earlier versions are not read any more: the tab says "never" until the command has run once.
-- `SystemCheckStore` gets the new pool as its argument (the class is unchanged).
-- Documentation: "Where the result is kept" and "Without a crontab: the system check as a URL cron" in [docs/system.en.md](docs/system.en.md) (with an example controller, hints on `proc_open` and `composer_binary`).
 
 ## 1.5.0 - 2026-11-19
 

@@ -29,9 +29,12 @@ class BuiltinWidgetsTest extends TestCase
         $reader->method('countSnippets')->willReturn(4);
         $reader->method('countMedia')->willReturn(99);
         $reader->method('openItems')->willReturn([['id' => 'a']]);
-        $reader->method('seoCoverage')->willReturn(['total' => 4, 'seoTitle' => 3, 'seoDescription' => 2, 'excerptImage' => 1, 'missing' => [
-            ['resourceKey' => 'pages', 'id' => 'p1', 'webspace' => 'main', 'group' => null, 'title' => 'About'],
-            ['resourceKey' => 'articles', 'id' => 'a1', 'webspace' => null, 'group' => 'blog', 'title' => 'Post'],
+        $page = ['resourceKey' => 'pages', 'id' => 'p1', 'webspace' => 'main', 'group' => null, 'template' => 'default', 'title' => 'About', 'changed' => '2026-11-05 10:00:00'];
+        $article = ['resourceKey' => 'articles', 'id' => 'a1', 'webspace' => null, 'group' => 'blog', 'template' => 'blog', 'title' => 'Post', 'changed' => '2026-11-04 09:30:00'];
+        $reader->method('seoCoverage')->willReturn(['total' => 4, 'seoTitle' => 3, 'seoDescription' => 2, 'excerptImage' => 2, 'missing' => [
+            'seoTitle' => [$page],
+            'seoDescription' => [$page, $article],
+            'excerptImage' => [$article, $page],
         ]]);
         $reader->method('translations')->willReturn(['source' => 'de', 'locales' => []]);
 
@@ -127,22 +130,48 @@ class BuiltinWidgetsTest extends TestCase
         $this->assertCount(1, array_filter($widgets, static fn ($widget): bool => $widget instanceof ConditionalDashboardWidgetInterface));
     }
 
-    public function testSeoTileHasThreeRingsAndLinksIntoTheSeoTab(): void
+    public function testSeoTileHasThreeRingsEachWithItsOwnListOfMissingEntries(): void
     {
         $widget = new SeoWidget($this->reader());
         $data = $widget->getData('de');
 
-        $this->assertSame('progress', $widget->getType());
+        $this->assertSame('custom', $widget->getType());
         $this->assertSame('main', $widget->getColumn());
-        $this->assertSame('ring', $data['display']);
-        $this->assertSame([3, 2, 1], array_column($data['items'], 'value'));
+        $this->assertSame(['seoTitle', 'seoDescription', 'excerptImage'], array_column($data['items'], 'key'));
+        $this->assertSame([3, 2, 2], array_column($data['items'], 'value'));
         $this->assertSame([4, 4, 4], array_column($data['items'], 'max'));
         $this->assertSame(4, $data['text']['parameters']['count']);
+        $this->assertSame([1, 2, 2], array_map(static fn (array $item): int => $item['missing']['count'], $data['items']));
+        $this->assertSame([1, 2, 2], array_map(static fn (array $item): int => \count($item['missing']['rows']), $data['items']));
+    }
 
-        $rows = $data['footer']['rows'];
-        $this->assertSame('sulu_page.page_edit_form.seo', $rows[0]['link']['view']);
-        $this->assertSame(['id' => 'p1', 'webspace' => 'main', 'locale' => 'de'], $rows[0]['link']['attributes']);
-        $this->assertSame('sulu_article.article.edit_tabs_blog.seo', $rows[1]['link']['view']);
-        $this->assertSame(['id' => 'a1', 'locale' => 'de'], $rows[1]['link']['attributes']);
+    public function testSeoLinksLeadIntoTheTabThatHoldsTheDetail(): void
+    {
+        $items = (new SeoWidget($this->reader()))->getData('de')['items'];
+
+        // title and description: SEO tab
+        $page = $items[0]['missing']['rows'][0];
+        $this->assertSame('su-webspace', $page['icon']);
+        $this->assertSame(['pages', 'default', '2026-11-05 10:00:00'], [$page['resourceKey'], $page['template'], $page['changed']]);
+        $this->assertSame('About', $page['title']);
+        $this->assertSame('sulu_page.page_edit_form.seo', $page['link']['view']);
+        $this->assertSame(['id' => 'p1', 'webspace' => 'main', 'locale' => 'de'], $page['link']['attributes']);
+
+        $article = $items[1]['missing']['rows'][1];
+        $this->assertSame('su-newspaper', $article['icon']);
+        $this->assertSame('sulu_article.article.edit_tabs_blog.seo', $article['link']['view']);
+        $this->assertSame(['id' => 'a1', 'locale' => 'de'], $article['link']['attributes']);
+
+        // preview image: excerpt tab
+        $this->assertSame('sulu_article.article.edit_tabs_blog.excerpt', $items[2]['missing']['rows'][0]['link']['view']);
+        $this->assertSame('sulu_page.page_edit_form.excerpt', $items[2]['missing']['rows'][1]['link']['view']);
+    }
+
+    public function testSeoLinksCarryTheChosenLanguage(): void
+    {
+        $items = (new SeoWidget($this->reader()))->getData('en')['items'];
+
+        $this->assertSame('en', $items[2]['missing']['rows'][0]['link']['attributes']['locale']);
+        $this->assertSame('en', $items[2]['missing']['rows'][1]['link']['attributes']['locale']);
     }
 }

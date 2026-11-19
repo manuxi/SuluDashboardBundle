@@ -4,6 +4,7 @@ import widgetRegistry from './widgetRegistry';
 import Activities from './widgets/Activities';
 import OpenItems from './widgets/OpenItems';
 import Translations from './widgets/Translations';
+import SeoDetails from './widgets/SeoDetails';
 import SystemFacts from './widgets/SystemFacts';
 import SystemStorage from './widgets/SystemStorage';
 import SystemVulnerabilities from './widgets/SystemVulnerabilities';
@@ -19,6 +20,7 @@ viewRegistry.add('sulu_dashboard.redirect', Redirect);
 // the custom tiles of this bundle use the same registry as the tiles of other bundles
 widgetRegistry.add('sulu_open_items', OpenItems);
 widgetRegistry.add('sulu_translations', Translations);
+widgetRegistry.add('sulu_seo', SeoDetails);
 widgetRegistry.add('sulu_activities', Activities);
 // shown only when the log statistics are installed (VisitorsWidget on the server)
 widgetRegistry.add('sulu_visitors', Visitors);

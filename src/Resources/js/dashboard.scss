@@ -284,6 +284,55 @@
     margin-top: 10px;
 }
 
+/* the toggle under a ring stands in the middle, like the label and the figure above it */
+.ring .more {
+    display: flex;
+    justify-content: center;
+}
+
+/* the ring whose list is open: its label in Sulu's accent colour and a small tip that points down to the list */
+.ringActive {
+    position: relative;
+
+    .ringLabel {
+        color: $shakespeare;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -20px;
+        margin-left: -7px;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-bottom: 7px solid $shakespeare;
+    }
+}
+
+/* the list that belongs to the open ring: hairline above, heading flush with the title of the tile */
+.seoDetail {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid $gallery;
+
+    .title {
+        margin-bottom: 15px;
+    }
+}
+
+/* in a narrow column only title and pen remain: type and date (columns 3 and 4, the pen is column 1) drop out */
+.seoTable {
+    container-type: inline-size;
+}
+
+@container (max-width: 480px) {
+    .seoTable th:nth-child(n+3),
+    .seoTable td:nth-child(n+3) {
+        display: none;
+    }
+}
+
 .usage {
     display: flex;
     align-items: center;
