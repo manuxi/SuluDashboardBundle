@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `sulu:dashboard:system-check` exists in the admin **and** the website context (the `sulu.context: admin` tag is gone). A project without a crontab can start it from a controller in the website (URL cron) without overriding any service.
+- The result of the command is no longer lost between the contexts or by `cache:clear`: it was saved in `cache.app`, which Sulu keeps separately per context (`var/cache/admin`, `var/cache/website`) and which `cache:clear` empties.
+
+### Changed
+
+- The result is saved in an own cache pool (`sulu_dashboard.system_cache`, `FilesystemAdapter`) in `var/sulu-dashboard`. New option `sulu_dashboard.system.storage_dir` (default `%kernel.project_dir%/var/sulu-dashboard`). Results in `cache.app` of earlier versions are not read any more: the tab says "never" until the command has run once.
+- `SystemCheckStore` gets the new pool as its argument (the class is unchanged).
+- Documentation: "Where the result is kept" and "Without a crontab: the system check as a URL cron" in [docs/system.en.md](docs/system.en.md) (with an example controller, hints on `proc_open` and `composer_binary`).
+
 ## 1.5.0 - 2026-11-19
 
 ### Added

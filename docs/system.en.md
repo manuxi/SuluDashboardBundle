@@ -94,12 +94,69 @@ Run it once a day, for example with this cron entry (adjust the path):
 15 4 * * * cd /path/to/project && php bin/adminconsole sulu:dashboard:system-check >> var/log/system-check.log 2>&1
 ```
 
-- Use `bin/adminconsole`: the tab reads the cache of the admin, and the command saves into it.
+- Use `bin/adminconsole` or `bin/websiteconsole`: the command exists in both contexts and saves to the same place (see below), so the tab shows the result either way.
 - A failed check ends with exit code 1 (Composer not found, no internet, too slow), a found vulnerability does not: the check itself worked.
-- **Until the command has run, the condition says that nothing was checked yet** and the tab shows no vulnerabilities and no folder sizes. The result is kept in the cache and also contains the measurement before it (for the change). If the last run is older than 48 hours the tab warns that the cron job may have stopped (`sulu_dashboard.system.max_age`, in hours, for a weekly cron job for example 200).
-- `cache:clear` also clears this result (depending on the cache setup of the project) and with it the measurement before: the display of the change starts again. Run the command at the end of a deployment, after `cache:clear`.
-- Hosting without a crontab: use the cron function of the provider and let it start the command, or run it by hand now and then. A script that calls the command through a secret URL is only an idea, the bundle has no such route.
+- **Until the command has run, the condition says that nothing was checked yet** and the tab shows no vulnerabilities and no folder sizes. The result is kept in the storage folder (see below) and also contains the measurement before it (for the change). If the last run is older than 48 hours the tab warns that the cron job may have stopped (`sulu_dashboard.system.max_age`, in hours, for a weekly cron job for example 200).
+- `cache:clear` does not delete the result, and neither does a deployment that replaces the cache folders: the result lives in its own folder, `var/sulu-dashboard` (see "Where the result is kept"). The change since the last measurement therefore survives a deployment.
+- Hosting without a crontab: see "Without a crontab: the system check as a URL cron" below.
 - Composer must be callable by the user of the cron job. If the command finds it under another name or path, set it: `sulu_dashboard.system.composer_binary: '/usr/local/bin/composer'` or the path to a `composer.phar`. Without a `HOME` directory (some cron environments) Composer needs `COMPOSER_HOME=/path/to/a/writable/folder` in front of the command. Without `composer.lock` in the project there is nothing to check.
+
+### Where the result is kept
+
+The result is saved in a cache pool of its own (`sulu_dashboard.system_cache`, a `FilesystemAdapter`) in the folder `var/sulu-dashboard` of the project. It is no part of `cache.app`: Sulu gives every context its own cache folder (`var/cache/admin`, `var/cache/website`), so a result in `cache.app` would be invisible to the other context and would be deleted by `cache:clear`. The own folder is read and written by both contexts and survives `cache:clear`. The folder needs no setup, the command creates it; it must be writable for the user of the web server and of the cron job. Where that is not possible, change the folder:
+
+```yaml
+sulu_dashboard:
+    system:
+        storage_dir: '%kernel.project_dir%/var/sulu-dashboard'   # the default
+```
+
+Results that earlier versions left in `cache.app` are not read any more; after the update the tab says "never" until the command has run once. Nothing breaks.
+
+### Without a crontab: the system check as a URL cron
+
+Some shared hosting offers only a "URL cron": the provider calls a web address at fixed times. The command is available in the website context for this, so a small controller of the project can start it. The example uses a secret in the URL (kept in an environment variable) and runs the command in the running kernel:
+
+```php
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class SystemCheckCronController
+{
+    public function __construct(private readonly string $cronToken)
+    {
+    }
+
+    #[Route('/cron/system-check/{token}', methods: ['GET'])]
+    public function __invoke(KernelInterface $kernel, string $token): Response
+    {
+        if (!hash_equals($this->cronToken, $token)) {
+            return new Response('', Response::HTTP_NOT_FOUND);
+        }
+
+        set_time_limit(300);
+
+        $application = new Application($kernel);
+        $application->setAutoExit(false);
+
+        $output = new BufferedOutput();
+        $exitCode = $application->run(new ArrayInput(['command' => 'sulu:dashboard:system-check']), $output);
+
+        return new Response($output->fetch(), 0 === $exitCode ? 200 : 500, ['Content-Type' => 'text/plain']);
+    }
+}
+```
+
+Register the controller like any other of the project and give it `$cronToken` (for example `'%env(SYSTEM_CHECK_CRON_TOKEN)%'`). Enter the address `https://example.org/cron/system-check/<secret>` in the cron function of the provider (once a day is enough). Keep the route out of the sitemap and the cache, and do not log the address.
+
+Two things the web PHP needs:
+
+- `proc_open` must not be disabled in `disable_functions`: the check starts Composer (`composer audit`, `composer outdated`) as a process. Where it is disabled, Composer cannot be started: the tab then reports the security check as "could not run" (the folder sizes are still saved).
+- Composer must be callable by the PHP of the web server. Often the plain command `composer` does not exist there. Then set `sulu_dashboard.system.composer_binary` to the path of a `composer.phar` in the project (and a `COMPOSER_HOME` in the environment, if the account has no home directory). The web PHP also has a `max_execution_time`: the command takes about ten to thirty seconds, `set_time_limit()` in the controller helps where the provider allows it.
 
 ## Check without a login
 
@@ -117,6 +174,7 @@ The user must have the permission `sulu.settings.dashboard_system`, otherwise th
 sulu_dashboard:
     system:
         composer_binary: composer   # command in the PATH or path to a composer.phar
+        storage_dir: '%kernel.project_dir%/var/sulu-dashboard'   # folder of the result (both contexts, not deleted by cache:clear)
         max_age: 48                 # hours after which the last check counts as too old
         cache_limit: 1024           # MB: from this size of var/cache the tile "Storage" gives a hint (0 = off)
         log_limit: 512              # MB: the same for var/log (0 = off)
