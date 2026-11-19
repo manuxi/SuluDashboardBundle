@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.4.0 - 2026-11-19
+
+### Added
+
+- The tile **Storage** of the tab "System" is a tile of its own now (React component `widgets/SystemStorage.js`, wide column): the total size of the measured folders, one bar per area with size and share (`public/uploads`, `var/cache`, `var/log`, `var/storage` and every other folder in `var`, the six biggest, the rest in one row), the change since the measurement before (per folder and in total, from 1 MB on), the number and size of the media of Sulu and, always, the age of the measurement ("Measured 3 hours ago by the command ..., not live."). Free disk space is left out on purpose: on shared hosting it is the space of the whole server.
+- Hints for a big `var/cache` and `var/log` (yellow bar and a short message), also as a warning row in the small tile on the overview. Options `sulu_dashboard.system.cache_limit` (default 1024 MB) and `sulu_dashboard.system.log_limit` (default 512 MB), `0` turns a hint off.
+- `sulu:dashboard:system-check` now reports `var` by its subfolders, reads the number and size of the media from Sulu's media tables (`MediaStatistics`, only in the command) and keeps the measurement before inside the result (`SystemCheck::$previous`). Results of earlier versions are still read; the change appears after the second run.
+- Texts in de, en and nl; tests for the report (`StorageReportTest`), the measurer, the checker, the media statistics and the pure logic of the component (`tests/js/storage.test.mjs`).
+
+### Changed
+
+- The tiles "Database migrations" and "Failed messages" (one sentence each) are pinned to the narrow column, so the balance does not move them into the wide one. The tile "Storage" moves to the wide column and may be moved by the balance.
+- `StorageMeasurer` takes a third argument `$splitPaths` (default `['var']`) and then reports the subfolders of `var` instead of one entry `var`. `SystemChecker` and `SystemTileData` take an optional last argument (`MediaStatistics`, `StorageReport`).
+
 ## 1.3.0 - 2026-11-18
 
 ### Added

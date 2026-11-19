@@ -23,8 +23,8 @@ final class SystemTileWidget implements GroupedDashboardWidgetInterface, PinnedD
     public const KEY_PREFIX = 'sulu_system_';
 
     /**
-     * Name => [title, type, column, priority]. The table of vulnerabilities is a React component of its own
-     * (widgets/SystemVulnerabilities.js), the others are lists without a table head.
+     * Name => [title, type, column, priority]. The table of vulnerabilities and the storage are React components of their
+     * own (widgets/SystemVulnerabilities.js, widgets/SystemStorage.js), the others are lists without a table head.
      *
      * @var array<string, array{string, string, string, int}>
      */
@@ -33,7 +33,7 @@ final class SystemTileWidget implements GroupedDashboardWidgetInterface, PinnedD
         'last_check' => ['sulu_dashboard.system_last_check', WidgetTypes::LIST, WidgetColumns::SIDE, 90],
         'versions' => ['sulu_dashboard.system_versions', WidgetTypes::LIST, WidgetColumns::SIDE, 80],
         'environment' => ['sulu_dashboard.system_environment', WidgetTypes::LIST, WidgetColumns::SIDE, 70],
-        'storage' => ['sulu_dashboard.system_storage', WidgetTypes::LIST, WidgetColumns::SIDE, 60],
+        'storage' => ['sulu_dashboard.system_storage', WidgetTypes::CUSTOM, WidgetColumns::MAIN, 60],
         'migrations' => ['sulu_dashboard.system_migrations', WidgetTypes::LIST, WidgetColumns::SIDE, 50],
         'failed_messages' => ['sulu_dashboard.system_failed_messages', WidgetTypes::LIST, WidgetColumns::SIDE, 40],
     ];
@@ -78,11 +78,12 @@ final class SystemTileWidget implements GroupedDashboardWidgetInterface, PinnedD
     }
 
     /**
-     * The table of vulnerabilities has six columns and needs the wide column: the balance never moves it.
+     * The table of vulnerabilities has six columns and needs the wide column. The tiles with one sentence ("Database
+     * migrations", "Failed messages") belong in the narrow one. The balance never moves them.
      */
     public function isPinned(): bool
     {
-        return 'vulnerabilities' === $this->name;
+        return \in_array($this->name, ['vulnerabilities', 'migrations', 'failed_messages'], true);
     }
 
     public function getGroup(): string

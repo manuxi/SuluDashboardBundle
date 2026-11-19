@@ -87,11 +87,17 @@ services:
     Manuxi\SuluDashboardBundle\System\StorageMeasurer:
         arguments: ['%kernel.project_dir%']
 
+    # number and size of the media (Sulu's media tables), read by the command only
+    Manuxi\SuluDashboardBundle\System\MediaStatistics:
+        arguments: ['@?doctrine.dbal.default_connection']
+
     Manuxi\SuluDashboardBundle\System\SystemChecker:
         arguments:
             - '@Manuxi\SuluDashboardBundle\System\ComposerAuditRunner'
             - '@Manuxi\SuluDashboardBundle\System\StorageMeasurer'
             - '@Manuxi\SuluDashboardBundle\System\SystemCheckStore'
+            - null
+            - '@Manuxi\SuluDashboardBundle\System\MediaStatistics'
 
     # optional: only when doctrine/migrations and a failure transport of Messenger are configured, otherwise null
     Manuxi\SuluDashboardBundle\System\PendingMigrations:
@@ -145,6 +151,13 @@ services:
             - '@Manuxi\SuluDashboardBundle\System\FailedMessages'
             - '%sulu_dashboard.system.max_age%'
             - '@?logger'
+            - null
+            - '@Manuxi\SuluDashboardBundle\Widget\System\StorageReport'
+
+    Manuxi\SuluDashboardBundle\Widget\System\StorageReport:
+        arguments:
+            - '%sulu_dashboard.system.cache_limit%'
+            - '%sulu_dashboard.system.log_limit%'
 
     Manuxi\SuluDashboardBundle\Widget\Builtin\SystemWidget:
         arguments: ['@Manuxi\SuluDashboardBundle\Widget\System\SystemTileData']
