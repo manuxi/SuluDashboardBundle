@@ -7,8 +7,6 @@ namespace Manuxi\SuluDashboardBundle\System;
 use Closure;
 use Composer\InstalledVersions;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
-use Symfony\Component\Process\ExecutableFinder;
-use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 
@@ -37,7 +35,7 @@ final class ComposerAuditRunner implements AuditRunnerInterface
 
     public function run(): AuditResult
     {
-        $command = $this->command();
+        $command = ComposerCommand::resolve($this->composer);
         if (null === $command) {
             return AuditResult::unavailable(AuditResult::ERROR_NOT_FOUND);
         }
@@ -59,22 +57,6 @@ final class ComposerAuditRunner implements AuditRunnerInterface
         }
 
         return AuditResult::vulnerable($this->advisories($data), $this->abandoned($data));
-    }
-
-    /**
-     * @return list<string>|null
-     */
-    private function command(): ?array
-    {
-        if (str_ends_with($this->composer, '.phar')) {
-            $php = (new PhpExecutableFinder())->find(false);
-
-            return false !== $php && is_file($this->composer) ? [$php, $this->composer] : null;
-        }
-
-        $binary = is_file($this->composer) ? $this->composer : (new ExecutableFinder())->find($this->composer);
-
-        return null === $binary ? null : [$binary];
     }
 
     /**

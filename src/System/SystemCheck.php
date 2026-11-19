@@ -11,6 +11,7 @@ namespace Manuxi\SuluDashboardBundle\System;
  * @phpstan-type Storage list<array{path: string, bytes: int}>
  * @phpstan-type Media array{count: int, bytes: int}
  * @phpstan-type Previous array{checkedAt: int, storage: Storage, media: Media|null}
+ * @phpstan-type Updates list<array{package: string, installed: string, latest: string}>
  */
 final class SystemCheck
 {
@@ -18,6 +19,7 @@ final class SystemCheck
      * @param Storage       $storage
      * @param Media|null    $media    number and size of the media of Sulu; null if they could not be read
      * @param Previous|null $previous the measurement before this one; null at the first run
+     * @param Updates|null  $updates  newer patch releases of Sulu and Symfony; null if that check could not run (or an older result)
      */
     public function __construct(
         public readonly int $checkedAt,
@@ -25,11 +27,12 @@ final class SystemCheck
         public readonly array $storage,
         public readonly ?array $media = null,
         public readonly ?array $previous = null,
+        public readonly ?array $updates = null,
     ) {
     }
 
     /**
-     * @return array{checkedAt: int, audit: array<string, mixed>, storage: Storage, media: Media|null, previous: Previous|null}
+     * @return array{checkedAt: int, audit: array<string, mixed>, storage: Storage, media: Media|null, previous: Previous|null, updates: Updates|null}
      */
     public function toArray(): array
     {
@@ -39,6 +42,7 @@ final class SystemCheck
             'storage' => $this->storage,
             'media' => $this->media,
             'previous' => $this->previous,
+            'updates' => $this->updates,
         ];
     }
 
@@ -61,7 +65,7 @@ final class SystemCheck
             ];
         }
 
-        return new self($data['checkedAt'], $audit, self::storage($data['storage'] ?? null), self::media($data['media'] ?? null), $previous);
+        return new self($data['checkedAt'], $audit, self::storage($data['storage'] ?? null), self::media($data['media'] ?? null), $previous, self::updates($data['updates'] ?? null));
     }
 
     /**
@@ -89,5 +93,24 @@ final class SystemCheck
         }
 
         return null;
+    }
+
+    /**
+     * @return Updates|null
+     */
+    private static function updates(mixed $value): ?array
+    {
+        if (!\is_array($value)) {
+            return null;
+        }
+
+        $updates = [];
+        foreach ($value as $entry) {
+            if (\is_array($entry) && \is_string($entry['package'] ?? null) && \is_string($entry['installed'] ?? null) && \is_string($entry['latest'] ?? null)) {
+                $updates[] = ['package' => $entry['package'], 'installed' => $entry['installed'], 'latest' => $entry['latest']];
+            }
+        }
+
+        return $updates;
     }
 }

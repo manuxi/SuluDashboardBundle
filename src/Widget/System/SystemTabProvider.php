@@ -8,7 +8,7 @@ use Manuxi\SuluDashboardBundle\Admin\DashboardAdmin;
 use Manuxi\SuluDashboardBundle\Tab\TilesTabProviderInterface;
 
 /**
- * The tab "System": security vulnerabilities, versions, environment, storage, migrations and failed messages as tiles of
+ * The tab "System": condition, security vulnerabilities, versions, environment and storage as tiles of
  * the group "system" that the user can arrange, hide and reset like the tiles of the overview. Only for users with the
  * permission {@see DashboardAdmin::SYSTEM_SECURITY_CONTEXT}: without it there is no tab. No period, no language.
  */
