@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Number tiles (pages, articles, snippets, media): the indicator of Sulu's lists now comes first, then the count, then the text ("(dot) 65 published"). The indicators stand in a fixed column of two dots, the counts are right-aligned with tabular figures, so nothing steps.
+- Tables in tiles ("Open drafts", list tiles with links): the pen of a row is always visible, subdued, and strong on hover. Sulu hides it until the mouse is over the row, which looked like a missing first column.
+
 ## 1.4.0 - 2026-11-19
 
 ### Added
