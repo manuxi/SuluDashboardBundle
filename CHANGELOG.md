@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.5.0 - 2026-11-19
 
 ### Added
 
@@ -23,6 +23,8 @@
 - The tiles "Versions" and "Environment" are `custom` tiles (`SystemFacts`) and no list tiles any more. Both stay in the narrow column and may be moved by the balance.
 - `SystemTileData::versions()` takes the language (for the date of the PHP support), `SystemTileData` an optional last argument `RuntimeInfo`, `SystemChecker` an optional last argument `UpdateRunnerInterface`, `SystemCheck` an optional last argument `$updates`. Results of earlier versions are still read.
 - The list tile takes its icons from `facts.js` (the same ones as the facts).
+- Number tiles (pages, articles, snippets, media): the indicator of Sulu's lists now comes first, then the count, then the text ("(dot) 65 published"). The indicators stand in a fixed column of two dots, the counts are right-aligned with tabular figures, so nothing steps.
+- Tables in tiles ("Open drafts", list tiles with links): the pen of a row is always visible, subdued, and strong on hover. Sulu hides it until the mouse is over the row, which looked like a missing first column.
 
 ### Removed
 

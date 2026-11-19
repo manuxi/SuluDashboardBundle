@@ -87,6 +87,8 @@ Opening `/` redirects to "Overview". The search of Sulu stays on `/search`. Exis
 
 Tiles that other bundles or the project bring (ratings, glossary, DeepL quota, events ...) are not on the overview but in the tab **Extensions**. It is a tab of tiles (group `extensions`, own arrangement under `sulu_dashboard.layout.extensions`, "Customize" mode), has the language select (the tiles use the language) and no period. **No extensions, no tab:** it appears only if the user may see at least one such tile. It stands after "Overview" and before "Visitors" and "System".
 
+![The tab Extensions (the admin interface is shown in German)](img/dashboard-extensions.de.png)
+
 The dashboard decides by itself which tile goes there, the other bundles stay unchanged:
 
 - A tile with its own group (`GroupedDashboardWidgetInterface`) keeps it.

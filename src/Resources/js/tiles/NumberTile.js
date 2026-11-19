@@ -1,5 +1,6 @@
 // Widget type "number": a figure with its label and an optional split by state.
-// data: {value, parts?: [{label, count, state?}]}; state is a workflow place and shows Sulu's PublishIndicator.
+// data: {value, parts?: [{label, count, state?}]}; state is a workflow place and shows Sulu's PublishIndicator in front of
+// the count, as in Sulu's lists (indicator, number, text).
 import React from 'react';
 import {PublishIndicator} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
@@ -17,12 +18,12 @@ export default function NumberTile({widget, data}) {
                 <ul className={styles.places}>
                     {parts.map((part, index) => (
                         <li key={index}>
-                            <span className={styles.placeCount}>{part.count}</span>
-                            <span>{tx(part.label)}</span>
                             {part.state && INDICATOR[part.state]
                                 ? <PublishIndicator className={styles.placeIndicator} {...INDICATOR[part.state]} />
                                 : <span />
                             }
+                            <span className={styles.placeCount}>{part.count}</span>
+                            <span>{tx(part.label)}</span>
                         </li>
                     ))}
                 </ul>

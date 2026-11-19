@@ -209,9 +209,10 @@
     list-style: none;
     margin: 15px 0 0;
     padding: 0;
-    /* one grid for all rows: numbers right-aligned in their own column, status dots at the right edge */
+    /* one grid for all rows, like Sulu's lists: indicator first (fixed column of two dots, right-aligned), then the number
+       right-aligned (tabular figures), then the text */
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 26px auto 1fr;
     column-gap: 8px;
     align-items: center;
     line-height: 20px;
@@ -229,6 +230,7 @@
 .placeIndicator {
     display: inline-flex;
     justify-self: end;
+    margin: 0;
 }
 
 .indicator {
@@ -295,6 +297,12 @@
 /* safety net: on narrow screens the table scrolls inside its card instead of overlapping it */
 .tableWrap {
     overflow-x: auto;
+}
+
+/* Sulu hides the pen of a row until the mouse is over it (opacity 0). On a start page that looks as if the first column
+   were missing: keep it visible, subdued; Sulu's own hover rule (more specific, opacity 1) makes it strong. */
+.tableWrap tbody td button:not(:disabled) {
+    opacity: .5;
 }
 
 .typeIcon {
