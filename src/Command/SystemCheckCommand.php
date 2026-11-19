@@ -53,7 +53,7 @@ class SystemCheckCommand extends Command
         }
 
         if (null === $check->updates) {
-            $io->writeln('Updates: could not be checked (composer outdated needs internet access).');
+            $io->writeln('Updates: could not be checked' . (null === $check->updatesError ? '.' : ': ' . $check->updatesError));
         } elseif ([] === $check->updates) {
             $io->writeln('Updates: no newer patch release of Sulu or Symfony.');
         }
@@ -79,8 +79,12 @@ class SystemCheckCommand extends Command
             $io->error(match ($audit->error) {
                 AuditResult::ERROR_NOT_FOUND => 'The security check could not run: Composer was not found. Set sulu_dashboard.system.composer_binary to its path.',
                 AuditResult::ERROR_TIMEOUT => 'The security check could not run: composer audit took too long.',
+                AuditResult::ERROR_NETWORK => 'The security check could not run: Composer cannot fetch the security database. Check the network access of the web PHP or run the command over SSH.',
                 default => 'The security check could not run: composer audit failed. Run "composer audit --locked" in the project folder to see why (it needs a composer.lock and internet access).',
             });
+            if (null !== $audit->detail) {
+                $io->writeln('Composer said: ' . $audit->detail);
+            }
 
             return Command::FAILURE;
         }

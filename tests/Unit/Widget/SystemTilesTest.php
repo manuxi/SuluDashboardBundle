@@ -220,11 +220,11 @@ class SystemTilesTest extends TestCase
 
     public function testAnAuditThatCouldNotRunNamesItsReason(): void
     {
-        foreach ([AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_FAILED, AuditResult::ERROR_TIMEOUT, 'something else'] as $error) {
+        foreach ([AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_FAILED, AuditResult::ERROR_TIMEOUT, AuditResult::ERROR_NETWORK, 'something else'] as $error) {
             $this->save(AuditResult::unavailable($error));
             $data = $this->tile('vulnerabilities')->getData('en');
 
-            $expected = \in_array($error, [AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_TIMEOUT], true) ? $error : AuditResult::ERROR_FAILED;
+            $expected = \in_array($error, [AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_TIMEOUT, AuditResult::ERROR_NETWORK], true) ? $error : AuditResult::ERROR_FAILED;
             $this->assertSame('unavailable', $data['status'], $error);
             $this->assertSame('sulu_dashboard.system_audit_error_' . $expected, $data['reason'], $error);
         }

@@ -31,7 +31,7 @@ export default class SystemVulnerabilities extends React.Component {
 
     handleToggle = () => this.setState({expanded: !this.state.expanded});
 
-    renderMessage(kind, text, hint) {
+    renderMessage(kind, text, hint, detail) {
         const icons = {ok: 'su-check-circle', warning: 'su-exclamation-circle', error: 'su-exclamation-triangle'};
         const classes = {ok: styles.severityOk, warning: styles.severityWarning, error: styles.severityError};
 
@@ -41,6 +41,7 @@ export default class SystemVulnerabilities extends React.Component {
                 <div>
                     <div className={kind === 'error' ? styles.severityTitleError : undefined}>{text}</div>
                     {hint && <div className={styles.rowText}>{hint}</div>}
+                    {detail && <div className={styles.rowText}>{detail}</div>}
                 </div>
             </div>
         );
@@ -137,13 +138,13 @@ export default class SystemVulnerabilities extends React.Component {
 
     render() {
         const {widget, data} = this.props;
-        const {state, advisories, abandoned, reason, command} = normalize(data);
+        const {state, advisories, abandoned, reason, detail, command} = normalize(data);
 
         return (
             <Card>
                 <h2 className={styles.title}>{tx(widget.title)}</h2>
                 {'never' === state && this.renderMessage('warning', translate('sulu_dashboard.system_vulnerabilities_never'), translate('sulu_dashboard.system_vulnerabilities_never_hint', {command}))}
-                {'unavailable' === state && this.renderMessage('warning', translate('sulu_dashboard.system_audit_could_not_run'), reason ? tx(reason) : null)}
+                {'unavailable' === state && this.renderMessage('warning', translate('sulu_dashboard.system_audit_could_not_run'), reason ? tx(reason) : null, detail)}
                 {'ok' === state && this.renderMessage('ok', translate('sulu_dashboard.system_vulnerabilities_none'), translate('sulu_dashboard.system_vulnerabilities_none_hint'))}
                 {advisories.length > 0 && this.renderAdvisories(advisories)}
                 {advisories.length > 0 && <p className={styles.rowText}>{translate('sulu_dashboard.system_vulnerabilities_found_hint')}</p>}

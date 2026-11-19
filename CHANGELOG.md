@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `sulu:dashboard:system-check` from a web request (URL cron): `composer audit` and `composer outdated` stopped with "The APPDATA or COMPOSER_HOME environment variable must be set" because the PHP of a web server has no home directory (no `HOME`, on Windows no `APPDATA`/`LOCALAPPDATA`). The bundle now starts Composer with `COMPOSER_HOME` and `COMPOSER_CACHE_DIR` in `var/sulu-dashboard/composer` where the environment has no usable home (a `COMPOSER_HOME` set by the server is respected), with `COMPOSER_NO_INTERACTION=1` and, on Windows, a `SystemRoot` if it is missing. The new option `sulu_dashboard.system.composer_home` (default `null`) sets a folder that is always used.
+- The reason of a failed check is no longer lost: the shortened error output of Composer (300 characters at most; no colours, no paths, no secrets) is saved with the result (`AuditResult::$detail`, `SystemCheck::$updatesError`), printed by the command ("Composer said: ...", "Updates: could not be checked: ...") and shown in the tile "Security vulnerabilities". Before, "composer outdated needs internet access" was printed for every failure.
+- A failure of the network is told apart (`AuditResult::ERROR_NETWORK`): "Composer cannot fetch the security database. Check the network access of the web PHP or run the command over SSH." (de, en, nl).
+
+### Added
+
+- `ComposerEnvironment`, `ComposerFailure` and the interface `ReportsFailure` in `Manuxi\SuluDashboardBundle\System`; `ComposerAuditRunner` and `ComposerOutdatedRunner` take an optional `ComposerEnvironment` as their last argument.
+
 ## 1.6.0 - 2026-11-19
 
 ### Added

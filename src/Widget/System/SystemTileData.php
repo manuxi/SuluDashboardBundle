@@ -69,7 +69,7 @@ final class SystemTileData
     public function vulnerabilities(): array
     {
         $check = $this->store->load();
-        $data = ['status' => 'never', 'advisories' => [], 'abandoned' => [], 'reason' => null, 'command' => self::COMMAND];
+        $data = ['status' => 'never', 'advisories' => [], 'abandoned' => [], 'reason' => null, 'detail' => null, 'command' => self::COMMAND];
         if (null === $check) {
             return $data;
         }
@@ -83,8 +83,9 @@ final class SystemTileData
             usort($advisories, static fn (array $a, array $b): int => [self::SEVERITY_ORDER[$a['severity'] ?? ''] ?? 99, $a['package']] <=> [self::SEVERITY_ORDER[$b['severity'] ?? ''] ?? 99, $b['package']]);
             $data['advisories'] = $advisories;
         } elseif (AuditResult::UNAVAILABLE === $audit->status) {
-            $known = [AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_TIMEOUT];
+            $known = [AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_TIMEOUT, AuditResult::ERROR_NETWORK];
             $data['reason'] = 'sulu_dashboard.system_audit_error_' . (\in_array($audit->error, $known, true) ? $audit->error : AuditResult::ERROR_FAILED);
+            $data['detail'] = $audit->detail;
         }
 
         return $data;
@@ -230,7 +231,7 @@ final class SystemTileData
         }
 
         if (AuditResult::UNAVAILABLE === $audit->status) {
-            $known = [AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_TIMEOUT];
+            $known = [AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_TIMEOUT, AuditResult::ERROR_NETWORK];
 
             return $this->row(self::SEVERITY_WARNING, $title, 'sulu_dashboard.system_audit_unavailable', 'sulu_dashboard.system_audit_error_' . (\in_array($audit->error, $known, true) ? $audit->error : AuditResult::ERROR_FAILED));
         }

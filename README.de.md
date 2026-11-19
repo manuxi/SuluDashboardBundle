@@ -130,6 +130,7 @@ sulu_dashboard:
         balance: true      # nach dem Laden Kacheln vom Ende der längeren in die kürzere Spalte schieben (einmal); false: Kacheln bleiben in ihrer Spalte
     system:
         composer_binary: composer   # Tab „System“: Befehl im PATH oder Pfad zu einer composer.phar
+        composer_home: ~            # Tab „System“: Ordner für Home und Cache von Composer (null: nur wo die Umgebung keinen hat)
         max_age: 48                 # Stunden, nach denen die letzte Hintergrundprüfung als zu alt gilt
     disabled_widgets: []   # Schlüssel von Kacheln, die nicht erscheinen, z. B. ['sulu_activities']
 ```

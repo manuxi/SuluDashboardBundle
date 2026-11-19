@@ -83,7 +83,7 @@ class TranslationKeysTest extends TestCase
         foreach (['published', 'draft', 'unpublished', 'review'] as $place) {
             $this->assertArrayHasKey('sulu_dashboard.place_' . $place, $keys);
         }
-        foreach (['not_found', 'failed', 'timeout'] as $reason) {
+        foreach (['not_found', 'failed', 'timeout', 'network'] as $reason) {
             $this->assertArrayHasKey('sulu_dashboard.system_audit_error_' . $reason, $keys);
         }
         foreach (['pages', 'articles'] as $type) {

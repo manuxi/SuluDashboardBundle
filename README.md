@@ -132,6 +132,7 @@ sulu_dashboard:
         balance: true      # after loading, move tiles from the end of the longer column into the shorter one (once); false: tiles stay in their column
     system:
         composer_binary: composer   # tab "System": command in the PATH or path to a composer.phar
+        composer_home: ~            # tab "System": folder for the home and cache of Composer (null: only where the environment has none)
         max_age: 48                 # hours after which the last background check counts as too old
     disabled_widgets: []   # keys of tiles that are not shown, e.g. ['sulu_activities']
 ```

@@ -50,6 +50,7 @@ export const normalize = (data) => {
         advisories: 'vulnerable' === state ? advisories : [],
         abandoned,
         reason: typeof source.reason === 'string' ? source.reason : null,
+        detail: typeof source.detail === 'string' && source.detail !== '' ? source.detail : null,
         command: typeof source.command === 'string' ? source.command : '',
     };
 };

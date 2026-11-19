@@ -308,8 +308,9 @@ code execution', 'cve' => 'CVE-2026-1', 'link' => 'https://example.com/1', 'affe
         $result = (new ComposerAuditRunner($this->directory, $composer))->run();
 
         $this->assertSame(AuditResult::UNAVAILABLE, $result->status);
-        $this->assertSame(AuditResult::ERROR_FAILED, $result->error);
+        $this->assertSame(AuditResult::ERROR_NETWORK, $result->error);
         $this->assertStringNotContainsString('secret', (string) json_encode($result->toArray()));
+        $this->assertSame('Could not resolve host in <path>', $result->detail);
     }
 
     public function testComposerAuditThatTakesTooLongIsReportedAsTimeout(): void

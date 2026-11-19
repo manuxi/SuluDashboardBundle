@@ -89,16 +89,27 @@ services:
     Manuxi\SuluDashboardBundle\System\SystemCheckStore:
         arguments: ['@sulu_dashboard.system_cache']
 
+    # environment of the Composer process: a home and a cache where the web PHP has none
+    Manuxi\SuluDashboardBundle\System\ComposerEnvironment:
+        arguments:
+            - '%sulu_dashboard.system.storage_dir%/composer'
+            - '%sulu_dashboard.system.composer_home%'
+
     Manuxi\SuluDashboardBundle\System\ComposerAuditRunner:
         arguments:
             - '%kernel.project_dir%'
             - '%sulu_dashboard.system.composer_binary%'
+            - 120
+            - null
+            - '@Manuxi\SuluDashboardBundle\System\ComposerEnvironment'
 
     # newer patch releases of Sulu and Symfony (composer outdated, asks the internet: command only)
     Manuxi\SuluDashboardBundle\System\ComposerOutdatedRunner:
         arguments:
             - '%kernel.project_dir%'
             - '%sulu_dashboard.system.composer_binary%'
+            - 90
+            - '@Manuxi\SuluDashboardBundle\System\ComposerEnvironment'
 
     # cheap live values of PHP for the tile "Environment"
     Manuxi\SuluDashboardBundle\System\RuntimeInfo:

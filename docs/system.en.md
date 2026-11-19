@@ -38,7 +38,7 @@ Migrations and failed messages have a row only where there is something to read 
 ### The tiles "Versions" and "Environment"
 
 - **PHP**: the version and below it "Security updates until 31 Dec 2028". The end dates come from a fixed table in the code (source: php.net/supported-versions.php, `PhpSupport::SECURITY_UNTIL`), nothing is asked online. A test fails as soon as the PHP that runs the tests is not in the table: a new minor version has to be added then. Versions the table does not know get no statement.
-- **Newer patch release**: if `composer outdated --direct --patch-only` finds a newer patch version of Sulu or Symfony (`symfony/framework-bundle`), the row says "Patch update available: 3.0.11" with a yellow icon. A patch release stays inside the version the project chose, so it is the safe kind of update. Composer asks the internet for this (about ten seconds), so it only runs in the console command. Without internet or without Composer the rows simply say nothing. Only direct requirements are checked.
+- **Newer patch release**: if `composer outdated --direct --patch-only` finds a newer patch version of Sulu or Symfony (`symfony/framework-bundle`), the row says "Patch update available: 3.0.11" with a yellow icon. A patch release stays inside the version the project chose, so it is the safe kind of update. Composer asks the internet for this (about ten seconds), so it only runs in the console command. Without internet or without Composer the rows simply say nothing (the console output and the URL cron response then name the reason). Only direct requirements are checked.
 - **Environment**: the live values of the running PHP: mode, debug mode, `memory_limit`, `max_execution_time`, OPcache (**yellow in `prod` if it is off**), time zone and the default language of the kernel. No paths, no keys, no connection data.
 
 ### The tile "Storage"
@@ -95,11 +95,11 @@ Run it once a day, for example with this cron entry (adjust the path):
 ```
 
 - Use `bin/adminconsole` or `bin/websiteconsole`: the command exists in both contexts and saves to the same place (see below), so the tab shows the result either way.
-- A failed check ends with exit code 1 (Composer not found, no internet, too slow), a found vulnerability does not: the check itself worked.
+- A failed check ends with exit code 1 (Composer not found, no internet, too slow), a found vulnerability does not: the check itself worked. The reason is not hidden: the output says "Composer said: ..." with the error output of Composer (at most 300 characters; colours, the project path, other paths and anything that looks like a secret are removed), and the tile "Security vulnerabilities" shows it below the message. For the updates it is the line "Updates: could not be checked: ...".
 - **Until the command has run, the condition says that nothing was checked yet** and the tab shows no vulnerabilities and no folder sizes. The result is kept in the storage folder (see below) and also contains the measurement before it (for the change). If the last run is older than 48 hours the tab warns that the cron job may have stopped (`sulu_dashboard.system.max_age`, in hours, for a weekly cron job for example 200).
 - `cache:clear` does not delete the result, and neither does a deployment that replaces the cache folders: the result lives in its own folder, `var/sulu-dashboard` (see "Where the result is kept"). The change since the last measurement therefore survives a deployment.
 - Hosting without a crontab: see "Without a crontab: the system check as a URL cron" below.
-- Composer must be callable by the user of the cron job. If the command finds it under another name or path, set it: `sulu_dashboard.system.composer_binary: '/usr/local/bin/composer'` or the path to a `composer.phar`. Without a `HOME` directory (some cron environments) Composer needs `COMPOSER_HOME=/path/to/a/writable/folder` in front of the command. Without `composer.lock` in the project there is nothing to check.
+- Composer must be callable by the user of the cron job. If the command finds it under another name or path, set it: `sulu_dashboard.system.composer_binary: '/usr/local/bin/composer'` or the path to a `composer.phar`. Without `composer.lock` in the project there is nothing to check. Composer also needs a home and a cache folder: where the environment brings none (no `HOME`, on Windows no `APPDATA`/`LOCALAPPDATA`; typical for cron and for the PHP of a web server) the bundle starts Composer with `COMPOSER_HOME` and `COMPOSER_CACHE_DIR` in `var/sulu-dashboard/composer` of its own. A `COMPOSER_HOME` that the server sets is respected; `sulu_dashboard.system.composer_home` sets a folder that is always used.
 
 ### Where the result is kept
 
@@ -155,8 +155,9 @@ Register the controller like any other of the project and give it `$cronToken` (
 
 Two things the web PHP needs:
 
+- **Network access**: Composer asks packagist.org. If the web PHP has no access (firewall, proxy, a PHP without `openssl`), the security check says "Composer cannot fetch the security database. Check the network access of the web PHP or run the command over SSH." and the updates are skipped. Proxy settings (`HTTPS_PROXY`) are inherited from the PHP environment.
 - `proc_open` must not be disabled in `disable_functions`: the check starts Composer (`composer audit`, `composer outdated`) as a process. Where it is disabled, Composer cannot be started: the tab then reports the security check as "could not run" (the folder sizes are still saved).
-- Composer must be callable by the PHP of the web server. Often the plain command `composer` does not exist there. Then set `sulu_dashboard.system.composer_binary` to the path of a `composer.phar` in the project (and a `COMPOSER_HOME` in the environment, if the account has no home directory). The web PHP also has a `max_execution_time`: the command takes about ten to thirty seconds, `set_time_limit()` in the controller helps where the provider allows it.
+- Composer must be callable by the PHP of the web server. Often the plain command `composer` does not exist there. Then set `sulu_dashboard.system.composer_binary` to the path of a `composer.phar` in the project. A missing home directory of the account (`HOME`, on Windows `APPDATA`) needs no setup: Composer gets its own folder `var/sulu-dashboard/composer` (see "The background check"). Without it Composer would stop with "The APPDATA or COMPOSER_HOME environment variable must be set". The web PHP also has a `max_execution_time`: the command takes about ten to thirty seconds, `set_time_limit()` in the controller helps where the provider allows it.
 
 ## Check without a login
 
@@ -174,6 +175,7 @@ The user must have the permission `sulu.settings.dashboard_system`, otherwise th
 sulu_dashboard:
     system:
         composer_binary: composer   # command in the PATH or path to a composer.phar
+        composer_home: ~            # folder for the home and cache of Composer; null: Composer's own, var/sulu-dashboard/composer only where the environment has none
         storage_dir: '%kernel.project_dir%/var/sulu-dashboard'   # folder of the result (both contexts, not deleted by cache:clear)
         max_age: 48                 # hours after which the last check counts as too old
         cache_limit: 1024           # MB: from this size of var/cache the tile "Storage" gives a hint (0 = off)
