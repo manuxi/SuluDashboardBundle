@@ -81,7 +81,7 @@ final class SeoWidget extends AbstractBuiltinWidget
     /**
      * @param array<string, mixed> $entry
      *
-     * @return array{title: string, icon: string, link: array{view: string, attributes: array<string, string>}}
+     * @return array{title: string, icon: string, resourceKey: string, template: string, changed: string, link: array{view: string, attributes: array<string, string>}}
      */
     private function row(array $entry, string $tab, string $locale): array
     {
@@ -90,6 +90,9 @@ final class SeoWidget extends AbstractBuiltinWidget
         return [
             'title' => $entry['title'],
             'icon' => $isPage ? 'su-webspace' : 'su-newspaper',
+            'resourceKey' => $entry['resourceKey'],
+            'template' => $entry['template'] ?? '',
+            'changed' => $entry['changed'] ?? '',
             'link' => [
                 'view' => $isPage
                     ? 'sulu_page.page_edit_form.' . $tab

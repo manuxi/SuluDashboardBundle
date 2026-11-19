@@ -1,6 +1,7 @@
 // Run with: node --test tests/js/*.test.mjs   (Node 22 or newer, no packages needed)
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
+import {templateTitle} from '../../src/Resources/js/templates.js';
 import {missingCount, nextOpen, openItem, visibleRows, VISIBLE_ENTRIES} from '../../src/Resources/js/seo.js';
 
 const rows = (count) => Array.from({length: count}, (_, index) => ({title: 'row ' + index}));
@@ -35,4 +36,12 @@ test('missing count comes from the server, or from value and max', () => {
     assert.equal(missingCount({value: 3, max: 4, missing: {count: 1, rows: []}}), 1);
     assert.equal(missingCount({value: 3, max: 4}), 1);
     assert.equal(missingCount({value: 5, max: 4}), 0);
+});
+
+test('the template title comes in the admin language, else the first one, else null', () => {
+    const titles = {articles: {blog: {de: 'Beitrag', en: 'Post'}}, pages: {default: {en: 'Default'}}};
+    assert.equal(templateTitle(titles, 'articles', 'blog', 'de'), 'Beitrag');
+    assert.equal(templateTitle(titles, 'pages', 'default', 'de'), 'Default');
+    assert.equal(templateTitle(titles, 'pages', 'gone', 'de'), null);
+    assert.equal(templateTitle(undefined, 'pages', 'default', 'de'), null);
 });

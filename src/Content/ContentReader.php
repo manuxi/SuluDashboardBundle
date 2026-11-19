@@ -253,7 +253,9 @@ class ContentReader
                     'id' => (string) $row['id'],
                     'webspace' => null !== $row['webspace'] ? (string) $row['webspace'] : null,
                     'group' => 'articles' === $row['resourceKey'] ? ($groups[$row['template']]['id'] ?? null) : null,
+                    'template' => (string) $row['template'],
                     'title' => (string) $row['title'],
+                    'changed' => (string) $row['changed'],
                 ];
                 $result['missing'][$detail][] = $entry;
             }

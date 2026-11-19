@@ -29,8 +29,8 @@ class BuiltinWidgetsTest extends TestCase
         $reader->method('countSnippets')->willReturn(4);
         $reader->method('countMedia')->willReturn(99);
         $reader->method('openItems')->willReturn([['id' => 'a']]);
-        $page = ['resourceKey' => 'pages', 'id' => 'p1', 'webspace' => 'main', 'group' => null, 'title' => 'About'];
-        $article = ['resourceKey' => 'articles', 'id' => 'a1', 'webspace' => null, 'group' => 'blog', 'title' => 'Post'];
+        $page = ['resourceKey' => 'pages', 'id' => 'p1', 'webspace' => 'main', 'group' => null, 'template' => 'default', 'title' => 'About', 'changed' => '2026-11-05 10:00:00'];
+        $article = ['resourceKey' => 'articles', 'id' => 'a1', 'webspace' => null, 'group' => 'blog', 'template' => 'blog', 'title' => 'Post', 'changed' => '2026-11-04 09:30:00'];
         $reader->method('seoCoverage')->willReturn(['total' => 4, 'seoTitle' => 3, 'seoDescription' => 2, 'excerptImage' => 2, 'missing' => [
             'seoTitle' => [$page],
             'seoDescription' => [$page, $article],
@@ -152,6 +152,7 @@ class BuiltinWidgetsTest extends TestCase
         // title and description: SEO tab
         $page = $items[0]['missing']['rows'][0];
         $this->assertSame('su-webspace', $page['icon']);
+        $this->assertSame(['pages', 'default', '2026-11-05 10:00:00'], [$page['resourceKey'], $page['template'], $page['changed']]);
         $this->assertSame('About', $page['title']);
         $this->assertSame('sulu_page.page_edit_form.seo', $page['link']['view']);
         $this->assertSame(['id' => 'p1', 'webspace' => 'main', 'locale' => 'de'], $page['link']['attributes']);

@@ -250,6 +250,7 @@ class ContentReaderTest extends TestCase
         $this->assertSame(['a2'], array_column($seo['missing']['seoDescription'], 'id'));
         $this->assertSame(['a2'], array_column($seo['missing']['excerptImage'], 'id'));
         $this->assertSame('main', $seo['missing']['seoDescription'][0]['webspace']);
+        $this->assertSame(['default', '2026-11-02 10:00:00'], [$seo['missing']['seoDescription'][0]['template'], $seo['missing']['seoDescription'][0]['changed']]);
     }
 
     public function testEachListHoldsExactlyTheEntriesThatLackThatDetail(): void
