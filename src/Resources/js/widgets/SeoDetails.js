@@ -120,11 +120,7 @@ export default class SeoDetails extends React.Component {
                                 <div className={styles.meta}>{item.value + ' / ' + item.max}</div>
                                 {hasMissing &&
                                     <div className={styles.more}>
-                                        <Button
-                                            icon={active ? 'su-angle-up' : 'su-angle-down'}
-                                            onClick={() => this.toggle(item.key)}
-                                            skin="link"
-                                        >
+                                        <Button onClick={() => this.toggle(item.key)} skin="link">
                                             {translate(active ? 'sulu_dashboard.whats_missing_hide' : 'sulu_dashboard.whats_missing')}
                                         </Button>
                                     </div>
