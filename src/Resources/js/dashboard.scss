@@ -284,6 +284,12 @@
     margin-top: 10px;
 }
 
+/* the toggle under a ring stands in the middle, like the label and the figure above it */
+.ring .more {
+    display: flex;
+    justify-content: center;
+}
+
 /* the ring whose list is open: its label in Sulu's accent colour and a small tip that points down to the list */
 .ringActive {
     position: relative;
