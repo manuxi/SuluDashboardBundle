@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- The tile **Condition** (`sulu_system_status`) is the first tile of the tab "System" (wide column, pinned). A headline ("Everything is in order" or "3 items need attention", in the colour of the worst finding) and one row with Sulu's icon (ok, warning, error) per check: vulnerabilities, abandoned packages, end of PHP security support, debug mode (red in `prod`), open migrations, failed messages, a big cache or logs, and the age of the last check. It takes over what the traffic light on the overview showed, the tiles "Last check", "Database migrations" and "Failed messages" are rows of it.
+- **PHP support** in "Versions" and "Condition": the end of the security support of the running PHP minor version, from a fixed table in the code (`PhpSupport::SECURITY_UNTIL`, source php.net/supported-versions.php). Yellow half a year before the end, red after it. A test fails when the PHP that runs the tests is missing from the table.
+- **Newer patch release** of Sulu and Symfony in "Versions": `sulu:dashboard:system-check` also runs `composer outdated --locked --direct --patch-only` (about ten seconds, needs internet) and saves the answer (`SystemCheck::$updates`). A failure there is no error of the command, the rows then say nothing. The output of the command names the updates.
+- "Environment" shows `memory_limit`, `max_execution_time`, OPcache (yellow in `prod` if it is off), the time zone and the default language of the kernel (`RuntimeInfo`, only cheap live values, no paths or secrets).
+- One component for all tiles of facts (`widgets/SystemFacts.js`, logic in `facts.js`, tested with `node --test tests/js/*.test.mjs`): flush with the card title instead of Sulu's table cells with their indent, compact rows, name left, value right, grey line below, icons, the value drops under the name in a narrow column.
+
+### Changed
+
+- All tiles of the tab "System" are pinned to their column (wide: Condition, Vulnerabilities, Storage; narrow: Versions, Environment), so the balance does not move them. The head of the Storage tile breaks cleanly in a narrow column (the facts flush left under the total). The tile "Vulnerabilities" no longer repeats the headline with the number when it has a table (the Condition says it); the hint "composer update" is a grey line under the table.
+
+- The tiles "Versions" and "Environment" are `custom` tiles (`SystemFacts`) and no list tiles any more. Both stay in the narrow column and may be moved by the balance.
+- `SystemTileData::versions()` takes the language (for the date of the PHP support), `SystemTileData` an optional last argument `RuntimeInfo`, `SystemChecker` an optional last argument `UpdateRunnerInterface`, `SystemCheck` an optional last argument `$updates`. Results of earlier versions are still read.
+- The list tile takes its icons from `facts.js` (the same ones as the facts).
+
+### Removed
+
+- The tile `sulu_system` on the overview (class `SystemWidget`). Saved arrangements that still name it, and the saved places of the removed tiles `sulu_system_last_check`, `sulu_system_migrations` and `sulu_system_failed_messages`, are ignored; nothing breaks. `disabled_widgets` with these keys stays valid and does nothing.
+- Unused texts of the removed rows (`system_debug_in_prod`, `system_migrations_ok`, `system_migrations_pending`, `system_migrations_error`, `system_failed_found`, `system_failed_error`, `system_not_run`, `system_stale`, `system_details`, `system_abandoned_found`). The screenshot of the small tile.
+
+
 ## 1.4.0 - 2026-11-19
 
 ### Added

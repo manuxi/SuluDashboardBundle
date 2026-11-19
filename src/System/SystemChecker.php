@@ -7,7 +7,7 @@ namespace Manuxi\SuluDashboardBundle\System;
 use Closure;
 
 /**
- * The expensive checks of the "System" tile: known vulnerabilities, the size of the folders and the media. Run by the
+ * The expensive checks of the "System" tab: known vulnerabilities, newer patch releases, the size of the folders and the media. Run by the
  * console command (cron), the result goes to the cache pool the tile reads. The result of the run before is kept inside
  * the new one, so the tile can say what grew or shrank.
  */
@@ -19,6 +19,7 @@ final class SystemChecker
         private readonly SystemCheckStore $store,
         private readonly ?Closure $now = null,
         private readonly ?MediaStatistics $media = null,
+        private readonly ?UpdateRunnerInterface $updates = null,
     ) {
     }
 
@@ -35,6 +36,7 @@ final class SystemChecker
             $this->storage->measure(),
             $this->media?->measure(),
             $previous,
+            $this->updates?->run(),
         );
         $this->store->save($check);
 

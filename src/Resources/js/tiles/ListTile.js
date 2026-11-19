@@ -12,14 +12,13 @@ import {observer} from 'mobx-react';
 import {Button, Icon, PublishIndicator, Table} from 'sulu-admin-bundle/components';
 import Card from 'sulu-admin-bundle/components/Card';
 import {translate} from 'sulu-admin-bundle/utils';
+import {SEVERITY_ICONS} from '../facts';
 import {listLayout} from '../list';
 import {INDICATOR, navigate, tx} from '../utils';
 import Footer from './Footer';
 import styles from '../dashboard.scss';
 
 const VISIBLE_ROWS = 10;
-
-const SEVERITY_ICONS = {error: 'su-exclamation-triangle', warning: 'su-exclamation-circle', ok: 'su-check-circle'};
 
 const SEVERITY_CLASSES = {error: styles.severityError, warning: styles.severityWarning, ok: styles.severityOk};
 

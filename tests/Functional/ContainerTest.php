@@ -33,7 +33,7 @@ class ContainerTest extends KernelTestCase
         $this->assertSame(
             [
                 'sulu_activities', 'sulu_articles', 'sulu_media', 'sulu_open_items', 'sulu_pages', 'sulu_seo', 'sulu_snippets',
-                'sulu_system', 'sulu_system_environment', 'sulu_system_failed_messages', 'sulu_system_last_check', 'sulu_system_migrations',
+                'sulu_system_environment', 'sulu_system_status',
                 'sulu_system_storage', 'sulu_system_versions', 'sulu_system_vulnerabilities',
                 'sulu_translations',
             ],
@@ -50,12 +50,13 @@ class ContainerTest extends KernelTestCase
         /** @var WidgetRegistry $registry */
         $registry = self::getContainer()->get('sulu_dashboard.widget_registry');
 
-        $titles = array_map(static fn (array $row): mixed => $row['title'], $registry->all()['sulu_system']->getData('en')['rows']);
-        $this->assertContains('sulu_dashboard.system_not_run', $titles);
-        $this->assertSame('sulu_dashboard.tab_system', $registry->all()['sulu_system']->getData('en')['footer']['rows'][0]['link']['view']);
+        $status = $registry->all()['sulu_system_status']->getData('en');
+        $this->assertContains('sulu_dashboard.system_last_check', array_column($status['rows'], 'title'));
+        $this->assertContains('sulu_dashboard.system_never', array_column($status['rows'], 'value'), 'without a result of the command the check never ran');
+        $this->assertNotNull($status['headline']);
 
         $this->assertSame('never', $registry->all()['sulu_system_vulnerabilities']->getData('en')['status']);
-        $versions = array_map(static fn (array $row): mixed => $row['title'], $registry->all()['sulu_system_versions']->getData('en')['rows']);
+        $versions = array_column($registry->all()['sulu_system_versions']->getData('en')['rows'], 'title');
         $this->assertContains('PHP', $versions);
     }
 
@@ -71,7 +72,8 @@ class ContainerTest extends KernelTestCase
         $registry = self::getContainer()->get('sulu_dashboard.widget_registry');
         $keys = array_map(static fn ($widget): string => $widget->getKey(), $registry->available('system'));
         $this->assertContains('sulu_system_vulnerabilities', $keys);
-        $this->assertNotContains('sulu_system', $keys, 'the small tile belongs to the overview');
+        $this->assertContains('sulu_system_status', $keys);
+        $this->assertNotContains('sulu_system', $keys);
     }
 
     public function testTheCommandsAreRegistered(): void

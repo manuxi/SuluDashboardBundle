@@ -643,15 +643,16 @@
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    justify-content: space-between;
+    gap: 5px 30px;
     margin-bottom: 5px;
 }
 
+/* the facts sit beside the sum, or under it in a narrow column: always flush left, so they never look indented */
 .storageFacts {
-    text-align: right;
+    flex: 1 1 200px;
+    min-width: 0;
     line-height: 20px;
 }
-
 .storageHint {
     margin: 20px 0 0;
 }
@@ -661,4 +662,92 @@
     align-items: center;
     margin-top: 20px;
     line-height: 20px;
+}
+
+/* the tiles of facts of the tab "System" (Condition, Versions, Environment): a slim list, flush with the title of the card.
+   Name left, value right, a grey line below; a hairline between the rows (Sulu's table cells would indent by 20px) */
+.facts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.fact {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 0;
+    line-height: 20px;
+    border-top: 1px solid $silver;
+
+    &:first-child {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    &:last-child {
+        padding-bottom: 0;
+    }
+}
+
+.factIcon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 16px;
+    margin-right: 10px;
+    font-size: 16px;
+    line-height: 20px;
+    text-align: center;
+}
+
+.factBody {
+    flex: 1;
+    min-width: 0;
+}
+
+/* the value goes under the name when the column is too narrow for both */
+.factLine {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 15px;
+}
+
+.factName {
+    color: $black;
+}
+
+.factValue {
+    margin-left: auto;
+    min-width: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+/* the headline of the condition: icon and sentence above the rows */
+.factsHead {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    font-size: 16px;
+    line-height: 20px;
+    border-bottom: 1px solid $silver;
+}
+
+.factsHeadIcon {
+    flex-shrink: 0;
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.factsOk {
+    color: $mantis;
+}
+
+.factsWarning {
+    color: $gold;
+}
+
+.factsError {
+    color: $persianRed;
 }

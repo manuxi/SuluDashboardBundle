@@ -18,7 +18,7 @@ use Throwable;
  * The slow checks of the "System" tile, meant for a cron job: "composer audit", the size of public/uploads and of the folders of var, and the media of Sulu.
  * The result is left in the cache for the tile, so nothing slow happens when someone opens the dashboard.
  */
-#[AsCommand(name: 'sulu:dashboard:system-check', description: 'Runs the slow checks of the dashboard tile "System" (composer audit, folder sizes, media) and saves the result for the tile')]
+#[AsCommand(name: 'sulu:dashboard:system-check', description: 'Runs the slow checks of the dashboard tile "System" (composer audit, newer patch releases, folder sizes, media) and saves the result for the tile')]
 class SystemCheckCommand extends Command
 {
     public function __construct(private readonly SystemChecker $checker)
@@ -50,6 +50,16 @@ class SystemCheckCommand extends Command
 
         foreach ($audit->abandoned as $package) {
             $io->writeln(\sprintf('Abandoned: %s%s', $package['package'], null === $package['replacement'] ? '' : ' (use ' . $package['replacement'] . ' instead)'));
+        }
+
+        if (null === $check->updates) {
+            $io->writeln('Updates: could not be checked (composer outdated needs internet access).');
+        } elseif ([] === $check->updates) {
+            $io->writeln('Updates: no newer patch release of Sulu or Symfony.');
+        }
+
+        foreach ($check->updates ?? [] as $update) {
+            $io->writeln(\sprintf('Update: %s %s -> %s (patch release)', $update['package'], $update['installed'], $update['latest']));
         }
 
         foreach ($check->storage as $folder) {
