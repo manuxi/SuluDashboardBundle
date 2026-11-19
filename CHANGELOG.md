@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- The tile **Search engine details** (`sulu_seo`) shows under each ring (SEO title, meta description, preview image) "What is missing?" (de "Was fehlt?", nl "Wat ontbreekt?"): the pages and articles that lack exactly this detail, with type icon and title, newest change first. A click opens the form in the chosen language straight in the matching tab: the SEO tab (`sulu_page.page_edit_form.seo`, `sulu_article.article.edit_tabs_<group>.seo`) for title and description, the excerpt tab (`.excerpt`) for the preview image. Ten entries at first, "Show all" shows up to 50; one list open at a time. Only entries the user may see are listed. See [docs/built-in-widgets.en.md](docs/built-in-widgets.en.md).
+
+### Changed
+
+- `sulu_seo` is a `custom` tile now (React component `SeoDetails`, logic in `seo.js`, tested with `node --test tests/js/*.test.mjs`) and no `progress` tile any more. The data has `items[]` with `key`, `label`, `value`, `max` and `missing: {count, rows}`; the footer list "Add first" (up to five entries without meta description) is part of the new lists, there is no duplicate.
+- `ContentReader::seoCoverage()` returns `missing` per detail (`seoTitle`, `seoDescription`, `excerptImage`) instead of one list; the limit per list defaults to 50 (was 5 for the one list). Same two queries as before.
+
 ## 1.5.0 - 2026-11-19
 
 ### Added
