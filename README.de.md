@@ -120,7 +120,11 @@ sulu_dashboard:
     start_page: true       # true: Dashboard auf "/", Sulus Suche zieht nach "/search"; false: Dashboard auf "/dashboard", Suche bleibt auf "/"
     tabs:
         replace_navigation: true   # ein Tab darf einen Menüpunkt eines anderen Bundles ersetzen (die Statistik der Log-Statistik)
+    extensions:
+        tab: true                  # Kacheln anderer Bundles im Tab „Erweiterungen“; false: alles auf der Übersicht
+        keep_on_overview: []       # Schlüssel, die trotzdem auf der Übersicht bleiben
     log_stats:
+        overview_tile: false       # true: kleine Kachel „Besucher (7 Tage)“ auf der Übersicht (sonst nur der Tab)
         tab: tiles                 # tiles: der Tab „Besucher“ besteht aus Kacheln; view: die Seite des Log-Statistik-Bundles unverändert
     layout:
         balance: true      # nach dem Laden Kacheln vom Ende der längeren in die kürzere Spalte schieben (einmal); false: Kacheln bleiben in ihrer Spalte
@@ -136,7 +140,7 @@ Sulus Suche und das Dashboard wollen beide den Pfad `/`. Der Router des Admins n
 
 - [Eigene Kachel in 5 Minuten](docs/widgets.de.md) - Interface, Darstellungsarten, optionale Abhängigkeit, Tag
 - [Dashboard anpassen](docs/customize.de.md) - Kacheln je Benutzer anordnen, ausblenden und zurücksetzen ([Bildschirmfoto](docs/img/dashboard-customize.de.png))
-- [Tabs](docs/tabs.de.md) - Eine ganze Seite eines Bundles als Tab, Besucher aus der Log-Statistik
+- [Tabs](docs/tabs.de.md) - Eine ganze Seite eines Bundles als Tab, Tab „Erweiterungen“ für die Kacheln anderer Bundles, Besucher aus der Log-Statistik
 - [System](docs/system.de.md) - Tab für Administratoren: Sicherheitslücken, Versionen, Debug-Warnung, Speicher, Cronjob
 - [Eingebaute Kacheln](docs/built-in-widgets.de.md) - Kacheln, Rechte, das Recht für das Dashboard
 

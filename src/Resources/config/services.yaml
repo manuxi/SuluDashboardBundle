@@ -10,6 +10,8 @@ services:
             $sources: [] # filled by DashboardWidgetPass
             $securityChecker: '@sulu_security.security_checker'
             $disabled: '%sulu_dashboard.disabled_widgets%'
+            $extensions: '%sulu_dashboard.extensions.tab%'
+            $keepOnOverview: '%sulu_dashboard.extensions.keep_on_overview%'
 
     Manuxi\SuluDashboardBundle\Widget\WidgetRegistry:
         alias: sulu_dashboard.widget_registry

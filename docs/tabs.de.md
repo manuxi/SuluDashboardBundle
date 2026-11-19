@@ -83,11 +83,30 @@ Sulu setzt den Pfad des Elternteils vor den Pfad eines Kindes. Das Dashboard üb
 
 Wer `/` öffnet, landet auf „Übersicht“. Sulus Suche bleibt auf `/search`. Vorhandene Direktlinks eines Bundles mit eigener Seite (zum Beispiel `/log-stats`) bleiben gültig.
 
+## Eingebaut: Erweiterungen (Kacheln anderer Bundles)
+
+Kacheln, die andere Bundles oder das Projekt mitbringen (Bewertungen, Glossar, DeepL-Kontingent, Veranstaltungen ...), stehen nicht auf der Übersicht, sondern im Tab **Erweiterungen**. Er ist ein Tab aus Kacheln (Gruppe `extensions`, eigene Anordnung unter `sulu_dashboard.layout.extensions`, Modus „Anpassen“), hat die Sprachauswahl (die Kacheln nutzen die Sprache) und keinen Zeitraum. **Keine Erweiterungen, kein Tab:** Er erscheint nur, wenn der Benutzer mindestens eine solche Kachel sehen darf. Er steht hinter „Übersicht“ und vor „Besucher“ und „System“.
+
+Welche Kachel dorthin kommt, entscheidet das Dashboard selbst, die anderen Bundles bleiben unverändert:
+
+- Hat die Kachel eine eigene Gruppe (`GroupedDashboardWidgetInterface`), behält sie sie.
+- Sonst kommt sie in „Erweiterungen“, wenn ihre Klasse nicht aus dem Namespace `Manuxi\SuluDashboardBundle\` stammt. Bei einem Dienst mit Tag, der das Interface nicht implementiert, zählt die Klasse des Dienstes. Kacheln des Projekts (`App\...`) zählen wie die anderer Bundles.
+- Die eingebauten Kacheln (Zahlen, Offene Entwürfe, Letzte Aktivität, Suchmaschinen-Angaben, Übersetzungen, System) bleiben auf der Übersicht.
+
+```yaml
+sulu_dashboard:
+    extensions:
+        tab: true                  # false: alles bleibt auf der Übersicht, wie vor Version 1.5
+        keep_on_overview: []       # Schlüssel, die trotzdem auf der Übersicht bleiben, z. B. ['testimonials_ratings']
+```
+
+Gespeicherte Anordnungen der Übersicht brauchen keine Pflege: Schlüssel, die dort nicht mehr vorkommen, werden ignoriert, die Kacheln erscheinen im neuen Tab nach den üblichen Regeln.
+
 ## Eingebaut: Besucher aus der Log-Statistik
 
 ![Der Tab Besucher](img/dashboard-visitors.de.png)
 
-Ist `amoifr/sulu-log-stats-bundle` (Version `~0.1`) installiert und aktiviert und hat der Benutzer das Recht `sulu.settings.log_stats`, bekommt das Dashboard den Tab **Besucher** und die Kachel **Besucher (7 Tage)** in der schmalen Spalte (Seitenaufrufe der letzten sieben Tage, Summe der täglichen Besucher, Anteil der Fehlerseiten mit Status 4xx und 5xx). Der Tab ersetzt den Menüpunkt „Statistik“ dieses Bundles (siehe oben). Die Log-Statistik ist keine Voraussetzung dieses Bundles (nur `suggest`); ohne sie wird nichts davon geladen.
+Ist `amoifr/sulu-log-stats-bundle` (Version `~0.1`) installiert und aktiviert und hat der Benutzer das Recht `sulu.settings.log_stats`, bekommt das Dashboard den Tab **Besucher**. Die kleine Kachel **Besucher (7 Tage)** (`sulu_visitors`) steht nicht mehr auf der Übersicht, weil der Tab dieselben Zahlen ausführlicher zeigt. Wer sie dort noch möchte: `sulu_dashboard.log_stats.overview_tile: true`. Klasse und Schlüssel bleiben, eine gespeicherte Anordnung mit diesem Schlüssel verursacht keinen Fehler. Der Tab ersetzt den Menüpunkt „Statistik“ dieses Bundles (siehe oben). Die Log-Statistik ist keine Voraussetzung dieses Bundles (nur `suggest`); ohne sie wird nichts davon geladen.
 
 ### Der Tab aus Kacheln (Standard)
 

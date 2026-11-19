@@ -14,7 +14,7 @@ Die Kacheln dieses Bundles nutzen dasselbe Interface wie die Kacheln anderer Bun
 | `sulu_activities` | Letzte Aktivität | custom | side | `sulu.activities.activities` |
 | `sulu_system` | System (klein): Ampel mit Link in den Tab „System“, siehe [System](system.de.md) | list | side | `sulu.settings.dashboard_system` |
 | `sulu_system_*` | Tab „System“ (Gruppe `system`): Sicherheitslücken (breit), Letzte Prüfung, Versionen, Umgebung, Speicher, Migrationen, fehlgeschlagene Nachrichten | custom, list | main, side | `sulu.settings.dashboard_system` |
-| `sulu_visitors` | Besucher (7 Tage), nur mit der Log-Statistik, siehe [Tabs](tabs.de.md) | custom | side | `sulu.settings.log_stats` |
+| `sulu_visitors` | Besucher (7 Tage), nur mit der Log-Statistik und `log_stats.overview_tile: true`; sonst stehen die Besucher im Tab, siehe [Tabs](tabs.de.md) | custom | side | `sulu.settings.log_stats` |
 
 ![Das Dashboard](img/dashboard-overview.de.png)
 

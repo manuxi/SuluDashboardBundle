@@ -74,6 +74,20 @@ class ContainerTest extends KernelTestCase
         $this->assertNotContains('sulu_system', $keys, 'the small tile belongs to the overview');
     }
 
+    public function testTheTabExtensionsIsRegisteredButHiddenWithoutTilesOfOtherBundles(): void
+    {
+        /** @var TabRegistry $tabs */
+        $tabs = self::getContainer()->get('sulu_dashboard.tab_registry');
+
+        $this->assertArrayHasKey('extensions', $tabs->all());
+        $this->assertNotContains('extensions', array_map(static fn ($tab): string => $tab->getKey(), $tabs->available()));
+
+        /** @var WidgetRegistry $registry */
+        $registry = self::getContainer()->get('sulu_dashboard.widget_registry');
+        $this->assertSame([], $registry->available('extensions'), 'the test kernel brings no tiles of other bundles');
+        $this->assertNotNull($registry->find('sulu_pages'), 'the built-in tiles stay on the overview');
+    }
+
     public function testTheCommandsAreRegistered(): void
     {
         $application = new Application(self::$kernel);

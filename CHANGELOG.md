@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- The tab **Extensions** (de "Erweiterungen", nl "Extensies") for the tiles that other bundles and the project bring: a tab of tiles (group `extensions`, own setting key `sulu_dashboard.layout.extensions`, "Customize" mode, language select, no period). It stands after "Overview" and before "Visitors" and "System" (priority 10) and exists only while the user may see at least one such tile ("no extensions, no tab"). See [docs/tabs.en.md](docs/tabs.en.md) and "Where does my tile appear?" in [docs/widgets.en.md](docs/widgets.en.md).
+- Rule for the assignment, decided by the bundle itself (`WidgetRegistry::groupFor()`), the other bundles stay unchanged: a tile with its own group keeps it; a tile without a group whose class is not in the namespace `Manuxi\SuluDashboardBundle\` goes to "Extensions" (for a tagged service the class of the service counts; tiles of the project count like those of other bundles). The built-in tiles stay on the overview.
+- Options `sulu_dashboard.extensions.tab` (default `true`; `false` restores the old behaviour: everything on the overview) and `sulu_dashboard.extensions.keep_on_overview` (keys of tiles of other bundles that stay on the overview).
+- `ConditionalDashboardTabInterface` (`isAvailable(): bool`): a tab provider can hide its tab. `sulu:dashboard:dump --group=extensions` prints the tiles of the new tab.
+
+### Changed
+
+- The tile **Visitors (7 days)** (`sulu_visitors`) is no longer on the overview, because the tab "Visitors" shows the same figures in more detail. New option `sulu_dashboard.log_stats.overview_tile` (default `false`; `true` registers the tile as before). Class and key stay; a saved arrangement with the key causes no error.
+- Tiles of other bundles that were on the overview before (for example ratings, glossary, DeepL quota) move to the tab "Extensions". Projects that want the old place set `sulu_dashboard.extensions.tab: false` or list single keys under `keep_on_overview`.
+- `WidgetRegistry` takes two optional constructor arguments (`$extensions`, `$keepOnOverview`) and has the new methods `groupFor()` and `isForeign()`; `groupOf()` is unchanged.
+
 ## 1.4.0 - 2026-11-19
 
 ### Added

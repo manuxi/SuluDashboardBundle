@@ -83,13 +83,32 @@ Sulu puts the path of the parent in front of the path of a child. The dashboard 
 
 Opening `/` redirects to "Overview". The search of Sulu stays on `/search`. Existing deep links of a bundle that brings its own page (for example `/log-stats`) stay valid.
 
+## Built-in: Extensions (tiles of other bundles)
+
+Tiles that other bundles or the project bring (ratings, glossary, DeepL quota, events ...) are not on the overview but in the tab **Extensions**. It is a tab of tiles (group `extensions`, own arrangement under `sulu_dashboard.layout.extensions`, "Customize" mode), has the language select (the tiles use the language) and no period. **No extensions, no tab:** it appears only if the user may see at least one such tile. It stands after "Overview" and before "Visitors" and "System".
+
+The dashboard decides by itself which tile goes there, the other bundles stay unchanged:
+
+- A tile with its own group (`GroupedDashboardWidgetInterface`) keeps it.
+- Otherwise it goes to "Extensions" if its class is not in the namespace `Manuxi\SuluDashboardBundle\`. For a tagged service that does not implement the interface the class of the service counts. Tiles of the project (`App\...`) count like those of other bundles.
+- The built-in tiles (figures, open drafts, recent activity, search engine details, translations, system) stay on the overview.
+
+```yaml
+sulu_dashboard:
+    extensions:
+        tab: true                  # false: everything stays on the overview, as before version 1.5
+        keep_on_overview: []       # keys that stay on the overview anyway, e.g. ['testimonials_ratings']
+```
+
+Saved arrangements of the overview need no care: keys that no longer occur there are ignored, and the tiles appear in the new tab by the usual rules.
+
 ## Built-in: visitors from the log statistics
 
 ![The tab Visitors](img/dashboard-visitors.de.png)
 
 *The screenshot shows the German admin.*
 
-If `amoifr/sulu-log-stats-bundle` (version `~0.1`) is installed and enabled, and the user has the permission `sulu.settings.log_stats`, the dashboard gets the tab **Visitors** and the tile **Visitors (7 days)** in the narrow column (page views of the last seven days, the sum of the daily visitors and the share of error pages with status 4xx and 5xx). The tab replaces the menu item "Statistics" of that bundle (see above). The log statistics are not a requirement of this bundle (`suggest` only); nothing of it is loaded without it.
+If `amoifr/sulu-log-stats-bundle` (version `~0.1`) is installed and enabled, and the user has the permission `sulu.settings.log_stats`, the dashboard gets the tab **Visitors**. The small tile **Visitors (7 days)** (`sulu_visitors`) is no longer on the overview, because the tab shows the same figures in more detail. To keep it there: `sulu_dashboard.log_stats.overview_tile: true`. Class and key stay, and a saved arrangement with this key causes no error. The tab replaces the menu item "Statistics" of that bundle (see above). The log statistics are not a requirement of this bundle (`suggest` only); nothing of it is loaded without it.
 
 ### The tab made of tiles (default)
 

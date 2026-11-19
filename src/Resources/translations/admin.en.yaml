@@ -44,6 +44,7 @@ sulu_dashboard:
     visitors: "Visitors"
     visitors_week: "Visitors (7 days)"
     overview: "Overview"
+    extensions: "Extensions"
     visitors_count: "Visitors"
     page_views_week: "Page views (7 days)"
     page_views: "Page views"

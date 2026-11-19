@@ -53,7 +53,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Manuxi\\SuluDashboardBundle\\Tests\\": "tests/"
+            "Manuxi\\SuluDashboardBundle\\Tests\\": "tests/",
+            "Acme\\DashboardFixtures\\": "tests/Unit/Widget/Foreign/",
+            "Manuxi\\SuluDashboardBundleExtra\\": "tests/Unit/Widget/Lookalike/"
         }
     },
     "scripts": {
