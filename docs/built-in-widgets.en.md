@@ -31,7 +31,9 @@ Pages and articles that are not live as edited (never published, unpublished cha
 
 ## Search engine details
 
-Three rings for the published pages and articles of the chosen language: share with an own SEO title, with a meta description and with a preview image (the excerpt image). Under each ring "What is missing?" opens the list of the pages and articles that lack exactly this detail: type icon, title, newest change first. A click on the title opens the form in the chosen language straight in the matching tab: the "SEO" tab for SEO title and meta description, the "Excerpt" tab for the preview image. Ten entries show at first, "Show all" shows up to 50. Only one list is open at a time. Only what the user may see is listed (webspace permission of the page, permission of the article type). One query per kind of content (pages, articles) delivers the figures and all three lists together. ![Search engine details, translations and visitors](img/dashboard-tiles.de.png)
+Three rings for the published pages and articles of the chosen language: share with an own SEO title, with a meta description and with a preview image (the excerpt image). Under each ring "What is missing?" opens the list of the pages and articles that lack exactly this detail: type icon, title, newest change first. A click on the title opens the form in the chosen language straight in the matching tab: the "SEO" tab for SEO title and meta description, the "Excerpt" tab for the preview image. Ten entries show at first, "Show all" shows up to 50. Only one list is open at a time. Only what the user may see is listed (webspace permission of the page, permission of the article type). One query per kind of content (pages, articles) delivers the figures and all three lists together. 
+
+![Search engine details with the open list "Without preview image" (the admin interface is shown in German)](img/dashboard-seo.de.png)
 
 The tile only knows what Sulu stores. Rules of a project (for example a length check of the title) belong in a tile of that project.
 

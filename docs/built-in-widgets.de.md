@@ -29,7 +29,9 @@ Seiten und Artikel, die nicht so live sind, wie sie bearbeitet wurden (nie verö
 
 ## Suchmaschinen-Angaben
 
-Drei Ringe für die veröffentlichten Seiten und Artikel der gewählten Sprache: Anteil mit eigenem SEO-Titel, mit Meta-Beschreibung und mit Vorschaubild (Excerpt-Bild). Unter jedem Ring klappt „Was fehlt?“ die Liste der Seiten und Artikel auf, denen genau diese Angabe fehlt: Typ-Symbol, Titel, jüngste Änderung zuerst. Ein Klick auf den Titel öffnet das Formular in der gewählten Sprache direkt im passenden Tab: im Tab „SEO“ für SEO-Titel und Meta-Beschreibung, im Tab „Excerpt“ für das Vorschaubild. Zuerst erscheinen zehn Einträge, „Alle anzeigen“ zeigt bis zu 50. Es ist immer nur eine Liste offen. Gelistet wird nur, was der Benutzer ansehen darf (Webspace-Recht der Seite, Recht des Artikeltyps). Die Abfrage ist eine einzige je Inhaltsart (Seiten, Artikel) und liefert Zahlen und alle drei Listen zugleich. ![Suchmaschinen-Angaben, Übersetzungen und Besucher](img/dashboard-tiles.de.png)
+Drei Ringe für die veröffentlichten Seiten und Artikel der gewählten Sprache: Anteil mit eigenem SEO-Titel, mit Meta-Beschreibung und mit Vorschaubild (Excerpt-Bild). Unter jedem Ring klappt „Was fehlt?“ die Liste der Seiten und Artikel auf, denen genau diese Angabe fehlt: Typ-Symbol, Titel, jüngste Änderung zuerst. Ein Klick auf den Titel öffnet das Formular in der gewählten Sprache direkt im passenden Tab: im Tab „SEO“ für SEO-Titel und Meta-Beschreibung, im Tab „Excerpt“ für das Vorschaubild. Zuerst erscheinen zehn Einträge, „Alle anzeigen“ zeigt bis zu 50. Es ist immer nur eine Liste offen. Gelistet wird nur, was der Benutzer ansehen darf (Webspace-Recht der Seite, Recht des Artikeltyps). Die Abfrage ist eine einzige je Inhaltsart (Seiten, Artikel) und liefert Zahlen und alle drei Listen zugleich. 
+
+![Suchmaschinen-Angaben mit offener Liste „Ohne Vorschaubild“](img/dashboard-seo.de.png)
 
 Die Kachel kennt nur, was Sulu speichert. Regeln eines Projekts (zum Beispiel eine Längenprüfung des Titels) gehören in eine Kachel dieses Projekts.
 
