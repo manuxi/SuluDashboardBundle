@@ -10,6 +10,8 @@ services:
             $sources: [] # filled by DashboardWidgetPass
             $securityChecker: '@sulu_security.security_checker'
             $disabled: '%sulu_dashboard.disabled_widgets%'
+            $extensions: '%sulu_dashboard.extensions.tab%'
+            $keepOnOverview: '%sulu_dashboard.extensions.keep_on_overview%'
 
     Manuxi\SuluDashboardBundle\Widget\WidgetRegistry:
         alias: sulu_dashboard.widget_registry
@@ -84,6 +86,17 @@ services:
             - '%kernel.project_dir%'
             - '%sulu_dashboard.system.composer_binary%'
 
+    # newer patch releases of Sulu and Symfony (composer outdated, asks the internet: command only)
+    Manuxi\SuluDashboardBundle\System\ComposerOutdatedRunner:
+        arguments:
+            - '%kernel.project_dir%'
+            - '%sulu_dashboard.system.composer_binary%'
+
+    # cheap live values of PHP for the tile "Environment"
+    Manuxi\SuluDashboardBundle\System\RuntimeInfo:
+        factory: ['Manuxi\SuluDashboardBundle\System\RuntimeInfo', 'detect']
+        arguments: ['%kernel.default_locale%']
+
     Manuxi\SuluDashboardBundle\System\StorageMeasurer:
         arguments: ['%kernel.project_dir%']
 
@@ -98,6 +111,7 @@ services:
             - '@Manuxi\SuluDashboardBundle\System\SystemCheckStore'
             - null
             - '@Manuxi\SuluDashboardBundle\System\MediaStatistics'
+            - '@Manuxi\SuluDashboardBundle\System\ComposerOutdatedRunner'
 
     # optional: only when doctrine/migrations and a failure transport of Messenger are configured, otherwise null
     Manuxi\SuluDashboardBundle\System\PendingMigrations:
@@ -140,7 +154,7 @@ services:
     Manuxi\SuluDashboardBundle\Widget\Builtin\ActivitiesWidget:
         tags: ['sulu_dashboard.widget']
 
-    # "System": the data of the tab and of the small tile on the overview
+    # "System": the data of the tab
     Manuxi\SuluDashboardBundle\Widget\System\SystemTileData:
         arguments:
             - '@Manuxi\SuluDashboardBundle\System\SystemVersions'
@@ -153,15 +167,12 @@ services:
             - '@?logger'
             - null
             - '@Manuxi\SuluDashboardBundle\Widget\System\StorageReport'
+            - '@Manuxi\SuluDashboardBundle\System\RuntimeInfo'
 
     Manuxi\SuluDashboardBundle\Widget\System\StorageReport:
         arguments:
             - '%sulu_dashboard.system.cache_limit%'
             - '%sulu_dashboard.system.log_limit%'
-
-    Manuxi\SuluDashboardBundle\Widget\Builtin\SystemWidget:
-        arguments: ['@Manuxi\SuluDashboardBundle\Widget\System\SystemTileData']
-        tags: ['sulu_dashboard.widget']
 
     # the tab "System"; its tiles (one service per entry of SystemTileWidget::TILES) are registered by the extension
     Manuxi\SuluDashboardBundle\Widget\System\SystemTabProvider:

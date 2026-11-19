@@ -2,10 +2,34 @@
 
 ## Unreleased
 
+### Added
+
+- The tab **Extensions** (de "Erweiterungen", nl "Extensies") for the tiles that other bundles and the project bring: a tab of tiles (group `extensions`, own setting key `sulu_dashboard.layout.extensions`, "Customize" mode, language select, no period). It stands after "Overview" and before "Visitors" and "System" (priority 10) and exists only while the user may see at least one such tile ("no extensions, no tab"). See [docs/tabs.en.md](docs/tabs.en.md) and "Where does my tile appear?" in [docs/widgets.en.md](docs/widgets.en.md).
+- Rule for the assignment, decided by the bundle itself (`WidgetRegistry::groupFor()`), the other bundles stay unchanged: a tile with its own group keeps it; a tile without a group whose class is not in the namespace `Manuxi\SuluDashboardBundle\` goes to "Extensions" (for a tagged service the class of the service counts; tiles of the project count like those of other bundles). The built-in tiles stay on the overview.
+- Options `sulu_dashboard.extensions.tab` (default `true`; `false` restores the old behaviour: everything on the overview) and `sulu_dashboard.extensions.keep_on_overview` (keys of tiles of other bundles that stay on the overview).
+- `ConditionalDashboardTabInterface` (`isAvailable(): bool`): a tab provider can hide its tab. `sulu:dashboard:dump --group=extensions` prints the tiles of the new tab.
+- The tile **Condition** (`sulu_system_status`) is the first tile of the tab "System" (wide column, pinned). A headline ("Everything is in order" or "3 items need attention", in the colour of the worst finding) and one row with Sulu's icon (ok, warning, error) per check: vulnerabilities, abandoned packages, end of PHP security support, debug mode (red in `prod`), open migrations, failed messages, a big cache or logs, and the age of the last check. It takes over what the traffic light on the overview showed, the tiles "Last check", "Database migrations" and "Failed messages" are rows of it.
+- **PHP support** in "Versions" and "Condition": the end of the security support of the running PHP minor version, from a fixed table in the code (`PhpSupport::SECURITY_UNTIL`, source php.net/supported-versions.php). Yellow half a year before the end, red after it. A test fails when the PHP that runs the tests is missing from the table.
+- **Newer patch release** of Sulu and Symfony in "Versions": `sulu:dashboard:system-check` also runs `composer outdated --locked --direct --patch-only` (about ten seconds, needs internet) and saves the answer (`SystemCheck::$updates`). A failure there is no error of the command, the rows then say nothing. The output of the command names the updates.
+- "Environment" shows `memory_limit`, `max_execution_time`, OPcache (yellow in `prod` if it is off), the time zone and the default language of the kernel (`RuntimeInfo`, only cheap live values, no paths or secrets).
+- One component for all tiles of facts (`widgets/SystemFacts.js`, logic in `facts.js`, tested with `node --test tests/js/*.test.mjs`): flush with the card title instead of Sulu's table cells with their indent, compact rows, name left, value right, grey line below, icons, the value drops under the name in a narrow column.
+
 ### Changed
 
+- The tile **Visitors (7 days)** (`sulu_visitors`) is no longer on the overview, because the tab "Visitors" shows the same figures in more detail. New option `sulu_dashboard.log_stats.overview_tile` (default `false`; `true` registers the tile as before). Class and key stay; a saved arrangement with the key causes no error.
+- Tiles of other bundles that were on the overview before (for example ratings, glossary, DeepL quota) move to the tab "Extensions". Projects that want the old place set `sulu_dashboard.extensions.tab: false` or list single keys under `keep_on_overview`.
+- `WidgetRegistry` takes two optional constructor arguments (`$extensions`, `$keepOnOverview`) and has the new methods `groupFor()` and `isForeign()`; `groupOf()` is unchanged.
+- All tiles of the tab "System" are pinned to their column (wide: Condition, Vulnerabilities, Storage; narrow: Versions, Environment), so the balance does not move them. The head of the Storage tile breaks cleanly in a narrow column (the facts flush left under the total). The tile "Vulnerabilities" no longer repeats the headline with the number when it has a table (the Condition says it); the hint "composer update" is a grey line under the table.
+- The tiles "Versions" and "Environment" are `custom` tiles (`SystemFacts`) and no list tiles any more. Both stay in the narrow column and may be moved by the balance.
+- `SystemTileData::versions()` takes the language (for the date of the PHP support), `SystemTileData` an optional last argument `RuntimeInfo`, `SystemChecker` an optional last argument `UpdateRunnerInterface`, `SystemCheck` an optional last argument `$updates`. Results of earlier versions are still read.
+- The list tile takes its icons from `facts.js` (the same ones as the facts).
 - Number tiles (pages, articles, snippets, media): the indicator of Sulu's lists now comes first, then the count, then the text ("(dot) 65 published"). The indicators stand in a fixed column of two dots, the counts are right-aligned with tabular figures, so nothing steps.
 - Tables in tiles ("Open drafts", list tiles with links): the pen of a row is always visible, subdued, and strong on hover. Sulu hides it until the mouse is over the row, which looked like a missing first column.
+
+### Removed
+
+- The tile `sulu_system` on the overview (class `SystemWidget`). Saved arrangements that still name it, and the saved places of the removed tiles `sulu_system_last_check`, `sulu_system_migrations` and `sulu_system_failed_messages`, are ignored; nothing breaks. `disabled_widgets` with these keys stays valid and does nothing.
+- Unused texts of the removed rows (`system_debug_in_prod`, `system_migrations_ok`, `system_migrations_pending`, `system_migrations_error`, `system_failed_found`, `system_failed_error`, `system_not_run`, `system_stale`, `system_details`, `system_abandoned_found`). The screenshot of the small tile.
 
 ## 1.4.0 - 2026-11-19
 

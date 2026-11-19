@@ -90,6 +90,10 @@ final class TabRegistry
     {
         $available = [];
         foreach ($this->all() as $tab) {
+            if ($tab instanceof ConditionalDashboardTabInterface && !$tab->isAvailable()) {
+                continue;
+            }
+
             $context = $tab->getSecurityContext();
             if (null === $context || $this->securityChecker->hasPermission($context, PermissionTypes::VIEW)) {
                 $available[] = $tab;

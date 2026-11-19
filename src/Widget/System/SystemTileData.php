@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Widget\System;
 
 use Closure;
-use Manuxi\SuluDashboardBundle\Admin\DashboardAdmin;
+use DateTimeImmutable;
+use DateTimeZone;
+use IntlDateFormatter;
 use Manuxi\SuluDashboardBundle\System\AuditResult;
 use Manuxi\SuluDashboardBundle\System\FailedMessages;
 use Manuxi\SuluDashboardBundle\System\PendingMigrations;
+use Manuxi\SuluDashboardBundle\System\PhpSupport;
+use Manuxi\SuluDashboardBundle\System\RuntimeInfo;
 use Manuxi\SuluDashboardBundle\System\SystemCheck;
 use Manuxi\SuluDashboardBundle\System\SystemCheckStore;
 use Manuxi\SuluDashboardBundle\System\SystemVersions;
@@ -16,14 +20,16 @@ use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
- * The data of the tab "System" (one method per tile) and of the small tile on the overview that sums it up.
+ * The data of the tab "System" (one method per tile).
  *
- * Nothing slow runs here: the security check and the folder sizes are made by the console command
- * (sulu:dashboard:system-check, cron) and read from the cache pool; versions, the environment, the open migrations and
- * the failed messages are cheap. Nothing secret is shown: no connection strings, keys or absolute paths, only versions,
- * counts, package names and relative folder names.
+ * Nothing slow runs here: the security check, the newer patch releases and the folder sizes are made by the console
+ * command (sulu:dashboard:system-check, cron) and read from the cache pool; versions, the environment, the open
+ * migrations and the failed messages are cheap. Nothing secret is shown: no connection strings, keys or absolute paths,
+ * only versions, counts, package names, relative folder names and a few PHP settings.
  *
- * Texts are admin translation keys, {key, parameters} or {text} (shown as it is): see utils.js tx().
+ * The tiles "Condition", "Versions" and "Environment" hand over rows {title, value?, text?, severity?} for one component
+ * (widgets/SystemFacts.js). Texts are admin translation keys, {key, parameters} or {text} (shown as it is): see
+ * utils.js tx().
  */
 final class SystemTileData
 {
@@ -49,17 +55,8 @@ final class SystemTileData
         private readonly ?LoggerInterface $logger = null,
         private readonly ?Closure $now = null,
         private readonly ?StorageReport $storageReport = null,
+        private readonly ?RuntimeInfo $runtime = null,
     ) {
-    }
-
-    public function hasMigrations(): bool
-    {
-        return $this->migrations->isAvailable();
-    }
-
-    public function hasFailedMessages(): bool
-    {
-        return $this->failedMessages->isConfigured();
     }
 
     /**
@@ -94,36 +91,109 @@ final class SystemTileData
     }
 
     /**
-     * Tile "Versions": PHP, Symfony, Sulu.
+     * Tile "Condition": whether anything needs attention (the headline, the worst severity), and below it one row per
+     * check with its result: vulnerabilities, abandoned packages, PHP support, debug mode, open migrations, failed
+     * messages, big cache or logs, and the age of the last background check.
+     *
+     * status: ok | warning | error. The rows are in the order they are checked; a check that does not apply here (no
+     * migrations bundle, no failure transport) has no row.
      *
      * @return array<string, mixed>
      */
-    public function versions(): array
+    public function status(string $locale = 'en'): array
     {
-        $rows = [$this->fact('PHP', $this->text($this->versions->php)), $this->fact('Symfony', $this->text($this->versions->symfony))];
-        if (null !== $this->versions->sulu) {
-            $rows[] = $this->fact('Sulu', $this->text($this->versions->sulu));
+        $check = $this->store->load();
+        $rows = [$this->vulnerabilityRow($check)];
+
+        if (null !== $check && AuditResult::UNAVAILABLE !== $check->audit->status) {
+            $rows[] = $this->packagesRow($check);
         }
 
-        return ['header' => false, 'rows' => $rows];
+        $support = PhpSupport::check($this->versions->php, $this->date());
+        if (PhpSupport::STATE_UNKNOWN !== $support['state']) {
+            $rows[] = $this->phpSupportRow($support, $locale);
+        }
+
+        $rows[] = $this->debugRow();
+
+        foreach ([$this->migrationRow(), $this->failedRow()] as $row) {
+            if (null !== $row) {
+                $rows[] = $row;
+            }
+        }
+
+        if (null !== $check) {
+            foreach (($this->storageReport ?? new StorageReport())->hints($check, $locale) as $hint) {
+                $rows[] = $this->row(self::SEVERITY_WARNING, $hint['title'], null, $hint['text']);
+            }
+        }
+
+        $rows[] = $this->lastCheckRow($check);
+
+        $errors = \count(array_filter($rows, static fn (array $row): bool => self::SEVERITY_ERROR === $row['severity']));
+        $warnings = \count(array_filter($rows, static fn (array $row): bool => self::SEVERITY_WARNING === $row['severity']));
+
+        return [
+            'status' => $errors > 0 ? self::SEVERITY_ERROR : ($warnings > 0 ? self::SEVERITY_WARNING : self::SEVERITY_OK),
+            'headline' => $errors + $warnings > 0
+                ? ['key' => 'sulu_dashboard.system_attention', 'parameters' => ['count' => $errors + $warnings]]
+                : 'sulu_dashboard.system_all_good',
+            'rows' => $rows,
+        ];
     }
 
     /**
-     * Tile "Environment": the mode, the debug switch, and a clear warning for debug mode in production.
+     * Tile "Versions": PHP (with the end of its security support), Symfony and Sulu. If the last background check found a
+     * newer patch release of Symfony or Sulu, the row says so.
+     *
+     * @return array<string, mixed>
+     */
+    public function versions(string $locale = 'en'): array
+    {
+        $support = PhpSupport::check($this->versions->php, $this->date());
+        $note = match ($support['state']) {
+            PhpSupport::STATE_OK => [null, $this->supportText('sulu_dashboard.system_php_until', $support['until'], $locale)],
+            PhpSupport::STATE_ENDING => [self::SEVERITY_WARNING, $this->supportText('sulu_dashboard.system_php_until', $support['until'], $locale)],
+            PhpSupport::STATE_ENDED => [self::SEVERITY_ERROR, null === $support['until'] ? 'sulu_dashboard.system_php_ended' : $this->supportText('sulu_dashboard.system_php_ended_on', $support['until'], $locale)],
+            default => [null, null],
+        };
+
+        $rows = [$this->row($note[0], 'PHP', $this->text($this->versions->php), $note[1])];
+
+        $rows[] = $this->versionRow('Symfony', $this->versions->symfony, 'symfony/framework-bundle');
+        if (null !== $this->versions->sulu) {
+            $rows[] = $this->versionRow('Sulu', $this->versions->sulu, 'sulu/sulu');
+        }
+
+        return ['rows' => $rows];
+    }
+
+    /**
+     * Tile "Environment": mode, debug mode (red in production), the PHP limits, OPcache (a warning in production if it
+     * is off), time zone and default language.
      *
      * @return array<string, mixed>
      */
     public function environment(): array
     {
-        $rows = [];
-        if ($this->debugInProduction()) {
-            $rows[] = $this->problem(self::SEVERITY_ERROR, 'sulu_dashboard.system_debug_in_prod', 'sulu_dashboard.system_debug_in_prod_hint');
-        }
+        $runtime = $this->runtime ?? RuntimeInfo::detect();
 
-        $rows[] = $this->fact('sulu_dashboard.system_mode', $this->text($this->environment));
-        $rows[] = $this->fact('sulu_dashboard.system_debug', $this->debug ? 'sulu_dashboard.system_on' : 'sulu_dashboard.system_off');
+        $memory = '-1' === trim($runtime->memoryLimit) ? 'sulu_dashboard.system_unlimited' : $this->text($runtime->memoryLimit);
+        $time = $runtime->maxExecutionTime > 0
+            ? ['key' => 'sulu_dashboard.system_seconds', 'parameters' => ['count' => $runtime->maxExecutionTime]]
+            : 'sulu_dashboard.system_unlimited';
 
-        return ['header' => false, 'rows' => $rows];
+        $opcacheProblem = !$runtime->opcache && 'prod' === $this->environment;
+
+        return ['rows' => [
+            $this->row(null, 'sulu_dashboard.system_mode', $this->text($this->environment)),
+            $this->debugRow(false),
+            $this->row(null, 'sulu_dashboard.system_memory_limit', $memory),
+            $this->row(null, 'sulu_dashboard.system_max_execution_time', $time),
+            $this->row($opcacheProblem ? self::SEVERITY_WARNING : null, 'OPcache', $runtime->opcache ? 'sulu_dashboard.system_on' : 'sulu_dashboard.system_off', $opcacheProblem ? 'sulu_dashboard.system_opcache_hint' : null),
+            $this->row(null, 'sulu_dashboard.system_timezone', $this->text($runtime->timezone)),
+            $this->row(null, 'sulu_dashboard.system_locale', $this->text($runtime->locale)),
+        ]];
     }
 
     /**
@@ -143,181 +213,169 @@ final class SystemTileData
     }
 
     /**
-     * Tile "Database migrations".
-     *
      * @return array<string, mixed>
      */
-    public function migrations(): array
+    private function vulnerabilityRow(?SystemCheck $check): array
     {
-        $problem = $this->migrationProblem();
+        $title = 'sulu_dashboard.system_vulnerabilities';
 
-        return ['header' => false, 'rows' => [$problem ?? $this->problem(self::SEVERITY_OK, 'sulu_dashboard.system_migrations_ok')]];
-    }
-
-    /**
-     * Tile "Failed messages".
-     *
-     * @return array<string, mixed>
-     */
-    public function failedMessages(): array
-    {
-        $problem = $this->failedProblem();
-
-        return ['header' => false, 'rows' => [$problem ?? $this->problem(self::SEVERITY_OK, 'sulu_dashboard.system_failed_none')]];
-    }
-
-    /**
-     * Tile "Last check": how old the result of the console command is, a warning if it never ran or is too old, always
-     * with the command as text.
-     *
-     * @return array<string, mixed>
-     */
-    public function lastCheck(): array
-    {
-        return ['header' => false, 'rows' => [$this->lastCheckRow()]];
-    }
-
-    /**
-     * The small tile of the overview: a traffic light. Every problem is a row with its severity, without a problem one
-     * green row; below it the age of the check and a link to the tab.
-     *
-     * @return array<string, mixed>
-     */
-    public function summary(string $locale = 'en'): array
-    {
-        $rows = $this->problems($locale);
-        if ([] === $rows) {
-            $rows[] = $this->problem(self::SEVERITY_OK, 'sulu_dashboard.system_all_good');
-        }
-
-        $age = $this->age();
-        $rows[] = $this->fact('sulu_dashboard.system_last_check', null === $age ? 'sulu_dashboard.system_never' : $this->ageText($age));
-
-        return [
-            'header' => false,
-            'limit' => 10,
-            'rows' => $rows,
-            'footer' => ['rows' => [['title' => 'sulu_dashboard.system_details', 'icon' => 'su-arrow-right', 'link' => ['view' => DashboardAdmin::TAB_VIEW_PREFIX . SystemTabProvider::KEY, 'attributes' => (object) []]]]],
-        ];
-    }
-
-    /**
-     * Everything that needs attention, the worst first (errors, then warnings). Used by the overview tile.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function problems(string $locale): array
-    {
-        $errors = [];
-        $warnings = [];
-
-        if ($this->debugInProduction()) {
-            $errors[] = $this->problem(self::SEVERITY_ERROR, 'sulu_dashboard.system_debug_in_prod');
-        }
-
-        $check = $this->store->load();
         if (null === $check) {
-            $warnings[] = $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_not_run');
-        } else {
-            $audit = $check->audit;
-            if (AuditResult::VULNERABLE === $audit->status) {
-                $errors[] = $this->problem(self::SEVERITY_ERROR, ['key' => 'sulu_dashboard.system_audit_found', 'parameters' => ['count' => \count($audit->advisories)]]);
-            } elseif (AuditResult::UNAVAILABLE === $audit->status) {
-                $warnings[] = $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_audit_unavailable');
-            }
-
-            if ([] !== $audit->abandoned) {
-                $warnings[] = $this->problem(self::SEVERITY_WARNING, ['key' => 'sulu_dashboard.system_abandoned_found', 'parameters' => ['count' => \count($audit->abandoned)]]);
-            }
-
-            if ($this->isStale($check)) {
-                $warnings[] = $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_stale');
-            }
-
-            foreach (($this->storageReport ?? new StorageReport())->hints($check, $locale) as $hint) {
-                $warnings[] = $this->problem(self::SEVERITY_WARNING, $hint['title'], $hint['text']);
-            }
+            return $this->row(self::SEVERITY_WARNING, $title, 'sulu_dashboard.system_not_checked');
         }
 
-        foreach ([$this->migrationProblem(), $this->failedProblem()] as $problem) {
-            if (null !== $problem) {
-                $warnings[] = $problem;
-            }
+        $audit = $check->audit;
+
+        if (AuditResult::VULNERABLE === $audit->status) {
+            return $this->row(self::SEVERITY_ERROR, $title, ['key' => 'sulu_dashboard.system_vulnerabilities_found', 'parameters' => ['count' => \count($audit->advisories)]], 'sulu_dashboard.system_vulnerabilities_found_hint');
         }
 
-        return [...$errors, ...$warnings];
-    }
+        if (AuditResult::UNAVAILABLE === $audit->status) {
+            $known = [AuditResult::ERROR_NOT_FOUND, AuditResult::ERROR_TIMEOUT];
 
-    private function debugInProduction(): bool
-    {
-        return $this->debug && 'prod' === $this->environment;
+            return $this->row(self::SEVERITY_WARNING, $title, 'sulu_dashboard.system_audit_unavailable', 'sulu_dashboard.system_audit_error_' . (\in_array($audit->error, $known, true) ? $audit->error : AuditResult::ERROR_FAILED));
+        }
+
+        return $this->row(self::SEVERITY_OK, $title, 'sulu_dashboard.system_none_known');
     }
 
     /**
-     * @return array<string, mixed>|null null: all migrations ran, or the check is not available
+     * @return array<string, mixed>
      */
-    private function migrationProblem(): ?array
+    private function packagesRow(SystemCheck $check): array
+    {
+        $abandoned = \count($check->audit->abandoned);
+
+        return $abandoned > 0
+            ? $this->row(self::SEVERITY_WARNING, 'sulu_dashboard.system_packages', ['key' => 'sulu_dashboard.system_packages_abandoned', 'parameters' => ['count' => $abandoned]], 'sulu_dashboard.system_abandoned_hint_short')
+            : $this->row(self::SEVERITY_OK, 'sulu_dashboard.system_packages', 'sulu_dashboard.system_packages_ok');
+    }
+
+    /**
+     * @param array{state: string, until: ?string} $support
+     *
+     * @return array<string, mixed>
+     */
+    private function phpSupportRow(array $support, string $locale): array
+    {
+        $title = 'sulu_dashboard.system_php_support';
+        $until = null === $support['until'] ? null : ['key' => 'sulu_dashboard.system_until', 'parameters' => ['date' => $this->formatDate($support['until'], $locale)]];
+
+        return match ($support['state']) {
+            PhpSupport::STATE_ENDED => $this->row(self::SEVERITY_ERROR, $title, null === $support['until'] ? 'sulu_dashboard.system_ended' : ['key' => 'sulu_dashboard.system_ended_on', 'parameters' => ['date' => $this->formatDate($support['until'], $locale)]], 'sulu_dashboard.system_php_ended_hint'),
+            PhpSupport::STATE_ENDING => $this->row(self::SEVERITY_WARNING, $title, $until, 'sulu_dashboard.system_php_ending_hint'),
+            default => $this->row(self::SEVERITY_OK, $title, $until),
+        };
+    }
+
+    /**
+     * Debug mode: red with a hint in production (visitors could see internal details), otherwise just the state.
+     *
+     * @return array<string, mixed>
+     */
+    private function debugRow(bool $withOk = true): array
+    {
+        $problem = $this->debug && 'prod' === $this->environment;
+        $value = $this->debug ? 'sulu_dashboard.system_on' : 'sulu_dashboard.system_off';
+
+        if ($problem) {
+            return $this->row(self::SEVERITY_ERROR, 'sulu_dashboard.system_debug', $value, 'sulu_dashboard.system_debug_in_prod_hint');
+        }
+
+        return $this->row($withOk ? self::SEVERITY_OK : null, 'sulu_dashboard.system_debug', $value);
+    }
+
+    /**
+     * @return array<string, mixed>|null null: the check is not available (no migrations bundle)
+     */
+    private function migrationRow(): ?array
     {
         if (!$this->migrations->isAvailable()) {
             return null;
         }
+
+        $title = 'sulu_dashboard.system_migrations';
 
         try {
             $open = $this->migrations->count();
         } catch (Throwable $exception) {
             $this->logger?->warning('Dashboard system tile: the open migrations could not be read.', ['exception' => $exception]);
 
-            return $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_migrations_error');
+            return $this->row(self::SEVERITY_WARNING, $title, 'sulu_dashboard.system_check_failed');
         }
 
         return $open > 0
-            ? $this->problem(self::SEVERITY_WARNING, ['key' => 'sulu_dashboard.system_migrations_pending', 'parameters' => ['count' => $open]], 'sulu_dashboard.system_migrations_pending_hint')
-            : null;
+            ? $this->row(self::SEVERITY_WARNING, $title, ['key' => 'sulu_dashboard.system_migrations_open', 'parameters' => ['count' => $open]], 'sulu_dashboard.system_migrations_pending_hint')
+            : $this->row(self::SEVERITY_OK, $title, 'sulu_dashboard.system_migrations_done');
     }
 
     /**
-     * @return array<string, mixed>|null null: no failed messages, or no failure transport
+     * @return array<string, mixed>|null null: no failure transport
      */
-    private function failedProblem(): ?array
+    private function failedRow(): ?array
     {
         if (!$this->failedMessages->isConfigured()) {
             return null;
         }
+
+        $title = 'sulu_dashboard.system_failed_messages';
 
         try {
             $failed = $this->failedMessages->count();
         } catch (Throwable $exception) {
             $this->logger?->warning('Dashboard system tile: the failed messages could not be counted.', ['exception' => $exception]);
 
-            return $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_failed_error');
+            return $this->row(self::SEVERITY_WARNING, $title, 'sulu_dashboard.system_check_failed');
         }
 
         if (null === $failed) {
-            return $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_failed_error');
+            return $this->row(self::SEVERITY_WARNING, $title, 'sulu_dashboard.system_check_failed');
         }
 
         return $failed > 0
-            ? $this->problem(self::SEVERITY_WARNING, ['key' => 'sulu_dashboard.system_failed_found', 'parameters' => ['count' => $failed]], 'sulu_dashboard.system_failed_found_hint')
-            : null;
+            ? $this->row(self::SEVERITY_WARNING, $title, ['key' => 'sulu_dashboard.system_failed_count', 'parameters' => ['count' => $failed]], 'sulu_dashboard.system_failed_found_hint')
+            : $this->row(self::SEVERITY_OK, $title, 'sulu_dashboard.system_failed_none');
     }
 
     /**
+     * How old the result of the console command is, a warning if it never ran or is too old, always with the command.
+     *
      * @return array<string, mixed>
      */
-    private function lastCheckRow(): array
+    private function lastCheckRow(?SystemCheck $check): array
     {
+        $title = 'sulu_dashboard.system_last_check';
         $parameters = ['command' => self::COMMAND];
-        $age = $this->age();
 
-        if (null === $age) {
-            return $this->problem(self::SEVERITY_WARNING, 'sulu_dashboard.system_not_run', ['key' => 'sulu_dashboard.system_not_run_hint', 'parameters' => $parameters]);
+        if (null === $check) {
+            return $this->row(self::SEVERITY_WARNING, $title, 'sulu_dashboard.system_never', ['key' => 'sulu_dashboard.system_not_run_hint', 'parameters' => $parameters]);
         }
 
-        if ($age > $this->maxAgeHours * 3600) {
-            return $this->problem(self::SEVERITY_WARNING, $this->ageText($age), ['key' => 'sulu_dashboard.system_stale_hint', 'parameters' => $parameters]);
+        $age = max(0, $this->time() - $check->checkedAt);
+
+        return $this->isStale($check)
+            ? $this->row(self::SEVERITY_WARNING, $title, self::ageText($age), ['key' => 'sulu_dashboard.system_stale_hint', 'parameters' => $parameters])
+            : $this->row(self::SEVERITY_OK, $title, self::ageText($age), ['key' => 'sulu_dashboard.system_refresh_hint', 'parameters' => $parameters]);
+    }
+
+    /**
+     * Symfony or Sulu: the version, and a hint if the last background check found a newer patch release.
+     *
+     * @return array<string, mixed>
+     */
+    private function versionRow(string $name, string $version, string $package): array
+    {
+        $latest = null;
+        foreach ($this->store->load()->updates ?? [] as $update) {
+            if ($update['package'] === $package) {
+                $latest = $update['latest'];
+            }
         }
 
-        return $this->problem(self::SEVERITY_OK, $this->ageText($age), ['key' => 'sulu_dashboard.system_refresh_hint', 'parameters' => $parameters]);
+        if (null === $latest) {
+            return $this->row(null, $name, $this->text($version));
+        }
+
+        return $this->row(self::SEVERITY_WARNING, $name, $this->text($version), ['key' => 'sulu_dashboard.system_update_available', 'parameters' => ['version' => $latest]]);
     }
 
     private function isStale(SystemCheck $check): bool
@@ -325,55 +383,37 @@ final class SystemTileData
         return max(0, $this->time() - $check->checkedAt) > $this->maxAgeHours * 3600;
     }
 
-    /**
-     * Seconds since the last run of the console command; null if it never ran.
-     */
-    private function age(): ?int
-    {
-        $check = $this->store->load();
-
-        return null === $check ? null : max(0, $this->time() - $check->checkedAt);
-    }
-
     private function time(): int
     {
         return null === $this->now ? time() : (int) ($this->now)();
     }
 
-    /**
-     * @param string|array<string, mixed>      $title
-     * @param string|array<string, mixed>|null $text
-     *
-     * @return array<string, mixed>
-     */
-    private function problem(string $severity, string|array $title, string|array|null $text = null): array
+    private function date(): DateTimeImmutable
     {
-        $row = ['title' => $title, 'severity' => $severity];
-        if (null !== $text) {
-            $row['text'] = $text;
-        }
-
-        return $row;
+        return new DateTimeImmutable('@' . $this->time());
     }
 
     /**
-     * @param string|array<string, mixed>      $title
-     * @param string|array<string, mixed>      $value
-     * @param string|array<string, mixed>|null $text
-     *
-     * @return array<string, mixed>
+     * "2028-12-31" as the day in the language of the user ("31 Dec 2028"); the day itself, whatever the time zone.
      */
-    private function fact(string|array $title, string|array $value, ?string $severity = null, string|array|null $text = null): array
+    private function formatDate(string $day, string $locale): string
     {
-        $row = ['title' => $title, 'meta' => $value];
-        if (null !== $severity) {
-            $row['severity'] = $severity;
-        }
-        if (null !== $text) {
-            $row['text'] = $text;
+        if (!class_exists(IntlDateFormatter::class)) {
+            return $day;
         }
 
-        return $row;
+        $date = new DateTimeImmutable($day . ' 12:00:00', new DateTimeZone('UTC'));
+        $formatted = (new IntlDateFormatter($locale, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE, 'UTC'))->format($date);
+
+        return false === $formatted ? $day : $formatted;
+    }
+
+    /**
+     * @return array{key: string, parameters: array{date: string}}|null
+     */
+    private function supportText(string $key, ?string $until, string $locale): ?array
+    {
+        return null === $until ? null : ['key' => $key, 'parameters' => ['date' => $this->formatDate($until, $locale)]];
     }
 
     /**
@@ -384,6 +424,20 @@ final class SystemTileData
     private function text(string $value): array
     {
         return ['text' => $value];
+    }
+
+    /**
+     * One row of a tile of facts.
+     *
+     * @param string|array<string, mixed>      $title
+     * @param string|array<string, mixed>|null $value
+     * @param string|array<string, mixed>|null $text  grey second line
+     *
+     * @return array<string, mixed>
+     */
+    private function row(?string $severity, string|array $title, string|array|null $value = null, string|array|null $text = null): array
+    {
+        return ['title' => $title, 'value' => $value, 'text' => $text, 'severity' => $severity];
     }
 
     /**

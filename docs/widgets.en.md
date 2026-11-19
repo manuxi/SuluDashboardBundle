@@ -174,6 +174,16 @@ Add the package to `assets/admin/package.json` (`"sulu-dashboard-bundle": "file:
 - Keys starting with `sulu_` belong to the tiles of this bundle.
 - Switch a tile off in the configuration: `sulu_dashboard.disabled_widgets: ['sulu_activities']`.
 
+## Where does my tile appear?
+
+| Your tile | Place |
+|---|---|
+| implements `GroupedDashboardWidgetInterface` | in the tab of that group, nowhere else |
+| no group, class in another bundle or in the project | in the tab **Extensions** (only if the user may see it; otherwise there is no such tab) |
+| no group, class from this bundle | on the overview |
+
+You do not have to do anything for this. If your tile should stay on the overview anyway, list its key under `sulu_dashboard.extensions.keep_on_overview`; `sulu_dashboard.extensions.tab: false` restores the old behaviour (everything on the overview). See [Tabs](tabs.en.md).
+
 ## A tile that is only shown sometimes
 
 Implement `ConditionalDashboardWidgetInterface` (adds `isAvailable(): bool`), for example when an API key is missing.
