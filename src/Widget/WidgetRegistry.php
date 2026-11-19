@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Manuxi\SuluDashboardBundle\Widget;
 
 use LogicException;
+use Manuxi\SuluDashboardBundle\Widget\Extensions\ExtensionsTabProvider;
 use Sulu\Component\Security\Authorization\PermissionTypes;
 use Sulu\Component\Security\Authorization\SecurityCheckerInterface;
 
@@ -16,17 +17,24 @@ final class WidgetRegistry
 {
     private const KEY_PATTERN = '/^[a-z][a-z0-9_]*$/';
 
+    /** namespace of this bundle: tiles from there are the built-in ones */
+    private const OWN_NAMESPACE = 'Manuxi\\SuluDashboardBundle\\';
+
     /** @var array<string, DashboardWidgetInterface>|null */
     private ?array $widgets = null;
 
     /**
      * @param iterable<DashboardWidgetInterface> $sources
-     * @param list<string>                       $disabled keys of tiles that are switched off in the configuration
+     * @param list<string>                       $disabled       keys of tiles that are switched off in the configuration
+     * @param bool                               $extensions     true: tiles of other bundles and of the project go to the tab "Extensions"
+     * @param list<string>                       $keepOnOverview keys of tiles that stay on the overview although they come from another bundle
      */
     public function __construct(
         private readonly iterable $sources,
         private readonly SecurityCheckerInterface $securityChecker,
         private readonly array $disabled = [],
+        private readonly bool $extensions = true,
+        private readonly array $keepOnOverview = [],
     ) {
     }
 
@@ -66,7 +74,7 @@ final class WidgetRegistry
     {
         $available = [];
         foreach ($this->all() as $widget) {
-            if (self::groupOf($widget) === $group && $this->isVisible($widget)) {
+            if ($this->groupFor($widget) === $group && $this->isVisible($widget)) {
                 $available[] = $widget;
             }
         }
@@ -87,11 +95,37 @@ final class WidgetRegistry
     }
 
     /**
-     * Group of a tile; null for a tile of the overview.
+     * Group a tile names itself; null for a tile without a group.
      */
     public static function groupOf(DashboardWidgetInterface $widget): ?string
     {
         return $widget instanceof GroupedDashboardWidgetInterface ? $widget->getGroup() : null;
+    }
+
+    /**
+     * The group a tile is shown in; null means the overview. A tile with its own group keeps it. A tile without a group
+     * goes to the tab "Extensions" when its class does not belong to this bundle (another bundle or the project), unless
+     * the tab is switched off or the key is listed in "keep_on_overview". The built-in tiles stay on the overview.
+     */
+    public function groupFor(DashboardWidgetInterface $widget): ?string
+    {
+        $own = self::groupOf($widget);
+        if (null !== $own || !$this->extensions || \in_array($widget->getKey(), $this->keepOnOverview, true)) {
+            return $own;
+        }
+
+        return self::isForeign($widget) ? ExtensionsTabProvider::GROUP : null;
+    }
+
+    /**
+     * Whether the class of the tile (for a tagged service the class of the service) is outside the namespace of this
+     * bundle. The trailing backslash keeps a bundle like "Manuxi\SuluDashboardBundleExtra" from counting as ours.
+     */
+    public static function isForeign(DashboardWidgetInterface $widget): bool
+    {
+        $class = $widget instanceof TaggedWidget ? $widget->getService()::class : $widget::class;
+
+        return !str_starts_with($class, self::OWN_NAMESPACE);
     }
 
     private function isVisible(DashboardWidgetInterface $widget): bool

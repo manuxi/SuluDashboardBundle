@@ -9,8 +9,10 @@ use Manuxi\SuluDashboardBundle\DependencyInjection\Compiler\DashboardWidgetPass;
 use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTabProvider;
 use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTilesTabProvider;
 use Manuxi\SuluDashboardBundle\Integration\LogStats\LogStatsTileWidget;
+use Manuxi\SuluDashboardBundle\Integration\LogStats\VisitorsWidget;
 use Manuxi\SuluDashboardBundle\Tab\DashboardTabProviderInterface;
 use Manuxi\SuluDashboardBundle\Widget\DashboardWidgetInterface;
+use Manuxi\SuluDashboardBundle\Widget\Extensions\ExtensionsTabProvider;
 use Manuxi\SuluDashboardBundle\Widget\System\SystemTileData;
 use Manuxi\SuluDashboardBundle\Widget\System\SystemTileWidget;
 use Symfony\Component\Config\FileLocator;
@@ -29,6 +31,8 @@ class SuluDashboardExtension extends Extension
 
         $container->setParameter('sulu_dashboard.start_page', $config['start_page']);
         $container->setParameter('sulu_dashboard.tabs.replace_navigation', $config['tabs']['replace_navigation']);
+        $container->setParameter('sulu_dashboard.extensions.tab', $config['extensions']['tab']);
+        $container->setParameter('sulu_dashboard.extensions.keep_on_overview', array_values($config['extensions']['keep_on_overview']));
         $container->setParameter('sulu_dashboard.log_stats.tab', $config['log_stats']['tab']);
         $container->setParameter('sulu_dashboard.layout.balance', $config['layout']['balance']);
         $container->setParameter('sulu_dashboard.system.composer_binary', $config['system']['composer_binary']);
@@ -53,11 +57,23 @@ class SuluDashboardExtension extends Extension
                 ->addTag(DashboardWidgetPass::TAG);
         }
 
+        // the tab "Extensions" (tiles of other bundles); without it they stay on the overview
+        if ($config['extensions']['tab']) {
+            $container->register(ExtensionsTabProvider::class, ExtensionsTabProvider::class)
+                ->setArguments([new Reference('sulu_dashboard.widget_registry')])
+                ->setPublic(false)
+                ->addTag(DashboardTabPass::TAG);
+        }
+
         // optional integration: the statistics of amoifr/sulu-log-stats-bundle as the tab "Visitors" and a tile
         $bundles = $container->hasParameter('kernel.bundles') ? $container->getParameter('kernel.bundles') : [];
         if (\in_array(self::LOG_STATS_BUNDLE, \is_array($bundles) ? $bundles : [], true)
             && ContainerBuilder::willBeAvailable('amoifr/sulu-log-stats-bundle', self::LOG_STATS_BUNDLE, ['manuxi/sulu-dashboard-bundle'])) {
             $loader->load('log-stats.yaml');
+            if (!$config['log_stats']['overview_tile']) {
+                // the figures are in the tab "Visitors"; the class stays for projects that switch the tile on again
+                $container->removeDefinition(VisitorsWidget::class);
+            }
             $this->loadLogStatsTiles($container, $config['log_stats']['tab']);
         }
     }

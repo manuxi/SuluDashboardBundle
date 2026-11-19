@@ -174,6 +174,16 @@ Das Paket in `assets/admin/package.json` eintragen (`"sulu-dashboard-bundle": "f
 - Schlüssel mit `sulu_` am Anfang gehören den Kacheln dieses Bundles.
 - Eine Kachel abschalten: `sulu_dashboard.disabled_widgets: ['sulu_activities']`.
 
+## Wo erscheint meine Kachel?
+
+| Deine Kachel | Ort |
+|---|---|
+| implementiert `GroupedDashboardWidgetInterface` | im Tab dieser Gruppe, sonst nirgends |
+| ohne Gruppe, Klasse in einem anderen Bundle oder im Projekt | im Tab **Erweiterungen** (nur wenn der Benutzer sie sehen darf; sonst gibt es den Tab nicht) |
+| ohne Gruppe, Klasse aus diesem Bundle | auf der Übersicht |
+
+Du musst dafür nichts tun. Soll deine Kachel trotzdem auf die Übersicht, trage ihren Schlüssel unter `sulu_dashboard.extensions.keep_on_overview` ein; `sulu_dashboard.extensions.tab: false` stellt den alten Zustand her (alles auf der Übersicht). Siehe [Tabs](tabs.de.md).
+
 ## Eine Kachel, die nur manchmal erscheint
 
 `ConditionalDashboardWidgetInterface` implementieren (ergänzt `isAvailable(): bool`), zum Beispiel wenn ein API-Schlüssel fehlt.

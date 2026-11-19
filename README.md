@@ -122,7 +122,11 @@ sulu_dashboard:
     start_page: true       # true: dashboard on "/", Sulu's search moves to "/search"; false: dashboard on "/dashboard", search stays on "/"
     tabs:
         replace_navigation: true   # a tab may replace a menu item of another bundle (the statistics of the log statistics)
+    extensions:
+        tab: true                  # tiles of other bundles in the tab "Extensions"; false: everything on the overview
+        keep_on_overview: []       # keys that stay on the overview anyway
     log_stats:
+        overview_tile: false       # true: small tile "Visitors (7 days)" on the overview (otherwise the tab only)
         tab: tiles                 # tiles: the tab "Visitors" is made of tiles; view: the page of the log statistics bundle unchanged
     layout:
         balance: true      # after loading, move tiles from the end of the longer column into the shorter one (once); false: tiles stay in their column
@@ -138,7 +142,7 @@ Sulu's search and the dashboard both want the path `/`. The router of the admin 
 
 - [Your own tile in 5 minutes](docs/widgets.en.md) - Interface, display types, optional dependency, tag
 - [Customize the dashboard](docs/customize.en.md) - Arrange, hide and reset tiles per user ([screenshot](docs/img/dashboard-customize.de.png), admin in German)
-- [Tabs](docs/tabs.en.md) - A whole page of a bundle as a tab, visitors from the log statistics
+- [Tabs](docs/tabs.en.md) - A whole page of a bundle as a tab, tab "Extensions" for the tiles of other bundles, visitors from the log statistics
 - [System](docs/system.en.md) - Tab for administrators: vulnerabilities, versions, debug warning, storage, cron job
 - [Built-in tiles](docs/built-in-widgets.en.md) - Tiles, permissions, the permission of the dashboard
 
