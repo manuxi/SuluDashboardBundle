@@ -90,8 +90,8 @@ final class ComposerFailure
             }
         }
 
-        return self::summarize(implode("
-", array_filter($lines, static fn (string $line): bool => 1 !== preg_match(self::NOISE, trim($line)))), $projectDir);
+        return self::summarize(implode('
+', array_filter($lines, static fn (string $line): bool => 1 !== preg_match(self::NOISE, trim($line)))), $projectDir);
     }
 
     public static function isNetwork(string $text): bool
