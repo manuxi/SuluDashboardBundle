@@ -113,6 +113,7 @@ sulu_dashboard:
     system_audit_error_not_found: "Composer was not found. Enter its path in sulu_dashboard.system.composer_binary."
     system_audit_error_failed: "composer audit failed. Check on the server with “composer audit --locked” (needs composer.lock and internet)."
     system_audit_error_timeout: "composer audit took too long."
+    system_audit_error_network: "Composer cannot fetch the security database. Check the network access of the web PHP or run the command over SSH."
     system_migrations: "Database migrations"
     system_migrations_pending_hint: "Run them with doctrine:migrations:migrate."
     system_failed_messages: "Failed messages"

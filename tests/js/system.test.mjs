@@ -41,8 +41,8 @@ test('the reported day is the day of the source, in every time zone', () => {
 });
 
 test('the data is normalized: known state, lists are lists', () => {
-    assert.deepEqual(normalize(undefined), {state: 'never', advisories: [], abandoned: [], reason: null, command: ''});
-    assert.deepEqual(normalize('nonsense'), {state: 'never', advisories: [], abandoned: [], reason: null, command: ''});
+    assert.deepEqual(normalize(undefined), {state: 'never', advisories: [], abandoned: [], reason: null, detail: null, command: ''});
+    assert.deepEqual(normalize('nonsense'), {state: 'never', advisories: [], abandoned: [], reason: null, detail: null, command: ''});
     assert.equal(normalize({status: 'something else'}).state, 'never');
 
     const vulnerable = normalize({status: 'vulnerable', advisories: [{package: 'a/b'}, null, 'text', {package: 'c/d'}], abandoned: 'no list', command: 'php x'});
@@ -58,6 +58,8 @@ test('vulnerable without an entry is ok, and only a vulnerable state has entries
     assert.deepEqual(normalize({status: 'ok', advisories: [{package: 'a/b'}]}).advisories, []);
     assert.equal(normalize({status: 'unavailable', reason: 'sulu_dashboard.system_audit_error_timeout'}).reason, 'sulu_dashboard.system_audit_error_timeout');
     assert.equal(normalize({status: 'ok', abandoned: [{package: 'a/old', replacement: null}]}).abandoned.length, 1);
+    assert.equal(normalize({status: 'unavailable', detail: 'curl error 6'}).detail, 'curl error 6');
+    assert.equal(normalize({status: 'unavailable', detail: ''}).detail, null);
 });
 
 test('ten rows are shown until the rest is asked for', () => {

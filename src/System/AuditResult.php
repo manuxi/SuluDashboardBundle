@@ -26,6 +26,8 @@ final class AuditResult
 
     public const ERROR_TIMEOUT = 'timeout';
 
+    public const ERROR_NETWORK = 'network';
+
     /**
      * @param list<Advisory>  $advisories
      * @param list<Abandoned> $abandoned
@@ -35,6 +37,7 @@ final class AuditResult
         public readonly array $advisories,
         public readonly ?string $error,
         public readonly array $abandoned = [],
+        public readonly ?string $detail = null,
     ) {
     }
 
@@ -55,17 +58,20 @@ final class AuditResult
         return [] === $advisories ? self::ok($abandoned) : new self(self::VULNERABLE, $advisories, null, $abandoned);
     }
 
-    public static function unavailable(string $error): self
+    /**
+     * @param string|null $detail why, in Composer's words, shortened and without paths (see {@see ComposerFailure})
+     */
+    public static function unavailable(string $error, ?string $detail = null): self
     {
-        return new self(self::UNAVAILABLE, [], $error);
+        return new self(self::UNAVAILABLE, [], $error, [], $detail);
     }
 
     /**
-     * @return array{status: string, advisories: list<Advisory>, abandoned: list<Abandoned>, error: ?string}
+     * @return array{status: string, advisories: list<Advisory>, abandoned: list<Abandoned>, error: ?string, detail: ?string}
      */
     public function toArray(): array
     {
-        return ['status' => $this->status, 'advisories' => $this->advisories, 'abandoned' => $this->abandoned, 'error' => $this->error];
+        return ['status' => $this->status, 'advisories' => $this->advisories, 'abandoned' => $this->abandoned, 'error' => $this->error, 'detail' => $this->detail];
     }
 
     /**
@@ -84,7 +90,7 @@ final class AuditResult
         }
 
         if (self::UNAVAILABLE === $status) {
-            return self::unavailable(\is_string($data['error'] ?? null) ? $data['error'] : self::ERROR_FAILED);
+            return self::unavailable(\is_string($data['error'] ?? null) ? $data['error'] : self::ERROR_FAILED, self::string($data, 'detail'));
         }
 
         if (self::VULNERABLE !== $status || !\is_array($data['advisories'] ?? null)) {

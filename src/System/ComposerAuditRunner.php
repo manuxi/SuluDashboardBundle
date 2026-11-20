@@ -30,6 +30,7 @@ final class ComposerAuditRunner implements AuditRunnerInterface
         private readonly string $composer = 'composer',
         private readonly int $timeout = 120,
         private readonly ?Closure $installedVersion = null,
+        private readonly ?ComposerEnvironment $environment = null,
     ) {
     }
 
@@ -40,20 +41,25 @@ final class ComposerAuditRunner implements AuditRunnerInterface
             return AuditResult::unavailable(AuditResult::ERROR_NOT_FOUND);
         }
 
-        $process = new Process([...$command, 'audit', '--locked', '--format=json', '--no-interaction'], $this->projectDir, ['COMPOSER_NO_INTERACTION' => '1'], null, $this->timeout);
+        $environment = $this->environment ?? new ComposerEnvironment($this->projectDir . '/var/sulu-dashboard/composer');
+        $process = new Process([...$command, 'audit', '--locked', '--format=json', '--no-interaction'], $this->projectDir, $environment->variables(), null, $this->timeout);
 
         try {
             $process->run();
         } catch (ProcessTimedOutException) {
             return AuditResult::unavailable(AuditResult::ERROR_TIMEOUT);
-        } catch (Throwable) {
-            return AuditResult::unavailable(AuditResult::ERROR_FAILED);
+        } catch (Throwable $exception) {
+            return AuditResult::unavailable(AuditResult::ERROR_FAILED, ComposerFailure::summarize($exception->getMessage(), $this->projectDir));
         }
 
         // exit code 1 means "vulnerabilities found" and still comes with the JSON
         $data = json_decode($process->getOutput(), true);
         if (!\is_array($data)) {
-            return AuditResult::unavailable(AuditResult::ERROR_FAILED);
+            $error = $process->getErrorOutput();
+            $detail = ComposerFailure::summarize('' !== trim($error) ? $error : $process->getOutput(), $this->projectDir)
+                ?? 'exit code ' . $process->getExitCode();
+
+            return AuditResult::unavailable(ComposerFailure::isNetwork($error) ? AuditResult::ERROR_NETWORK : AuditResult::ERROR_FAILED, $detail);
         }
 
         return AuditResult::vulnerable($this->advisories($data), $this->abandoned($data));

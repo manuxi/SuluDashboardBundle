@@ -17,9 +17,10 @@ final class SystemCheck
 {
     /**
      * @param Storage       $storage
-     * @param Media|null    $media    number and size of the media of Sulu; null if they could not be read
-     * @param Previous|null $previous the measurement before this one; null at the first run
-     * @param Updates|null  $updates  newer patch releases of Sulu and Symfony; null if that check could not run (or an older result)
+     * @param Media|null    $media        number and size of the media of Sulu; null if they could not be read
+     * @param Previous|null $previous     the measurement before this one; null at the first run
+     * @param Updates|null  $updates      newer patch releases of Sulu and Symfony; null if that check could not run (or an older result)
+     * @param string|null   $updatesError why it could not run (shortened, without paths); null if it ran
      */
     public function __construct(
         public readonly int $checkedAt,
@@ -28,11 +29,12 @@ final class SystemCheck
         public readonly ?array $media = null,
         public readonly ?array $previous = null,
         public readonly ?array $updates = null,
+        public readonly ?string $updatesError = null,
     ) {
     }
 
     /**
-     * @return array{checkedAt: int, audit: array<string, mixed>, storage: Storage, media: Media|null, previous: Previous|null, updates: Updates|null}
+     * @return array{checkedAt: int, audit: array<string, mixed>, storage: Storage, media: Media|null, previous: Previous|null, updates: Updates|null, updatesError: string|null}
      */
     public function toArray(): array
     {
@@ -43,6 +45,7 @@ final class SystemCheck
             'media' => $this->media,
             'previous' => $this->previous,
             'updates' => $this->updates,
+            'updatesError' => $this->updatesError,
         ];
     }
 
@@ -65,7 +68,7 @@ final class SystemCheck
             ];
         }
 
-        return new self($data['checkedAt'], $audit, self::storage($data['storage'] ?? null), self::media($data['media'] ?? null), $previous, self::updates($data['updates'] ?? null));
+        return new self($data['checkedAt'], $audit, self::storage($data['storage'] ?? null), self::media($data['media'] ?? null), $previous, self::updates($data['updates'] ?? null), \is_string($data['updatesError'] ?? null) && '' !== $data['updatesError'] ? $data['updatesError'] : null);
     }
 
     /**

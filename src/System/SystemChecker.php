@@ -30,14 +30,14 @@ final class SystemChecker
             ? null
             : ['checkedAt' => $before->checkedAt, 'storage' => $before->storage, 'media' => $before->media];
 
-        $check = new SystemCheck(
-            null === $this->now ? time() : (int) ($this->now)(),
-            $this->audit->run(),
-            $this->storage->measure(),
-            $this->media?->measure(),
-            $previous,
-            $this->updates?->run(),
-        );
+        $checkedAt = null === $this->now ? time() : (int) ($this->now)();
+        $audit = $this->audit->run();
+        $storage = $this->storage->measure();
+        $media = $this->media?->measure();
+        $updates = $this->updates?->run();
+        $updatesError = null === $updates && $this->updates instanceof ReportsFailure ? $this->updates->failure() : null;
+
+        $check = new SystemCheck($checkedAt, $audit, $storage, $media, $previous, $updates, $updatesError);
         $this->store->save($check);
 
         return $check;

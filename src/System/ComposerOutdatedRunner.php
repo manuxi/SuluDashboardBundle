@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Manuxi\SuluDashboardBundle\System;
 
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Throwable;
 
@@ -13,7 +14,7 @@ use Throwable;
  * inside the version the project has chosen, so updating it is the safe kind of update. A failure is no error of the
  * check: the tab then simply says nothing about updates.
  */
-final class ComposerOutdatedRunner implements UpdateRunnerInterface
+final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFailure
 {
     /** @var list<string> */
     public const PACKAGES = ['sulu/sulu', 'symfony/framework-bundle'];
@@ -22,27 +23,52 @@ final class ComposerOutdatedRunner implements UpdateRunnerInterface
         private readonly string $projectDir,
         private readonly string $composer = 'composer',
         private readonly int $timeout = 90,
+        private readonly ?ComposerEnvironment $environment = null,
     ) {
+    }
+
+    private ?string $failure = null;
+
+    public function failure(): ?string
+    {
+        return $this->failure;
     }
 
     public function run(): ?array
     {
+        $this->failure = null;
         $command = ComposerCommand::resolve($this->composer);
         if (null === $command) {
+            $this->failure = 'Composer was not found.';
+
             return null;
         }
 
         $arguments = ['outdated', '--locked', '--direct', '--patch-only', '--format=json', '--no-interaction'];
-        $process = new Process([...$command, ...$arguments], $this->projectDir, ['COMPOSER_NO_INTERACTION' => '1'], null, $this->timeout);
+        $environment = $this->environment ?? new ComposerEnvironment($this->projectDir . '/var/sulu-dashboard/composer');
+        $process = new Process([...$command, ...$arguments], $this->projectDir, $environment->variables(), null, $this->timeout);
 
         try {
             $process->run();
-        } catch (Throwable) {
+        } catch (ProcessTimedOutException) {
+            $this->failure = 'composer outdated took too long.';
+
+            return null;
+        } catch (Throwable $exception) {
+            $this->failure = ComposerFailure::summarize($exception->getMessage(), $this->projectDir) ?? 'composer outdated could not be started.';
+
             return null;
         }
 
         $data = json_decode($process->getOutput(), true);
         if (!\is_array($data) || !\is_array($data['locked'] ?? null)) {
+            $error = $process->getErrorOutput();
+            $detail = ComposerFailure::summarize('' !== trim($error) ? $error : $process->getOutput(), $this->projectDir)
+                ?? 'exit code ' . $process->getExitCode();
+            $this->failure = ComposerFailure::isNetwork($error)
+                ? 'Composer cannot fetch the package list. Check the network access of the web PHP or run the command over SSH. ' . $detail
+                : $detail;
+
             return null;
         }
 

@@ -37,6 +37,7 @@ class SuluDashboardExtension extends Extension
         $container->setParameter('sulu_dashboard.layout.balance', $config['layout']['balance']);
         $container->setParameter('sulu_dashboard.system.composer_binary', $config['system']['composer_binary']);
         $container->setParameter('sulu_dashboard.system.storage_dir', $config['system']['storage_dir']);
+        $container->setParameter('sulu_dashboard.system.composer_home', $config['system']['composer_home']);
         $container->setParameter('sulu_dashboard.system.max_age', $config['system']['max_age']);
         $container->setParameter('sulu_dashboard.system.cache_limit', $config['system']['cache_limit']);
         $container->setParameter('sulu_dashboard.system.log_limit', $config['system']['log_limit']);
