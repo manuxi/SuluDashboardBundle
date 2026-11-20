@@ -16,6 +16,7 @@ use Manuxi\SuluDashboardBundle\System\SystemChecker;
 use Manuxi\SuluDashboardBundle\System\SystemCheckStore;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Process\Process;
 
 /**
  * The environment of the Composer process (no HOME in a web request) and the reason when Composer fails.
@@ -78,10 +79,12 @@ class ComposerEnvironmentTest extends TestCase
     public function testAHomeThatIsThereIsLeftAlone(): void
     {
         $variables = $this->environment(['HOME' => $this->directory])->variables();
-        $this->assertSame(['COMPOSER_NO_INTERACTION' => '1'], $variables);
+        $this->assertArrayNotHasKey('COMPOSER_HOME', $variables);
+        $this->assertArrayNotHasKey('COMPOSER_CACHE_DIR', $variables);
 
         $variables = $this->environment(['COMPOSER_HOME' => '/set/by/the/server'])->variables();
-        $this->assertSame(['COMPOSER_NO_INTERACTION' => '1'], $variables);
+        $this->assertSame('/set/by/the/server', $variables['COMPOSER_HOME']);
+        $this->assertArrayNotHasKey('COMPOSER_CACHE_DIR', $variables);
         $this->assertDirectoryDoesNotExist($this->directory . '/default-home');
     }
 
@@ -100,6 +103,55 @@ class ComposerEnvironmentTest extends TestCase
         $this->assertArrayHasKey('COMPOSER_HOME', $this->environment(['APPDATA' => $appData], null, true)->variables());
         $this->assertArrayNotHasKey('COMPOSER_HOME', $this->environment(['APPDATA' => $appData, 'LOCALAPPDATA' => $appData, 'SystemRoot' => $this->directory], null, true)->variables());
         $this->assertArrayNotHasKey('COMPOSER_HOME', $this->environment(['HOME' => $appData], null, false)->variables());
+    }
+
+    public function testAUsableHomeIsPassedOnExplicitly(): void
+    {
+        $this->assertSame($this->directory, $this->environment(['HOME' => $this->directory])->variables()['HOME']);
+
+        $appData = $this->directory . '/AppData';
+        mkdir($appData);
+        $variables = $this->environment(['APPDATA' => $appData, 'LOCALAPPDATA' => $appData, 'SystemRoot' => $this->directory], null, true)->variables();
+        $this->assertSame($appData, $variables['APPDATA']);
+        $this->assertSame($appData, $variables['LOCALAPPDATA']);
+        $this->assertArrayNotHasKey('HOME', $variables);
+    }
+
+    public function testAHomeIsNotPassedOnWhereTheOwnFolderIsUsed(): void
+    {
+        $variables = $this->environment(['HOME' => $this->directory . '/gone'])->variables();
+        $this->assertArrayNotHasKey('HOME', $variables);
+
+        $variables = $this->environment(['HOME' => $this->directory], $this->directory . '/mine')->variables();
+        $this->assertArrayNotHasKey('HOME', $variables);
+    }
+
+    public function testTheChildProcessGetsTheHomeEvenIfItIsNotInServer(): void
+    {
+        $name = 'Windows' === \PHP_OS_FAMILY ? 'APPDATA' : 'HOME';
+        $names = 'Windows' === \PHP_OS_FAMILY ? ['APPDATA', 'LOCALAPPDATA'] : ['HOME'];
+        $env = [];
+        foreach ($names as $each) {
+            $env[$each] = $this->directory;
+        }
+        $env['SystemRoot'] = $this->directory;
+        $saved = $_SERVER;
+        $savedEnv = $_ENV;
+
+        try {
+            foreach ($names as $each) {
+                unset($_SERVER[$each], $_ENV[$each]);
+            }
+            // like a web server: the variable is there for getenv() (the closure stands in) but not in $_SERVER
+            $variables = (new ComposerEnvironment($this->directory . '/default-home', null, static fn (string $n): string|false => $env[$n] ?? false))->variables();
+            $process = new Process([\PHP_BINARY, '-r', "echo getenv('" . $name . "');"], null, $variables);
+            $process->run();
+        } finally {
+            $_SERVER = $saved;
+            $_ENV = $savedEnv;
+        }
+
+        $this->assertSame($this->directory, $process->getOutput());
     }
 
     public function testAConfiguredFolderAlwaysWins(): void

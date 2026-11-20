@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.2 - 2026-11-20
+
+### Fixed
+
+- `sulu:dashboard:system-check` from a web request: Composer still stopped with "The APPDATA or COMPOSER_HOME environment variable must be set" although `APPDATA` was set for PHP. The Symfony process hands the child only the variables of `getenv()` that are also in `$_SERVER`, and a web server does not put `APPDATA` there. `ComposerEnvironment` now passes a usable home (`APPDATA` and `LOCALAPPDATA` on Windows, otherwise `HOME`) and a `COMPOSER_HOME` set by the server on explicitly.
+
 ## 1.6.1 - 2026-11-19
 
 ### Fixed

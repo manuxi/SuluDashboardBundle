@@ -12,7 +12,9 @@ use Closure;
  * with "The APPDATA or COMPOSER_HOME environment variable must be set". Where neither COMPOSER_HOME nor a writable home
  * is there, Composer gets a folder of its own for its home and its cache. A COMPOSER_HOME the server already sets is
  * respected; a folder entered in sulu_dashboard.system.composer_home always wins. PATH and everything else is
- * inherited from PHP by the Symfony process.
+ * inherited from PHP by the Symfony process. A usable home (and a COMPOSER_HOME of the server) is passed on explicitly,
+ * because the Symfony process hands the child only the variables of getenv() that are also in $_SERVER, and a web server
+ * does not put APPDATA or HOME there.
  */
 final class ComposerEnvironment
 {
@@ -46,6 +48,12 @@ final class ComposerEnvironment
 
             $variables['COMPOSER_HOME'] = $home;
             $variables['COMPOSER_CACHE_DIR'] = $home . '/cache';
+        } else {
+            foreach (['COMPOSER_HOME', ...$this->homeNames()] as $name) {
+                if ('' !== $this->env($name)) {
+                    $variables[$name] = $this->env($name);
+                }
+            }
         }
 
         // without SystemRoot Windows cannot resolve host names for the process
@@ -66,14 +74,22 @@ final class ComposerEnvironment
             return false;
         }
 
-        $folders = $this->isWindows() ? [$this->env('APPDATA'), $this->env('LOCALAPPDATA')] : [$this->env('HOME')];
-        foreach ($folders as $folder) {
+        foreach ($this->homeNames() as $name) {
+            $folder = $this->env($name);
             if ('' === $folder || !is_dir($folder) || !is_writable($folder)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function homeNames(): array
+    {
+        return $this->isWindows() ? ['APPDATA', 'LOCALAPPDATA'] : ['HOME'];
     }
 
     private function env(string $name): string
