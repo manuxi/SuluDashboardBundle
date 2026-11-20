@@ -14,7 +14,8 @@ use Closure;
  * respected; a folder entered in sulu_dashboard.system.composer_home always wins. PATH and everything else is
  * inherited from PHP by the Symfony process. A usable home (and a COMPOSER_HOME of the server) is passed on explicitly,
  * because the Symfony process hands the child only the variables of getenv() that are also in $_SERVER, and a web server
- * does not put APPDATA or HOME there.
+ * does not put APPDATA or HOME there. SHELL_VERBOSITY is set to 0, so that the verbosity of a console command that
+ * runs in the same PHP process does not make Composer print every step.
  */
 final class ComposerEnvironment
 {
@@ -37,7 +38,8 @@ final class ComposerEnvironment
      */
     public function variables(): array
     {
-        $variables = ['COMPOSER_NO_INTERACTION' => '1'];
+        // SHELL_VERBOSITY of a console command running in this very process (cron URL) would make Composer verbose
+        $variables = ['COMPOSER_NO_INTERACTION' => '1', 'SHELL_VERBOSITY' => '0'];
         $configured = null === $this->configuredHome ? '' : trim($this->configuredHome);
         $home = '' !== $configured ? $configured : ($this->needsOwnHome() ? $this->defaultHome : null);
 

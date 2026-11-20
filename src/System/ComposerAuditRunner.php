@@ -56,7 +56,7 @@ final class ComposerAuditRunner implements AuditRunnerInterface
         $data = json_decode($process->getOutput(), true);
         if (!\is_array($data)) {
             $error = $process->getErrorOutput();
-            $detail = ComposerFailure::summarize('' !== trim($error) ? $error : $process->getOutput(), $this->projectDir)
+            $detail = ComposerFailure::reason('' !== trim($error) ? $error : $process->getOutput(), $this->projectDir)
                 ?? 'exit code ' . $process->getExitCode();
 
             return AuditResult::unavailable(ComposerFailure::isNetwork($error) ? AuditResult::ERROR_NETWORK : AuditResult::ERROR_FAILED, $detail);

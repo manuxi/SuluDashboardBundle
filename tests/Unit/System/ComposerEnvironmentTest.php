@@ -154,6 +154,90 @@ class ComposerEnvironmentTest extends TestCase
         $this->assertSame($this->directory, $process->getOutput());
     }
 
+    private function verboseGithubFailure(): string
+    {
+        $pad = static fn (string $line): string => '  ' . str_pad($line, 117) . "\n";
+
+        return "Reading ./composer.json (/srv/app/composer.json)\n"
+            . "Checked CA file /etc/ssl/cacert.pem: valid\n"
+            . "Executing command (/srv/app): git branch -a --no-color --no-abbrev -v\n"
+            . "Failed to initialize global composer: Composer could not find the config file\n"
+            . "Loading plugin Symfony\Flex\Flex (from symfony/flex)\n"
+            . "Downloading https://api.github.com/repos/example/ExampleBundle\n"
+            . "[403] https://api.github.com/repos/example/ExampleBundle\n"
+            . "Executing command (CWD): git clone --mirror -- git@github.com:example/ExampleBundle.git /tmp/vcs/x.git/\n"
+            . "Failed to clone the git@github.com:example/ExampleBundle.git repository, try running in interactive mode\n\n"
+            . "In Git.php line 595:\n\n"
+            . $pad('') . $pad('[RuntimeException]') . $pad('Failed to execute git clone --mirror -- git@github.com:example/ExampleBundle.git /tmp/vcs/x.git/') . $pad('')
+            . $pad("Cloning into bare repository '/tmp/vcs/x.git'...") . $pad('Host key verification failed.') . $pad('fatal: Could not read from remote repository.') . $pad('')
+            . "\nupdate [--dry-run]\n";
+    }
+
+    public function testTheReasonIsTheExceptionBlockAndItsLastLineNotTheProgressMessages(): void
+    {
+        $reason = ComposerFailure::reason($this->verboseGithubFailure(), '/srv/app');
+
+        $this->assertNotNull($reason);
+        $this->assertStringStartsWith('Failed to execute git clone', $reason);
+        $this->assertStringContainsString('fatal: Could not read from remote repository.', $reason);
+        $this->assertStringNotContainsString('Reading', $reason);
+        $this->assertStringNotContainsString('Executing command', $reason);
+        $this->assertLessThanOrEqual(300, mb_strlen($reason));
+    }
+
+    public function testWithoutAnExceptionBlockOnlyTheProgressMessagesAreLeftOut(): void
+    {
+        $reason = ComposerFailure::reason("Reading ./composer.json (/srv/app/composer.json)\nLoading plugin A\nfatal: detected dubious ownership in repository\n", '/srv/app');
+
+        $this->assertSame('fatal: detected dubious ownership in repository', $reason);
+        $this->assertNull(ComposerFailure::reason("Reading ./composer.json\n \n", '/srv/app'));
+    }
+
+    public function testAGithubRepositoryWithoutATokenIsRecognised(): void
+    {
+        $this->assertTrue(ComposerFailure::isGithubAuth($this->verboseGithubFailure()));
+        $this->assertTrue(ComposerFailure::isGithubAuth('Could not authenticate against github.com'));
+        $this->assertFalse(ComposerFailure::isGithubAuth('Could not resolve host: repo.packagist.org'));
+        $this->assertFalse(ComposerFailure::isGithubAuth('The APPDATA or COMPOSER_HOME environment variable must be set'));
+    }
+
+    public function testTheUpdateCheckNamesTheGithubTokenAndKeepsTheReason(): void
+    {
+        $composer = $this->fakeComposer('fwrite(STDERR, ' . var_export($this->verboseGithubFailure(), true) . '); exit(1);');
+        $runner = new ComposerOutdatedRunner($this->directory, $composer, 30, $this->environment([]));
+
+        $this->assertNull($runner->run());
+        $failure = $runner->failure();
+        $this->assertNotNull($failure);
+        $this->assertStringContainsString('GitHub token', $failure);
+        $this->assertSame('github_auth', $runner->failureCode());
+        $this->assertStringContainsString('auth.json', $failure);
+        $this->assertStringContainsString('Host key verification failed', $failure);
+        $this->assertStringNotContainsString('exit code', $failure);
+    }
+
+    public function testTheChildProcessDoesNotInheritTheVerbosityOfThisProcess(): void
+    {
+        $saved = [$_SERVER['SHELL_VERBOSITY'] ?? null, $_ENV['SHELL_VERBOSITY'] ?? null, getenv('SHELL_VERBOSITY')];
+        $_SERVER['SHELL_VERBOSITY'] = $_ENV['SHELL_VERBOSITY'] = '3';
+        putenv('SHELL_VERBOSITY=3');
+
+        try {
+            $process = new Process([\PHP_BINARY, '-r', "echo getenv('SHELL_VERBOSITY');"], null, $this->environment(['HOME' => $this->directory])->variables());
+            $process->run();
+            $inherited = new Process([\PHP_BINARY, '-r', "echo getenv('SHELL_VERBOSITY');"]);
+            $inherited->run();
+        } finally {
+            foreach ([&$_SERVER, &$_ENV] as $i => &$target) {
+                null === $saved[$i] ? $target = array_diff_key($target, ['SHELL_VERBOSITY' => 1]) : $target['SHELL_VERBOSITY'] = $saved[$i];
+            }
+            putenv(false === $saved[2] ? 'SHELL_VERBOSITY' : 'SHELL_VERBOSITY=' . $saved[2]);
+        }
+
+        $this->assertSame('3', $inherited->getOutput(), 'without the override the child inherits the verbosity');
+        $this->assertSame('0', $process->getOutput());
+    }
+
     public function testAConfiguredFolderAlwaysWins(): void
     {
         $variables = $this->environment(['HOME' => $this->directory, 'COMPOSER_HOME' => '/set/by/the/server'], $this->directory . '/mine')->variables();

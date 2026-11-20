@@ -14,7 +14,7 @@ use Throwable;
  * inside the version the project has chosen, so updating it is the safe kind of update. A failure is no error of the
  * check: the tab then simply says nothing about updates.
  */
-final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFailure
+final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFailureCode
 {
     /** @var list<string> */
     public const PACKAGES = ['sulu/sulu', 'symfony/framework-bundle'];
@@ -27,7 +27,17 @@ final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFail
     ) {
     }
 
+    /** The check needs a GitHub token for a repository of the project (see the section on tokens in docs/system.en.md). */
+    public const ERROR_GITHUB_AUTH = 'github_auth';
+
     private ?string $failure = null;
+
+    private ?string $failureCode = null;
+
+    public function failureCode(): ?string
+    {
+        return $this->failureCode;
+    }
 
     public function failure(): ?string
     {
@@ -37,6 +47,7 @@ final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFail
     public function run(): ?array
     {
         $this->failure = null;
+        $this->failureCode = null;
         $command = ComposerCommand::resolve($this->composer);
         if (null === $command) {
             $this->failure = 'Composer was not found.';
@@ -63,11 +74,16 @@ final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFail
         $data = json_decode($process->getOutput(), true);
         if (!\is_array($data) || !\is_array($data['locked'] ?? null)) {
             $error = $process->getErrorOutput();
-            $detail = ComposerFailure::summarize('' !== trim($error) ? $error : $process->getOutput(), $this->projectDir)
+            $detail = ComposerFailure::reason('' !== trim($error) ? $error : $process->getOutput(), $this->projectDir)
                 ?? 'exit code ' . $process->getExitCode();
-            $this->failure = ComposerFailure::isNetwork($error)
-                ? 'Composer cannot fetch the package list. Check the network access of the web PHP or run the command over SSH. ' . $detail
-                : $detail;
+            if (ComposerFailure::isGithubAuth($error)) {
+                $this->failureCode = self::ERROR_GITHUB_AUTH;
+                $this->failure = 'Composer needs a GitHub token for a repository of the project and the user of this PHP has none. Put an auth.json with "github-oauth" into the Composer home of this user or into the folder of sulu_dashboard.system.composer_home, or run the command over SSH. ' . $detail;
+            } elseif (ComposerFailure::isNetwork($error)) {
+                $this->failure = 'Composer cannot fetch the package list. Check the network access of the web PHP or run the command over SSH. ' . $detail;
+            } else {
+                $this->failure = $detail;
+            }
 
             return null;
         }
