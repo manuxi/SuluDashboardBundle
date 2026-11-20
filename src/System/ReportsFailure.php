@@ -13,9 +13,4 @@ interface ReportsFailure
      * The reason of the last run; null if it worked.
      */
     public function failure(): ?string;
-
-    /**
-     * A short code for a reason the tile can translate (for example "github_auth"); null if there is none.
-     */
-    public function failureCode(): ?string;
 }

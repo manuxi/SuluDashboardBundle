@@ -14,7 +14,7 @@ use Throwable;
  * inside the version the project has chosen, so updating it is the safe kind of update. A failure is no error of the
  * check: the tab then simply says nothing about updates.
  */
-final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFailure
+final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFailureCode
 {
     /** @var list<string> */
     public const PACKAGES = ['sulu/sulu', 'symfony/framework-bundle'];
