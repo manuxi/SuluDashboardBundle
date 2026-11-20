@@ -159,6 +159,10 @@ Two things the web PHP needs:
 - `proc_open` must not be disabled in `disable_functions`: the check starts Composer (`composer audit`, `composer outdated`) as a process. Where it is disabled, Composer cannot be started: the tab then reports the security check as "could not run" (the folder sizes are still saved).
 - Composer must be callable by the PHP of the web server. Often the plain command `composer` does not exist there. Then set `sulu_dashboard.system.composer_binary` to the path of a `composer.phar` in the project. A missing home directory of the account (`HOME`, on Windows `APPDATA`) needs no setup: Composer gets its own folder `var/sulu-dashboard/composer` (see "The background check"). Without it Composer would stop with "The APPDATA or COMPOSER_HOME environment variable must be set". The web PHP also has a `max_execution_time`: the command takes about ten to thirty seconds, `set_time_limit()` in the controller helps where the provider allows it.
 
+### Composer in a web request and GitHub repositories (token)
+
+If the `composer.json` points to a VCS repository on GitHub (for example a fork), `composer outdated` asks the GitHub API, and without a token. If it answers 403 (rate limit), Composer falls back to `git clone` over SSH. The user of the web server usually has no SSH keys (on Windows often `SYSTEM`), and the check for updates fails. Sometimes it works and sometimes not, depending on the rate limit. On the console it does not happen if the user has a token. The command then names the reason: "Composer needs a GitHub token ...", followed by the message of Git. To fix it, put an `auth.json` with `github-oauth` into the Composer home of the web server user, or set `sulu_dashboard.system.composer_home` to a folder with an `auth.json`, or run the command over CLI/SSH cron. The security check (`composer audit`) is not affected. Note: Composer no longer inherits the verbosity (`-v`) of a console command, so that the error message shows only the reason.
+
 ## Check without a login
 
 ```bash
