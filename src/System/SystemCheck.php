@@ -17,10 +17,11 @@ final class SystemCheck
 {
     /**
      * @param Storage       $storage
-     * @param Media|null    $media        number and size of the media of Sulu; null if they could not be read
-     * @param Previous|null $previous     the measurement before this one; null at the first run
-     * @param Updates|null  $updates      newer patch releases of Sulu and Symfony; null if that check could not run (or an older result)
-     * @param string|null   $updatesError why it could not run (shortened, without paths); null if it ran
+     * @param Media|null    $media            number and size of the media of Sulu; null if they could not be read
+     * @param Previous|null $previous         the measurement before this one; null at the first run
+     * @param Updates|null  $updates          newer patch releases of Sulu and Symfony; null if that check could not run (or an older result)
+     * @param string|null   $updatesError     why it could not run (shortened, without paths); null if it ran
+     * @param string|null   $updatesErrorCode a code the tile can translate, see ComposerOutdatedRunner::ERROR_GITHUB_AUTH; null if there is none
      */
     public function __construct(
         public readonly int $checkedAt,
@@ -30,11 +31,12 @@ final class SystemCheck
         public readonly ?array $previous = null,
         public readonly ?array $updates = null,
         public readonly ?string $updatesError = null,
+        public readonly ?string $updatesErrorCode = null,
     ) {
     }
 
     /**
-     * @return array{checkedAt: int, audit: array<string, mixed>, storage: Storage, media: Media|null, previous: Previous|null, updates: Updates|null, updatesError: string|null}
+     * @return array{checkedAt: int, audit: array<string, mixed>, storage: Storage, media: Media|null, previous: Previous|null, updates: Updates|null, updatesError: string|null, updatesErrorCode: string|null}
      */
     public function toArray(): array
     {
@@ -46,6 +48,7 @@ final class SystemCheck
             'previous' => $this->previous,
             'updates' => $this->updates,
             'updatesError' => $this->updatesError,
+            'updatesErrorCode' => $this->updatesErrorCode,
         ];
     }
 
@@ -68,7 +71,7 @@ final class SystemCheck
             ];
         }
 
-        return new self($data['checkedAt'], $audit, self::storage($data['storage'] ?? null), self::media($data['media'] ?? null), $previous, self::updates($data['updates'] ?? null), \is_string($data['updatesError'] ?? null) && '' !== $data['updatesError'] ? $data['updatesError'] : null);
+        return new self($data['checkedAt'], $audit, self::storage($data['storage'] ?? null), self::media($data['media'] ?? null), $previous, self::updates($data['updates'] ?? null), \is_string($data['updatesError'] ?? null) && '' !== $data['updatesError'] ? $data['updatesError'] : null, \is_string($data['updatesErrorCode'] ?? null) && '' !== $data['updatesErrorCode'] ? $data['updatesErrorCode'] : null);
     }
 
     /**

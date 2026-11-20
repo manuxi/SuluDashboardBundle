@@ -37,7 +37,9 @@ final class SystemChecker
         $updates = $this->updates?->run();
         $updatesError = null === $updates && $this->updates instanceof ReportsFailure ? $this->updates->failure() : null;
 
-        $check = new SystemCheck($checkedAt, $audit, $storage, $media, $previous, $updates, $updatesError);
+        $updatesErrorCode = null === $updates && $this->updates instanceof ReportsFailure ? $this->updates->failureCode() : null;
+
+        $check = new SystemCheck($checkedAt, $audit, $storage, $media, $previous, $updates, $updatesError, $updatesErrorCode);
         $this->store->save($check);
 
         return $check;

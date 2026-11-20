@@ -6,6 +6,7 @@
 
 - A failed update check no longer says only "exit code 1" or "exit code 100". `ComposerFailure::reason()` takes the real reason out of verbose Composer output: the exception block ("In X.php line N:") with its last lines, else the lines that are no progress messages ("Reading", "Executing command", "Downloading", "[200] ...").
 - A GitHub repository of the project without a token (the API answers 403, the fallback `git clone` over SSH fails for the user of the web server) is named: "Composer needs a GitHub token for a repository of the project ...", with the way out (`auth.json` with `github-oauth`, `sulu_dashboard.system.composer_home`, or run the command over SSH). See the new section in [docs/system.en.md](docs/system.en.md).
+- A failed update check is no longer silent: the tile "Versions" gets a warning row "Updates: not checked" with the reason (for a missing GitHub token a translated text with the way out). `SystemCheck::$updatesErrorCode` and `ReportsFailure::failureCode()` carry the code `github_auth` (de, en, nl).
 - Composer started from a console command that runs in the web process (URL cron) no longer inherits `SHELL_VERBOSITY` and prints only the reason, not every step: `ComposerEnvironment` sets `SHELL_VERBOSITY=0`.
 
 ## 1.6.2 - 2026-11-20

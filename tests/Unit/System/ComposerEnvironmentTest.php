@@ -210,6 +210,7 @@ class ComposerEnvironmentTest extends TestCase
         $failure = $runner->failure();
         $this->assertNotNull($failure);
         $this->assertStringContainsString('GitHub token', $failure);
+        $this->assertSame('github_auth', $runner->failureCode());
         $this->assertStringContainsString('auth.json', $failure);
         $this->assertStringContainsString('Host key verification failed', $failure);
         $this->assertStringNotContainsString('exit code', $failure);

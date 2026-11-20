@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use IntlDateFormatter;
 use Manuxi\SuluDashboardBundle\System\AuditResult;
+use Manuxi\SuluDashboardBundle\System\ComposerOutdatedRunner;
 use Manuxi\SuluDashboardBundle\System\FailedMessages;
 use Manuxi\SuluDashboardBundle\System\PendingMigrations;
 use Manuxi\SuluDashboardBundle\System\PhpSupport;
@@ -164,6 +165,15 @@ final class SystemTileData
         $rows[] = $this->versionRow('Symfony', $this->versions->symfony, 'symfony/framework-bundle');
         if (null !== $this->versions->sulu) {
             $rows[] = $this->versionRow('Sulu', $this->versions->sulu, 'sulu/sulu');
+        }
+
+        // a failed check must not look like "no update": say that the updates are unknown, and why
+        $check = $this->store->load();
+        if (null !== $check && null === $check->updates && null !== $check->updatesError) {
+            $reason = ComposerOutdatedRunner::ERROR_GITHUB_AUTH === $check->updatesErrorCode
+                ? 'sulu_dashboard.system_updates_error_github_auth'
+                : $this->text($check->updatesError);
+            $rows[] = $this->row(self::SEVERITY_WARNING, 'sulu_dashboard.system_updates', 'sulu_dashboard.system_updates_unchecked', $reason);
         }
 
         return ['rows' => $rows];

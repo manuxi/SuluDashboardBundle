@@ -27,7 +27,17 @@ final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFail
     ) {
     }
 
+    /** The check needs a GitHub token for a repository of the project (see the section on tokens in docs/system.en.md). */
+    public const ERROR_GITHUB_AUTH = 'github_auth';
+
     private ?string $failure = null;
+
+    private ?string $failureCode = null;
+
+    public function failureCode(): ?string
+    {
+        return $this->failureCode;
+    }
 
     public function failure(): ?string
     {
@@ -37,6 +47,7 @@ final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFail
     public function run(): ?array
     {
         $this->failure = null;
+        $this->failureCode = null;
         $command = ComposerCommand::resolve($this->composer);
         if (null === $command) {
             $this->failure = 'Composer was not found.';
@@ -66,6 +77,7 @@ final class ComposerOutdatedRunner implements UpdateRunnerInterface, ReportsFail
             $detail = ComposerFailure::reason('' !== trim($error) ? $error : $process->getOutput(), $this->projectDir)
                 ?? 'exit code ' . $process->getExitCode();
             if (ComposerFailure::isGithubAuth($error)) {
+                $this->failureCode = self::ERROR_GITHUB_AUTH;
                 $this->failure = 'Composer needs a GitHub token for a repository of the project and the user of this PHP has none. Put an auth.json with "github-oauth" into the Composer home of this user or into the folder of sulu_dashboard.system.composer_home, or run the command over SSH. ' . $detail;
             } elseif (ComposerFailure::isNetwork($error)) {
                 $this->failure = 'Composer cannot fetch the package list. Check the network access of the web PHP or run the command over SSH. ' . $detail;

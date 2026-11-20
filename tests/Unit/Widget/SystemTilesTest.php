@@ -441,6 +441,21 @@ class SystemTilesTest extends TestCase
         $this->assertSame(['key' => 'sulu_dashboard.system_update_available', 'parameters' => ['version' => '3.0.10']], $rows[2]['text']);
     }
 
+    public function testVersionsSayThatTheUpdatesCouldNotBeCheckedAndWhy(): void
+    {
+        $this->store->save(new SystemCheck(self::NOW - 3600, AuditResult::ok(), [], null, null, null, 'curl error 6 while downloading', null));
+        $rows = $this->tile('versions')->getData('en')['rows'];
+        $this->assertCount(4, $rows);
+        $this->assertSame(['title' => 'sulu_dashboard.system_updates', 'value' => 'sulu_dashboard.system_updates_unchecked', 'text' => ['text' => 'curl error 6 while downloading'], 'severity' => 'warning'], $rows[3]);
+
+        $this->store->save(new SystemCheck(self::NOW - 3600, AuditResult::ok(), [], null, null, null, 'English console text', 'github_auth'));
+        $rows = $this->tile('versions')->getData('en')['rows'];
+        $this->assertSame('sulu_dashboard.system_updates_error_github_auth', $rows[3]['text']);
+
+        $this->store->save(new SystemCheck(self::NOW - 3600, AuditResult::ok(), [], null, null, []));
+        $this->assertCount(3, $this->tile('versions')->getData('en')['rows'], 'a check that ran says nothing');
+    }
+
     public function testEnvironmentListsTheLiveValuesAndNothingSecret(): void
     {
         $runtime = new RuntimeInfo('512M', 60, true, 'Europe/Berlin', 'de');
