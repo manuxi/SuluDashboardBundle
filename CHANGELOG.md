@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.4 - 2026-11-21
+
+### Fixed
+
+- The hint for a large `var/log` now says to run `sulu:dashboard:system-check` again after cleaning up, like the hint for the cache. The sizes come from the last check, so the old figure stayed without a word about it (de, en, nl).
+
 ## 1.6.3 - 2026-11-20
 
 ### Fixed

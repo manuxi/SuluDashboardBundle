@@ -180,7 +180,7 @@ sulu_dashboard:
     system_storage_cache_large: "Der Cache ist {size} groß."
     system_storage_cache_large_hint: "Leeren mit cache:clear, danach den Befehl sulu:dashboard:system-check neu ausführen."
     system_storage_logs_large: "Die Protokolle sind {size} groß."
-    system_storage_logs_large_hint: "Alte Logdateien rotieren oder löschen."
+    system_storage_logs_large_hint: "Alte Logdateien rotieren oder löschen, danach den Befehl sulu:dashboard:system-check neu ausführen."
     system_vulnerabilities_none: "Keine bekannten Sicherheitslücken."
     system_vulnerabilities_none_hint: "composer audit hat in den installierten Paketen nichts gefunden."
     system_vulnerabilities_never: "Die Sicherheitsprüfung ist noch nie gelaufen."

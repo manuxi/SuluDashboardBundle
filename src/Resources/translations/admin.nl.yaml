@@ -180,7 +180,7 @@ sulu_dashboard:
     system_storage_cache_large: "De cache is {size} groot."
     system_storage_cache_large_hint: "Legen met cache:clear, voer daarna sulu:dashboard:system-check opnieuw uit."
     system_storage_logs_large: "De logbestanden zijn {size} groot."
-    system_storage_logs_large_hint: "Oude logbestanden roteren of verwijderen."
+    system_storage_logs_large_hint: "Oude logbestanden roteren of verwijderen, voer daarna sulu:dashboard:system-check opnieuw uit."
     system_vulnerabilities_none: "Geen bekende beveiligingslekken."
     system_vulnerabilities_none_hint: "composer audit heeft niets gevonden in de geïnstalleerde pakketten."
     system_vulnerabilities_never: "De beveiligingscontrole is nog nooit uitgevoerd."
