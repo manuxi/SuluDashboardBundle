@@ -180,7 +180,7 @@ sulu_dashboard:
     system_storage_cache_large: "The cache is {size}."
     system_storage_cache_large_hint: "Clear it with cache:clear, then run sulu:dashboard:system-check again."
     system_storage_logs_large: "The logs are {size}."
-    system_storage_logs_large_hint: "Rotate or delete old log files."
+    system_storage_logs_large_hint: "Rotate or delete old log files, then run sulu:dashboard:system-check again."
     system_vulnerabilities_none: "No known security vulnerabilities."
     system_vulnerabilities_none_hint: "composer audit found nothing in the installed packages."
     system_vulnerabilities_never: "The security check has never run."
